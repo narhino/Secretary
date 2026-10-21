@@ -1,0 +1,19 @@
+# Secretary settings. Times are local to `timezone`.
+timezone: Asia/Bangkok
+default_time: "09:00"        # used when a reminder has no time
+lookback_hours: 6            # how far back a late runner may still send a missed reminder
+
+morning_brief:
+  enabled: true
+  time: "07:30"              # TODO(onboarding): set to ~30 min after you wake up
+evening_checkin:
+  enabled: false             # turn on if you want a nightly accountability ping
+  time: "21:30"
+weekly_review:
+  enabled: true
+  day: sun
+  time: "19:00"
+
+discord:
+  owner_user_id: ""          # your Discord user ID (right-click your name > Copy User ID)
+  mention_owner: true        # @mention you in webhook messages so your phone buzzes

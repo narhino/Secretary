@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secretary"
+version = "0.1.0"
+description = "Personal secretary: reminders, tasks, gym log and a Discord bot backed by a git repo"
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6", "tzdata"]
+
+[project.optional-dependencies]
+bot = ["anthropic>=1.17", "discord.py>=2.4"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+secretary = "secretary.cli:main"
+secretary-bot = "secretary.bot.discord_bot:main"
+
+[tool.setuptools.packages.find]
+include = ["secretary*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

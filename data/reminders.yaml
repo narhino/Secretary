@@ -1,0 +1,23 @@
+# Reminders. Each one pings you on Discord at `time` (local) on its date(s),
+# plus once per lead time in `notify_before`.
+#
+#   id:            unique slug
+#   title:         what to show
+#   due:           YYYY-MM-DD (one-off date, or the anchor for a repeat)
+#   time:          "HH:MM" (quote it)
+#   repeat:        daily | weekdays | weekly | weekly:mon,thu | monthly | yearly | every 90d
+#   notify_before: [14d, 7d, 1d, 2h, 0m]   (0m = at the time itself)
+#   until:         YYYY-MM-DD (optional end for repeats)
+#   category / notes / link: optional
+#   done:          true when finished (interval repeats roll forward instead)
+#
+# Add or change them by asking the secretary, or with `python -m secretary remind add ...`.
+reminders:
+- id: weekly-meal-prep
+  title: Meal prep for the week (shop + cook)
+  repeat: weekly:sun
+  time: "10:00"
+  notify_before: [1d, 0m]
+  category: nutrition
+  notes: Check nutrition/meal-prep.md for this week's plan and shopping list.
+  link: nutrition/meal-prep.md
