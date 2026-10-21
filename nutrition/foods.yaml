@@ -1,0 +1,38 @@
+# Reference foods: nutrients per `serving`. TYPICAL ESTIMATES, because portions and recipes vary a
+# lot between vendors. Prefer the numbers on a packet label when there is one, and add or correct
+# entries as you learn your usual vendors and portions.
+# Log one with: python -m secretary meal add --ref khao-man-gai [--qty 1.5]
+foods:
+# --- staples
+- {id: jasmine-rice, name: Jasmine rice (cooked), serving: 1 plate ~200 g, kcal: 260, protein_g: 5, carbs_g: 57, fat_g: 0.5, fiber_g: 0.8}
+- {id: riceberry-rice, name: Riceberry rice (cooked), serving: 1 plate ~200 g, kcal: 260, protein_g: 6, carbs_g: 54, fat_g: 2, fiber_g: 3}
+- {id: sticky-rice, name: Sticky rice (khao niao), serving: 1 small bag ~100 g, kcal: 170, protein_g: 3.5, carbs_g: 37, fat_g: 0.3, fiber_g: 0.5}
+- {id: boiled-egg, name: Boiled egg, aliases: [egg, khai tom], serving: 1 large, kcal: 72, protein_g: 6.3, carbs_g: 0.4, fat_g: 4.8}
+- {id: fried-egg, name: Fried egg (khai dao), serving: 1 egg, kcal: 110, protein_g: 6.3, carbs_g: 0.4, fat_g: 9}
+- {id: chicken-breast, name: Chicken breast (cooked), serving: 100 g, kcal: 165, protein_g: 31, carbs_g: 0, fat_g: 3.6}
+- {id: chicken-breast-pack, name: Ready-to-eat chicken breast pack (7-Eleven style), serving: 1 pack ~100 g, kcal: 120, protein_g: 24, carbs_g: 1, fat_g: 2, sodium_mg: 450}
+- {id: greek-yogurt, name: Greek yoghurt plain 0%, serving: 100 g, kcal: 60, protein_g: 10, carbs_g: 4, fat_g: 0.4, sugar_g: 4}
+- {id: whey, name: Whey protein, serving: 1 scoop 30 g, kcal: 120, protein_g: 24, carbs_g: 3, fat_g: 1.5}
+- {id: milk, name: Fresh milk, serving: 1 box 225 ml, kcal: 140, protein_g: 7, carbs_g: 11, fat_g: 7.5, sugar_g: 11}
+- {id: oats, name: Rolled oats (dry), serving: 40 g, kcal: 150, protein_g: 5, carbs_g: 27, fat_g: 2.7, fiber_g: 4}
+- {id: banana, name: Banana, serving: 1 medium, kcal: 105, protein_g: 1.3, carbs_g: 27, fat_g: 0.4, fiber_g: 3.1, sugar_g: 14}
+- {id: tofu, name: Firm tofu, serving: 100 g, kcal: 140, protein_g: 15, carbs_g: 3, fat_g: 8}
+# --- Thai dishes (street-food portions)
+- {id: khao-man-gai, name: Khao man gai, serving: 1 plate, kcal: 600, protein_g: 30, carbs_g: 70, fat_g: 22, sodium_mg: 1100}
+- {id: pad-krapow-gai, name: Pad krapow gai with rice (no egg), aliases: [kaprao, krapow], serving: 1 plate, kcal: 550, protein_g: 30, carbs_g: 65, fat_g: 18, sodium_mg: 1300}
+- {id: pad-thai, name: Pad thai with shrimp, serving: 1 plate, kcal: 600, protein_g: 20, carbs_g: 75, fat_g: 24, sugar_g: 15, sodium_mg: 1500}
+- {id: khao-pad-gai, name: Fried rice with chicken (khao pad), serving: 1 plate, kcal: 600, protein_g: 22, carbs_g: 80, fat_g: 20, sodium_mg: 1200}
+- {id: pad-see-ew, name: Pad see ew, serving: 1 plate, kcal: 650, protein_g: 22, carbs_g: 80, fat_g: 25, sodium_mg: 1500}
+- {id: noodle-soup, name: Noodle soup (kuay teow nam), serving: 1 bowl, kcal: 350, protein_g: 18, carbs_g: 45, fat_g: 10, sodium_mg: 1500}
+- {id: jok, name: Rice porridge with pork and egg (jok), serving: 1 bowl, kcal: 300, protein_g: 15, carbs_g: 40, fat_g: 8}
+- {id: som-tam, name: Som tam Thai, serving: 1 plate, kcal: 120, protein_g: 4, carbs_g: 22, fat_g: 1.5, sugar_g: 12, sodium_mg: 1200}
+- {id: gai-yang, name: Gai yang (grilled chicken), serving: 1 leg+thigh, kcal: 250, protein_g: 25, carbs_g: 3, fat_g: 15}
+- {id: moo-ping, name: Moo ping, serving: 1 skewer, kcal: 100, protein_g: 7, carbs_g: 5, fat_g: 6, sugar_g: 4}
+- {id: larb-gai, name: Larb gai, serving: 1 plate, kcal: 200, protein_g: 25, carbs_g: 8, fat_g: 7}
+- {id: tom-yum-goong, name: Tom yum goong (clear), serving: 1 bowl, kcal: 150, protein_g: 18, carbs_g: 10, fat_g: 4, sodium_mg: 1500}
+- {id: green-curry-chicken, name: Green curry with chicken (no rice), serving: 1 bowl, kcal: 300, protein_g: 20, carbs_g: 10, fat_g: 20}
+- {id: pla-pao, name: Grilled salt-crusted fish (pla pao), serving: 1/2 fish, kcal: 300, protein_g: 50, carbs_g: 0, fat_g: 10}
+- {id: mango-sticky-rice, name: Mango sticky rice, serving: 1 portion, kcal: 450, protein_g: 6, carbs_g: 80, fat_g: 13, sugar_g: 40}
+# --- drinks
+- {id: thai-milk-tea, name: Thai milk tea (cha yen), serving: 1 cup ~400 ml, kcal: 250, protein_g: 3, carbs_g: 40, fat_g: 8, sugar_g: 38}
+- {id: americano, name: Iced Americano, no sugar, serving: 1 cup, kcal: 10, protein_g: 0.5, carbs_g: 1, fat_g: 0}

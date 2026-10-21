@@ -1,19 +1,24 @@
 # Secretary settings. Times are local to `timezone`.
 timezone: Asia/Bangkok
 default_time: "09:00"        # used when a reminder has no time
-lookback_hours: 6            # how far back a late runner may still send a missed reminder
+lookback_hours: 6            # how far back a late runner may still deliver a missed reminder
 
-morning_brief:
-  enabled: true
-  time: "07:30"              # TODO(onboarding): set to ~30 min after you wake up
-evening_checkin:
-  enabled: false             # turn on if you want a nightly accountability ping
-  time: "21:30"
-weekly_review:
-  enabled: true
-  day: sun
-  time: "19:00"
+# When the secretary reaches out on its own. Claude writes each message fresh from your data.
+# These times are mirrored by the scheduled tasks (see docs/setup.md). Change them by asking.
+checkins:
+  morning: "08:00"           # TODO(onboarding): ~30 min after you wake up
+  midday: "13:30"            # meal nudge, skipped if lunch is already logged
+  evening: "21:00"           # how was today: meals, mood, training, studio
+  weekly: {day: sun, time: "19:00"}   # weekly review and strategy
+quiet_hours: ["23:00", "07:00"]       # no non-critical messages in this window
+max_proactive_per_day: 5              # check-ins + reminders, critical ones excepted
+
+delivery:
+  # The GitHub Actions safety net sends ONLY critical reminders, and only if Claude hasn't
+  # delivered them within this grace period.
+  backup_grace_minutes: 45
+  critical_categories: [immigration, health, appointment]
 
 discord:
   owner_user_id: ""          # your Discord user ID (right-click your name > Copy User ID)
-  mention_owner: true        # @mention you in webhook messages so your phone buzzes
+  mention_owner: true        # @mention you so your phone buzzes

@@ -147,12 +147,25 @@ class SecretaryBot(discord.Client):
         if not due:
             return
         target = await self._notify_target()
-        for n, text in due:
+        checkins = [n for n, _ in due if n.reminder["id"].startswith("__")]
+        items = [{"title": n.reminder.get("title"), "when": reminders.describe_when(n.occurrence, now),
+                  "notes": n.reminder.get("notes")} for n, _ in due if not n.reminder["id"].startswith("__")]
+        kind = checkins[-1].reminder["id"].strip("_") if checkins else "reminders"
+        try:
+            # Claude writes the message itself, so check-ins and reminders read like a person.
+            reply = await self.secretary.compose(str(target.id), kind, items)
+            text = reply.text.strip()
+            if reply.wrote:
+                await asyncio.to_thread(gitsync.commit_and_push, "secretary: update from check-in")
+        except Exception:  # noqa: BLE001 - never lose a reminder because Claude was unreachable
+            log.exception("compose failed; sending plain reminders")
+            text = "\n\n".join(t for n, t in due if not n.reminder["id"].startswith("__") or n is checkins[-1])
+        if text and text != "SKIP":
             if self.notify_channel_id:
                 text = f"<@{self.owner_id}> {text}"
             await self._send(target, text)
-            scheduler.mark_sent(sent, [n], now)
-            reminders.save_sent(sent, now)
+        scheduler.mark_sent(sent, [n for n, _ in due], now)
+        reminders.save_sent(sent, now)
         await asyncio.to_thread(gitsync.commit_and_push, "secretary: reminder log")
 
     @reminder_loop.before_loop

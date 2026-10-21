@@ -24,16 +24,20 @@ WEB_SEARCH = {"type": "web_search_20260209", "name": "web_search", "max_uses": 5
 
 BOT_ADDENDUM = """
 # You are talking through Discord right now
-- You run as the user's Discord bot. Replies are Discord messages: keep them short and scannable
-  (a few lines, bullets, bold for key items). No tables. Under ~1500 characters unless asked for detail.
-- You have tools instead of a shell: read_file / write_file / edit_file / append_file for memory files,
-  add_reminder / complete_reminder / list_reminders, add_task / update_task / list_tasks,
-  log_workout / exercise_progress / log_body, and web_search for current information.
+- You run as the user's Discord bot. Your replies are Discord messages from a friend: short,
+  natural, no headers or tables, under ~1200 characters unless they ask for detail.
+- You have tools instead of a shell: log_meal (one call per item), log_day, log_workout, log_body,
+  exercise_progress, nutrition_day, status_report, week_report, add_reminder / complete_reminder /
+  list_reminders, add_task / update_task / list_tasks, read_file / write_file / edit_file /
+  append_file for memory files, and web_search for current information.
 - Files you change are committed and pushed to GitHub automatically after your reply.
 - The <context> block in each message is a fresh snapshot (date, today's schedule, open tasks).
   Trust it over anything older in the conversation.
-- Images or PDFs the user sends (receipts, visa stamps, meal photos, gym boards) are attached to their
-  message. Extract what matters (dates, amounts, macros) and file it.
+- Images or PDFs the user sends (meals, receipts, visa stamps, appointment cards, gym boards) are
+  attached to their message. Extract what matters and file it.
+- A message starting with [scheduled] is not from the user: it's your own timer telling you it is
+  time to reach out. Write the message you want to send them, following the check-in rules.
+  Your reply is sent to them as-is. Reply with exactly SKIP to send nothing.
 """.strip()
 
 
@@ -46,7 +50,7 @@ def system_prompt() -> list[dict]:
     """Stable instructions first (cached), then the slower-changing memory files."""
     manual = _read("CLAUDE.md") + "\n\n" + BOT_ADDENDUM
     memory = "\n\n".join(f'<file path="{p}">\n{_read(p)}\n</file>'
-                         for p in ("profile/me.md", "goals/goals.md"))
+                         for p in ("profile/me.md", "goals/goals.md", "memory/playbook.md"))
     return [{"type": "text", "text": manual, "cache_control": {"type": "ephemeral"}},
             {"type": "text", "text": "# Core memory (loaded at the start of every message)\n\n" + memory}]
 
@@ -84,6 +88,16 @@ class Secretary:
 
     def reset(self, key: str) -> None:
         self.histories.pop(key, None)
+
+    async def compose(self, key: str, kind: str, due: list[dict]) -> Reply:
+        """Have Claude write a proactive message (check-in or reminders) in its own words."""
+        lines = [f"[scheduled] Time for the {kind} check-in." if kind != "reminders"
+                 else "[scheduled] Reminders are due."]
+        if due:
+            lines.append("Due reminders to weave in naturally:")
+            lines += [f"- {d['title']} ({d['when']})" + (f": {d['notes']}" if d.get("notes") else "") for d in due]
+        lines.append("Call status_report first if you need more context.")
+        return await self.respond(key, "\n".join(lines))
 
     async def respond(self, key: str, text: str, attachments: list[tuple[str, bytes]] | None = None) -> Reply:
         now = config.now()

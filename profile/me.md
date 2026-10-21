@@ -21,6 +21,22 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Address registered with immigration (TM30 done by landlord?): TODO
 - Work permit (if any) expiry: TODO
 
+## Orthodontic treatment
+- Type (braces / clear aligners), started when, expected end: TODO
+- Clinic + orthodontist, how to book (LINE / phone): TODO
+- Next appointment: TODO
+- Routine (aligner change every N days, elastics hours, wear time, foods to avoid): TODO
+
+## Home (living alone)
+- Studio / condo, size, building facilities (laundry, gym, pool?): TODO
+- Cleaning help (maid service?) or all DIY: TODO
+- Where it usually goes wrong (dishes, laundry piles, clutter…): TODO
+
+## Wellbeing
+- Typical mood / energy baseline: TODO
+- What drains me / what recharges me: TODO
+- Social life here (friends, community, dating, calls home): TODO
+
 ## Daily routine
 - Wake time / sleep time: TODO
 - Work hours: TODO

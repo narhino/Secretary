@@ -34,15 +34,24 @@ your answers, and I set up the reminders.
 20. Kitchen setup: full kitchen, rice cooker, air fryer, or just a microwave?
 21. Which day suits meal prep? Weekly food budget?
 
-## 5. Goals & growth
-22. Where do you want to be in 1 year, and in 3 years? (Health, money/career, life in Thailand,
-    relationships, skills such as learning Thai.)
-23. The 3 things that would make the biggest difference in the next 3 months?
-24. What usually derails you, and how should I push you when it happens?
+## 5. Orthodontist, home & wellbeing
+22. Braces or clear aligners? Clinic, and when is your next appointment (date and time)? Any
+    routine I should remind you about (aligner changes, elastics, wear time, foods to avoid)?
+23. Your studio: what usually slips first (dishes, laundry, clutter)? Do you have a maid service or
+    do everything yourself?
+24. Living alone: what drains you and what recharges you? How's your social life here?
+25. On a normal day, how would you rate your mood and energy out of 10?
 
-## 6. How I should work
-25. Tone: gentle, direct, or drill sergeant?
-26. Reminders: minimal, normal, or nag me until it's done?
-27. Do you want a morning brief (what time?), an evening check-in, and a Sunday weekly review?
-28. Discord: do you already have a server? Do you have a computer that's always on, or would you
-    rent a small server? (This decides how I'm hosted. See docs/discord-setup.md.)
+## 6. Goals & growth
+26. Where do you want to be in 1 year, and in 3 years? (Health, money/career, life in Thailand,
+    relationships, skills such as learning Thai.)
+27. The 3 things that would make the biggest difference in the next 3 months?
+28. What usually derails you, and how should I push you when it happens?
+
+## 7. How I should work
+29. Tone: gentle, direct, or drill sergeant? Any language mix you like (English, some Thai)?
+30. Reminders: minimal, normal, or nag me until it's done?
+31. Check-in times: morning (after you wake), midday meal nudge, evening (before bed), Sunday
+    review. What times work? Any quiet hours?
+32. Discord: do you have a computer that can stay on 24/7 (or would you rent a small server)?
+    That decides whether we use Discord for two-way chat (see docs/setup.md).

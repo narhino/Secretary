@@ -340,7 +340,7 @@ def slugify(text: str) -> str:
 
 def add_reminder(title: str, due=None, time_: str | None = None, repeat=None,
                  notify_before=None, category: str | None = None, notes: str | None = None,
-                 link: str | None = None, rid: str | None = None) -> dict:
+                 link: str | None = None, rid: str | None = None, critical: bool = False) -> dict:
     reminders = load_reminders()
     ids = {r.get("id") for r in reminders}
     rid = rid or slugify(title)
@@ -359,6 +359,8 @@ def add_reminder(title: str, due=None, time_: str | None = None, repeat=None,
     for key, value in (("category", category), ("notes", notes), ("link", link)):
         if value:
             rem[key] = value
+    if critical:
+        rem["critical"] = True
     errors = validate([rem], config.tz())
     if errors:
         raise ValueError("; ".join(errors))

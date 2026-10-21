@@ -25,9 +25,11 @@ DEFAULT_SETTINGS = {
     "timezone": "Asia/Bangkok",
     "default_time": "09:00",
     "lookback_hours": 6,
-    "morning_brief": {"enabled": True, "time": "07:30"},
-    "evening_checkin": {"enabled": False, "time": "21:30"},
-    "weekly_review": {"enabled": True, "day": "sun", "time": "19:00"},
+    "checkins": {"morning": "08:00", "midday": "13:30", "evening": "21:00",
+                 "weekly": {"day": "sun", "time": "19:00"}},
+    "quiet_hours": ["23:00", "07:00"],
+    "max_proactive_per_day": 5,
+    "delivery": {"backup_grace_minutes": 45, "critical_categories": ["immigration", "health", "appointment"]},
     "discord": {"owner_user_id": "", "mention_owner": True},
 }
 

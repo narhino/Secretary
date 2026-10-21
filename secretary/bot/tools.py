@@ -7,9 +7,9 @@ from pathlib import Path
 
 import yaml
 
-from .. import config, fitness, reminders, tasks
+from .. import config, daylog, fitness, nutrition, reminders, status, tasks
 
-WRITABLE_DIRS = ("profile", "goals", "data", "fitness", "nutrition", "thailand", "journal", "memory")
+WRITABLE_DIRS = ("profile", "goals", "data", "fitness", "nutrition", "thailand", "journal", "memory", "home")
 HIDDEN = (".git", ".env", "data/state")
 TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".csv", ".txt", ".json"}
 MAX_READ = 60_000
@@ -27,7 +27,7 @@ TOOLS = [
     {"name": "list_files", "description": "List files in a repo directory ('' for the root).",
      "input_schema": _schema({"path": _S})},
     {"name": "write_file", "description": "Create or overwrite a whole text file. Only inside profile/, goals/, "
-     "data/, fitness/, nutrition/, thailand/, journal/, memory/. Prefer edit_file for small changes.",
+     "data/, fitness/, nutrition/, thailand/, journal/, memory/, home/. Prefer edit_file for small changes.",
      "input_schema": _schema({"path": _S, "content": _S}, ["path", "content"])},
     {"name": "edit_file", "description": "Replace one exact, unique snippet of text in a file with new text.",
      "input_schema": _schema({"path": _S, "old_text": _S, "new_text": _S}, ["path", "old_text", "new_text"])},
@@ -79,6 +79,30 @@ TOOLS = [
     {"name": "log_body", "description": "Log body weight (kg), waist (cm) and/or body fat %.",
      "input_schema": _schema({"weight_kg": {"type": "number"}, "waist_cm": {"type": "number"},
                               "bodyfat_pct": {"type": "number"}, "date": _S, "notes": _S})},
+    {"name": "log_meal", "description": "Log ONE food or drink item to the nutrition sheet. Use `ref` (an id "
+     "from nutrition/foods.yaml) with `qty` when it fits, otherwise give your best estimate of the nutrients. "
+     "Call once per item.",
+     "input_schema": _schema({
+         "food": _S, "ref": _S, "qty": {"type": "number"}, "amount": _S,
+         "meal": {"type": "string", "enum": nutrition.MEALS}, "time": {"type": "string", "description": "HH:MM"},
+         "kcal": {"type": "number"}, "protein_g": {"type": "number"}, "carbs_g": {"type": "number"},
+         "fat_g": {"type": "number"}, "fiber_g": {"type": "number"}, "sugar_g": {"type": "number"},
+         "sodium_mg": {"type": "number"},
+         "source": {"type": "string", "enum": ["estimate", "photo", "label", "reference"]},
+         "date": _S, "notes": _S})},
+    {"name": "log_day", "description": "Record how the day went: mood/energy/stress (1-10), sleep_h, trained "
+     "(yes/no/rest), training (what), tidy (clean/ok/messy), water_l, priorities (e.g. 2/3), highlight, notes.",
+     "input_schema": _schema({
+         "date": _S, "mood": {"type": "number"}, "energy": {"type": "number"}, "stress": {"type": "number"},
+         "sleep_h": {"type": "number"}, "trained": {"type": "string", "enum": ["yes", "no", "rest"]},
+         "training": _S, "tidy": {"type": "string", "enum": ["clean", "ok", "messy"]},
+         "water_l": {"type": "number"}, "priorities": _S, "highlight": _S, "notes": _S})},
+    {"name": "nutrition_day", "description": "Meals logged on a day with totals vs targets (default today).",
+     "input_schema": _schema({"date": _S})},
+    {"name": "status_report", "description": "Situation report: today's schedule, due reminders, what is "
+     "logged or missing today, training this week, nutrition so far.", "input_schema": _schema({})},
+    {"name": "week_report", "description": "This week's numbers for a weekly review: training, goals, "
+     "nutrition, mood/sleep/studio, tasks, upcoming events.", "input_schema": _schema({})},
 ]
 
 
@@ -241,5 +265,27 @@ def _run(name: str, a: dict) -> tuple[str, bool]:
         day = reminders.parse_date(a.get("date")) or _today()
         fitness.log_body(day, a.get("weight_kg"), a.get("waist_cm"), a.get("bodyfat_pct"), a.get("notes") or "")
         return f"logged body metrics for {day}. Trend: {fitness.body_trend()}", True
+
+    if name == "log_meal":
+        day = reminders.parse_date(a.get("date")) or _today()
+        nutrients = {k: a.get(k) for k in nutrition.NUTRIENTS}
+        row = nutrition.log_meal(day, a.get("food") or "", a.get("meal") or "", a.get("time") or "",
+                                 a.get("amount") or "", nutrients, a.get("ref"), float(a.get("qty") or 1),
+                                 a.get("source") or "", a.get("notes") or "")
+        return f"logged {row['food']} ({row['kcal']} kcal)\n" + nutrition.day_report(day), True
+
+    if name == "log_day":
+        day = reminders.parse_date(a.get("date")) or _today()
+        fields = {k: v for k, v in a.items() if k != "date"}
+        return f"{day}: {daylog.format_day(daylog.update(day, **fields))}", True
+
+    if name == "nutrition_day":
+        return nutrition.day_report(reminders.parse_date(a.get("date")) or _today()), False
+
+    if name == "status_report":
+        return json.dumps(status.snapshot(), ensure_ascii=False, default=str), False
+
+    if name == "week_report":
+        return json.dumps(status.weekly(), ensure_ascii=False, default=str), False
 
     raise ToolError(f"unknown tool {name}")

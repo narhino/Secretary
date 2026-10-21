@@ -1,0 +1,33 @@
+# Playbook: how I help you best
+
+_My living strategy document. I read it at the start of every session and update it as I learn.
+The weekly review always ends with a change-log entry._
+
+## What I know works for you
+- (learning… e.g. "replies faster to short questions than to lists", "prefers a nudge at 18:30 on
+  gym days", "mornings are rushed: keep the morning message to 2 lines")
+
+## What doesn't work
+- (learning…)
+
+## Patterns I've noticed
+- (from the data: e.g. "mood dips after <6 h sleep", "skips the gym when work runs past 19:00",
+  "studio gets messy midweek", "protein lowest on Sundays")
+
+## Rules I follow for you
+- Don't send a check-in if we already talked in the last 2 hours; fold it into the conversation.
+- Appointments (orthodontist, immigration, DLT): reminder 1 day before plus a few hours before, and
+  a prep task if documents are needed.
+- Meals: log every item the same day; estimates are fine, but missing days are not.
+
+## Current strategies & experiments
+| Since | Strategy / experiment | Why | Review on | Result |
+|---|---|---|---|---|
+| 2026-10-21 | Daily logging habit: meals + mood + studio in the evening check-in | Need a baseline before strategies | 2026-11-01 | — |
+
+## Living-alone systems in place
+- 10-minute evening reset (see `home/routines.md`)
+- Sunday: meal prep + weekly review + laundry
+
+## Change log
+- 2026-10-21: Playbook created. Starting with baseline tracking for 1–2 weeks before changing anything.

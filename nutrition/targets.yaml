@@ -1,0 +1,14 @@
+# Daily nutrition targets. The secretary sets these during onboarding and revisits them in the
+# weekly review. How they're derived:
+#   calories = Mifflin-St Jeor BMR x activity factor, -300..500 kcal to cut / +200..300 to gain
+#   protein  = 1.8-2.2 g per kg body weight; fat ~0.8 g/kg; carbs = the rest
+#   water    = ~35 ml/kg + 0.5-1 L per training hour (Thai heat)
+# A day counts as "on target" when calories are within +/-10% and protein is >= 90% of target.
+kcal: null
+protein_g: null
+carbs_g: null
+fat_g: null
+fiber_g: 30
+water_l: null
+updated: null
+basis: TODO - needs height, weight, age, sex, activity level and goal

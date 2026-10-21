@@ -1,48 +1,54 @@
 # Secretary
 
-A personal secretary built on Claude. It keeps track of goals, tasks and appointments, tracks gym
-progress and meal prep, handles life admin in Thailand (visa, 90-day reports, driving licence) and
-reminds you before things are due. You can talk to it **in the Claude app** and **on Discord**.
+A personal secretary and coach that runs on Claude (your subscription). It keeps track of goals,
+priorities, tasks and appointments (orthodontist, immigration…); logs what you eat into a daily
+nutrition sheet; tracks training, mood, sleep and the state of your studio; and turns all of it
+into weekly strategies. It talks like a person: Claude writes every message itself, with no
+templates.
 
 ## How it fits together
 ```
-                ┌──────────────── this git repo = the secretary's memory ────────────────┐
-                │ CLAUDE.md (how it behaves)  profile/  goals/  data/*.yaml  fitness/    │
-                │ nutrition/  thailand/  journal/  memory/                               │
-                └───────▲──────────────────────▲─────────────────────────▲───────────────┘
-                        │ read/write + push    │ read/write + push       │ read + sent-log
-         ┌──────────────┴───────┐  ┌───────────┴──────────────┐  ┌───────┴───────────────────┐
-         │ Claude app / Claude  │  │ Discord bot              │  │ GitHub Actions (cron)     │
-         │ Code (this chat)     │  │ secretary/bot, Claude API│  │ reminders via webhook     │
-         └──────────────────────┘  │ DMs you, reads photos    │  └───────────────────────────┘
-                                   └──────────────────────────┘
+                 ┌──────────── this private repo = the secretary's memory ────────────┐
+                 │ CLAUDE.md (voice + rules)   memory/playbook.md (self-updating)     │
+                 │ profile/ goals/ data/(tasks, reminders, daily.csv) home/           │
+                 │ nutrition/(meals.csv → daily.csv sheet) fitness/ thailand/ journal/│
+                 └─────▲─────────────────────▲─────────────────────────▲──────────────┘
+                       │                     │                         │ critical only,
+        ┌──────────────┴─────────┐ ┌─────────┴───────────────┐ ┌───────┴─────────────────┐
+        │ Claude app + scheduled │ │ Discord (optional):     │ │ Safety net: GitHub       │
+        │ check-ins (cloud, your │ │ Claude Code + Discord   │ │ Actions → Discord webhook│
+        │ subscription)          │ │ plugin on an always-on  │ │ if Claude didn't deliver │
+        └────────────────────────┘ │ computer                │ └──────────────────────────┘
+                                   └─────────────────────────┘
 ```
-- **One memory.** Every surface reads and writes the same files and syncs through git. Tell the bot
-  something on Discord and the Claude app knows it next time, and the other way round.
-- **Reliable reminders.** Reminders are plain code, not AI: `data/reminders.yaml` + `secretary/reminders.py`.
-  They fire through the bot (as DMs) or through GitHub Actions (webhook). A sent-log stops repeats.
-- **Morning brief, evening check-in, weekly review.** These are built in; set the times in
-  `data/settings.yaml`.
+Read [`docs/setup.md`](docs/setup.md) for the design and setup (Plan A: no server; Plan B: Discord).
+
+## What gets tracked
+| You say / send | Lands in |
+|---|---|
+| What you ate (text or photo) | `nutrition/meals.csv` → per-day totals vs targets in `nutrition/daily.csv` |
+| Mood, energy, stress, sleep, studio state, priorities | `data/daily.csv` |
+| Sets and reps, body weight | `fitness/workouts.csv`, `fitness/body.csv`, progress vs `fitness/targets.yaml` |
+| Appointments, deadlines, to-dos | `data/reminders.yaml`, `data/tasks.yaml` |
+| Anything about you | `profile/me.md`, `memory/playbook.md` |
 
 ## Start here
-1. Answer the questions in [`ONBOARDING.md`](ONBOARDING.md), or just tell the secretary "onboard me".
-2. Set up Discord: [`docs/discord-setup.md`](docs/discord-setup.md). Layer 1 takes about 10 minutes
-   and needs no server.
-3. Talk to it every day: "plan my day", "bench 80x8 80x8", "remind me to…", "weekly review".
+1. Make this repository **private** (Settings → General → Danger Zone → Change visibility).
+2. Answer the questions in [`ONBOARDING.md`](ONBOARDING.md), or say "onboard me".
+3. Pick the check-in times; the secretary schedules them.
 
-## Command line
+## Command line (used by Claude; handy for you too)
 ```bash
-pip install -e ".[bot,dev]"
-python -m secretary brief                 # today's brief
-python -m secretary upcoming --days 30
-python -m secretary remind add "Visa extension" --due 2026-12-01 --time 09:00 --before 30d,14d,7d,1d
-python -m secretary task add "Get residence certificate" --priority high --area thailand
-python -m secretary log "Squat" 100x5 100x5 100x5@8
-python -m secretary progress "Squat" ; python -m secretary prs
+pip install -e ".[dev]"
+python -m secretary status --json        # situation report
+python -m secretary meal add --ref khao-man-gai --meal lunch ; python -m secretary meal today
+python -m secretary day set --mood 7 --energy 6 --sleep-h 7.5 --tidy ok
+python -m secretary log "Squat" 100x5 100x5 100x5@8 ; python -m secretary prs
+python -m secretary week                  # weekly review numbers
+python -m secretary remind add "Orthodontist" --due 2026-11-04 --time 15:00 --category appointment --before 1d,3h
 python -m secretary validate && python -m pytest -q
-python -m secretary.bot                   # run the Discord bot (needs .env)
 ```
 
 ## Privacy
-Keep this repository **private**. Don't store passport numbers, bank details or passwords here.
-Secrets (bot token, API key, webhook URL) go in `.env` or GitHub secrets, never in commits.
+Keep the repository private. Never store passport numbers, bank details or passwords. Secrets
+(webhook URL, tokens) go in GitHub secrets or `.env`, never in commits.

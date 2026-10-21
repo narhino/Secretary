@@ -1,4 +1,4 @@
-"""Morning brief, evening check-in and weekly review messages."""
+"""Plain-text summaries: facts for Claude, and the fallback text if Claude can't write a message."""
 from __future__ import annotations
 
 import re

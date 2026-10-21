@@ -82,3 +82,34 @@ def test_bot_module_imports():
     pytest.importorskip("discord")
     from secretary.bot import discord_bot
     assert "!brief" in discord_bot.HELP
+
+
+def test_compose_writes_proactive_message(home, monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    sec = agent.Secretary()
+    fake = FakeClient([_message([{"type": "text", "text": "Morning! Ortho at 3 today, so brush after lunch 😁"}],
+                                "end_turn")])
+    sec.client = fake
+    reply = asyncio.run(sec.compose("dm", "morning", [{"title": "Orthodontist", "when": "today at 15:00"}]))
+    assert reply.text.startswith("Morning!")
+    prompt = fake.beta.messages.calls[0]["messages"][-1]["content"][-1]["text"]
+    assert "[scheduled] Time for the morning check-in." in prompt and "Orthodontist (today at 15:00)" in prompt
+    assert "memory/playbook.md" in fake.beta.messages.calls[0]["system"][1]["text"]
+
+
+def test_tracking_tools(home):
+    import shutil
+    from pathlib import Path
+    from secretary.bot import tools
+    (home / "nutrition").mkdir(exist_ok=True)
+    shutil.copy(Path(__file__).resolve().parent.parent / "nutrition" / "foods.yaml", home / "nutrition" / "foods.yaml")
+    out, wrote = tools.run("log_meal", {"ref": "khao-man-gai", "meal": "lunch", "time": "12:30"})
+    assert wrote and "600" in out
+    out, _ = tools.run("log_meal", {"food": "Iced latte", "kcal": 180, "protein_g": 8, "meal": "drink"})
+    assert "780" in out
+    out, wrote = tools.run("log_day", {"mood": 8, "tidy": "clean", "trained": "rest"})
+    assert wrote and "mood 8/10" in out
+    out, _ = tools.run("status_report", {})
+    assert '"items_logged": 2' in out
+    with pytest.raises(tools.ToolError):
+        tools.run("log_day", {"tidy": "chaos"})

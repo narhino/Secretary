@@ -9,7 +9,7 @@ tasks:
   due: '2026-10-23'
   created: '2026-10-21'
 - id: t-0002
-  title: Set up Discord (server, webhook, bot) — see docs/discord-setup.md
+  title: Set up Discord (server, webhook, bot) — see docs/setup.md
   status: todo
   priority: high
   area: personal
@@ -27,4 +27,18 @@ tasks:
   priority: med
   area: thailand
   notes: Checklist in thailand/drivers-license.md
+  created: '2026-10-21'
+- id: t-0005
+  title: Tell me about your orthodontic treatment and next appointment (date, time, clinic)
+  status: todo
+  priority: high
+  due: '2026-10-23'
+  area: health
+  created: '2026-10-21'
+- id: t-0006
+  title: Set calorie/protein targets and gym goals (needs height, weight, goal)
+  status: todo
+  priority: high
+  due: '2026-10-24'
+  area: fitness
   created: '2026-10-21'

@@ -123,14 +123,31 @@ def test_describe_when():
     assert R.describe_when(at("2026-10-18T09:00"), now).startswith("overdue by 3 days")
 
 
-def test_builtin_brief_is_due_and_rendered(home):
+def test_builtin_checkins_are_due_and_rendered(home):
     from secretary import config
     settings = config.load_settings()
-    now = at("2026-10-21T07:31")
+    now = at("2026-10-21T08:01")
     due = scheduler.collect_due(now, {}, settings)
-    ids = [n.reminder["id"] for n, _ in due]
-    assert "__brief__" in ids
-    text = dict((n.reminder["id"], t) for n, t in due)["__brief__"]
-    assert "Good morning" in text
-    # Hours later the stale brief is not sent.
-    assert scheduler.collect_due(at("2026-10-21T10:00"), {}, settings) == []
+    texts = {n.reminder["id"]: t for n, t in due}
+    assert "__morning__" in texts and "Good morning" in texts["__morning__"]
+    # Hours later the stale check-in is not sent.
+    assert scheduler.collect_due(at("2026-10-21T11:00"), {}, settings) == []
+    # Sunday evening brings the weekly review.
+    sunday = scheduler.collect_due(at("2026-10-25T19:01"), {}, settings)
+    assert "__weekly__" in [n.reminder["id"] for n, _ in sunday]
+
+
+def test_backup_only_sends_critical_after_grace(home):
+    from secretary import config
+    R.add_reminder("Orthodontist", "2026-10-21", "15:00", None, ["3h", "0m"], "appointment")
+    R.add_reminder("Buy shampoo", "2026-10-21", "12:00", category="home")
+    settings = config.load_settings()
+    # 12:10: the 3h-before ping is only 10 minutes late, so the safety net waits for Claude.
+    assert scheduler.collect_due(at("2026-10-21T12:10"), {}, settings, backup=True) == []
+    late = scheduler.collect_due(at("2026-10-21T12:50"), {}, settings, backup=True)
+    assert [n.reminder["id"] for n, _ in late] == ["orthodontist"]
+    text = late[0][1]
+    assert "Orthodontist" in text and "today at 15:00" in text and "⏰" not in text
+    # Once Claude has marked it sent, the safety net stays quiet.
+    sent = {k: "2026-10-21T12:01:00+07:00" for n, _ in late for k in n.covers}
+    assert scheduler.collect_due(at("2026-10-21T12:50"), sent, settings, backup=True) == []

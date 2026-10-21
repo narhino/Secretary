@@ -1,0 +1,8 @@
+# Gym goals the secretary tracks every week. Set during onboarding; revised in weekly reviews.
+#   metric: e1rm (estimated 1-rep max of `exercise`), body_weight (kg), or reps (best reps at `weight_kg`)
+sessions_per_week: null      # e.g. 4
+goals: []
+# Examples:
+# - {name: Bench 100 kg, metric: e1rm, exercise: Bench Press, target: 100, by: 2026-12-31}
+# - {name: Cut to 75 kg, metric: body_weight, target: 75, by: 2027-01-31}
+# - {name: 10 strict pull-ups, metric: reps, exercise: Pull-up, weight_kg: 0, target: 10, by: 2027-02-28}

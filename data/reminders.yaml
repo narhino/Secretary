@@ -8,7 +8,10 @@
 #   repeat:        daily | weekdays | weekly | weekly:mon,thu | monthly | yearly | every 90d
 #   notify_before: [14d, 7d, 1d, 2h, 0m]   (0m = at the time itself)
 #   until:         YYYY-MM-DD (optional end for repeats)
-#   category / notes / link: optional
+#   category:      appointment | immigration | health | fitness | nutrition | home | finance | ...
+#   critical:      true = the safety net must deliver it even if Claude doesn't (appointment,
+#                  immigration and health categories count as critical automatically)
+#   notes / link:  optional
 #   done:          true when finished (interval repeats roll forward instead)
 #
 # Add or change them by asking the secretary, or with `python -m secretary remind add ...`.
@@ -21,3 +24,17 @@ reminders:
   category: nutrition
   notes: Check nutrition/meal-prep.md for this week's plan and shopping list.
   link: nutrition/meal-prep.md
+- id: studio-weekly-reset
+  title: Weekly studio reset + laundry
+  repeat: weekly:sat
+  time: "11:00"
+  category: home
+  notes: Floor, bathroom, sheets (every other week), fridge check, laundry washed and put away.
+  link: home/routines.md
+- id: ac-filters
+  title: Clean the AC filters
+  due: 2026-11-01
+  repeat: monthly
+  time: "10:00"
+  category: home
+  notes: Rinse and dry. Good moment for the monthly fridge deep-clean too.

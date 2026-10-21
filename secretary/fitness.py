@@ -107,6 +107,44 @@ def last_session_day() -> str | None:
     return max((r["date"] for r in rows), default=None)
 
 
+def load_targets() -> dict:
+    return store.load_yaml(config.ROOT / "fitness" / "targets.yaml", {}) or {}
+
+
+def session_days(start: date, end: date) -> set[str]:
+    """Dates with at least one logged set in [start, end]."""
+    lo, hi = start.isoformat(), end.isoformat()
+    return {r["date"] for r in store.read_csv(config.WORKOUTS_FILE) if lo <= r["date"] <= hi}
+
+
+def latest_body_weight() -> float | None:
+    rows = [r for r in store.read_csv(config.BODY_FILE) if r.get("weight_kg")]
+    return float(rows[-1]["weight_kg"]) if rows else None
+
+
+def goal_progress(today: date) -> list[dict]:
+    out = []
+    for g in load_targets().get("goals") or []:
+        metric, current = g.get("metric"), None
+        if metric == "e1rm":
+            rows = sessions(g.get("exercise", ""))
+            current = max((r["e1rm"] for r in rows), default=None)
+        elif metric == "body_weight":
+            current = latest_body_weight()
+        elif metric == "reps":
+            reps = [int(r["reps"]) for r in store.read_csv(config.WORKOUTS_FILE)
+                    if r["exercise"].lower() == str(g.get("exercise", "")).lower()
+                    and float(r["weight_kg"] or 0) >= float(g.get("weight_kg") or 0)]
+            current = max(reps, default=None)
+        by = g.get("by")
+        days_left = (date.fromisoformat(str(by)) - today).days if by else None
+        out.append({"name": g.get("name"), "metric": metric, "current": current, "target": g.get("target"),
+                    "remaining": None if current is None or g.get("target") is None
+                    else round(float(g["target"]) - float(current), 1),
+                    "days_left": days_left})
+    return out
+
+
 def body_trend(last: int = 5) -> str:
     rows = [r for r in store.read_csv(config.BODY_FILE) if r.get("weight_kg")]
     if not rows:
