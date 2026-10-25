@@ -1214,30 +1214,36 @@ App state (JSON): ${appState()}`;
     if (!sample) { status("Your secretary is available when this page is open in Claude."); return; }
     ctl = new AbortController(); setBusy(true);
     const reply = $("#reply"); reply.hidden = false; reply.classList.remove("err"); reply.textContent = "Thinking…"; status("");
-    let image = null;
-    if (photo) {
-      image = await downscale(photo);
-      pending = { used: false, upload: assets ? assets.upload(image).then((r) => r.url) : null };
-      if (pending.upload) pending.upload.catch(() => {});
-    } else pending = null;
-    const userText = (text || "Log this meal.") + (image ? "\n[Image attached. Food → log_meal with from_photo true. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
-    turns.push({ role: "user", content: userText });
-    const opts = { signal: ctl.signal, onText: ({ text: t }) => { reply.textContent = t; } };
-    if (canTools) opts.tools = pickTools(userText, !!image);
-    if (image) opts.images = [image];
+    let image = null, opts = {}, pushed = false;
     try {
+      if (photo) {
+        image = await downscale(photo);
+        pending = { used: false, upload: assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.url) : null };
+        if (pending.upload) pending.upload.catch(() => {});
+      } else pending = null;
+      const userText = (text || "Log this meal.") + (image ? "\n[Image attached. Food → log_meal with from_photo true. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
+      turns.push({ role: "user", content: userText }); pushed = true;
+      opts = { signal: ctl.signal, onText: ({ text: t }) => { reply.textContent = t; } };
+      if (canTools) opts.tools = pickTools(userText, !!image);
+      if (image) opts.images = [image];
       const res = await sample([{ role: "user", content: RULES() }, ...turns.slice(-12)], opts);
       const out = res.text.trim();
       reply.textContent = out + (res.truncated ? "\n(cut short)" : "");
       turns.push({ role: "assistant", content: out });
       $("#askbox").value = ""; clearPhoto();
     } catch (e) {
-      turns.pop();
-      if (e.code === "cancelled") { reply.textContent = e.text || "Stopped."; }
+      if (pushed) turns.pop();
+      if (e && e.code === "cancelled") { reply.textContent = e.text || "Stopped."; }
       else {
-        reply.classList.add("err"); reply.textContent = (e.text ? e.text + "\n\n" : "") + (ERR[e.code] || "Something went wrong reaching Claude. Send it again.");
-        if (e.code === "tools_unavailable") canTools = false;
-        if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e.code)) fatal = true;
+        const code = (e && e.code) || "page_error";
+        reply.classList.add("err"); reply.textContent = (e && e.text ? e.text + "\n\n" : "") + (ERR[code] || `Couldn't get an answer from Claude (${code}). Tap Send to try again.`);
+        // Keep the details where Claude Code can read them (diag/last) to fix the cause.
+        try {
+          if (db) db.doc("diag/last").set({ code, message: clip(e && (e.message || String(e)), 600), stack: clip(e && e.stack, 800), at: nowIso(),
+            hadImage: !!image, tools: (opts.tools || []).map((t) => t.name), turns: turns.length, maxTools, ua: clip(navigator.userAgent, 160) }).catch(() => {});
+        } catch { /* diagnostics must never break the page */ }
+        if (code === "tools_unavailable") canTools = false;
+        if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(code)) fatal = true;
       }
     } finally {
       turns = turns.slice(-20); store("hq.turns", turns); setBusy(false); status("");
