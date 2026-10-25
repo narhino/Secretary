@@ -29,7 +29,8 @@ Read [`docs/setup.md`](docs/setup.md) for the design and setup (Plan A: no serve
 | What you ate (text or photo) | `nutrition/meals.csv` → per-day totals vs targets in `nutrition/daily.csv` |
 | Mood, energy, stress, sleep, studio state, priorities | `data/daily.csv` |
 | Sets and reps, body weight | `fitness/workouts.csv`, `fitness/body.csv`, progress vs `fitness/targets.yaml` |
-| Appointments, deadlines, to-dos | `data/reminders.yaml`, `data/tasks.yaml` |
+| Goals, to-dos, things to remember, wins | HQ app database |
+| Appointments and deadlines (pings) | `data/reminders.yaml` |
 | Anything about you | `profile/me.md`, `memory/playbook.md` |
 
 **Home page:** the [Secretary HQ app](https://claude.ai/artifact/GToYoRfQBUL9F9bVoT4oio), pinned in the claude.ai sidebar. It shows next actions, gamified goals, things to remember, today's log and wins, with Claude built in.
