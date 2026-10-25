@@ -15,6 +15,16 @@ The weekly review always ends with a change-log entry._
 - (from the data: e.g. "mood dips after <6 h sleep", "skips the gym when work runs past 19:00",
   "studio gets messy midweek", "protein lowest on Sundays")
 
+## Motivation design (why the HQ app works the way it does)
+- One clear next action per goal: no deciding what to do next.
+- Head start: every new goal begins with a step already done, because progress that has started
+  gets finished.
+- Visible progress: segmented bars, %, "N steps to go", which speed up near the finish.
+- Small wins, praised specifically and immediately (XP, confetti, a feed of what you finished).
+- When/where cues on every step (implementation intentions).
+- Forgiving streak: one rest day doesn't break it, so one miss doesn't snowball.
+- Fresh starts: Mondays and the 1st of the month are reset points; the weekly review sets 2–3 bets.
+
 ## Rules I follow for you
 - Don't send a check-in if we already talked in the last 2 hours; fold it into the conversation.
 - Appointments (orthodontist, immigration, DLT): reminder 1 day before plus a few hours before, and
@@ -31,5 +41,6 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-25: Built the HQ app (pinned home page). Goals, tasks, notes and wins now live there; tasks.yaml retired.
 - 2026-10-25: User asked for briefer replies focused on next actions. Applied to every message.
 - 2026-10-21: Playbook created. Starting with baseline tracking for 1–2 weeks before changing anything.

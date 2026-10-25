@@ -32,6 +32,8 @@ Read [`docs/setup.md`](docs/setup.md) for the design and setup (Plan A: no serve
 | Appointments, deadlines, to-dos | `data/reminders.yaml`, `data/tasks.yaml` |
 | Anything about you | `profile/me.md`, `memory/playbook.md` |
 
+**Home page:** the [Secretary HQ app](https://claude.ai/artifact/GToYoRfQBUL9F9bVoT4oio), pinned in the claude.ai sidebar. It shows next actions, gamified goals, things to remember, today's log and wins, with Claude built in.
+
 ## Start here
 1. Make this repository **private** (Settings → General → Danger Zone → Change visibility).
 2. Answer the questions in [`ONBOARDING.md`](ONBOARDING.md), or say "onboard me".

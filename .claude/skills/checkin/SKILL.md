@@ -5,8 +5,10 @@ description: Proactive or on-demand check-in (morning, midday, evening, or ad ho
 
 # Check-in
 
-1. `git pull --quiet`. Read `memory/playbook.md` (how this person likes to be treated) and run
-   `python -m secretary status --json`.
+1. `git pull --quiet`. Read `memory/playbook.md` (how this person likes to be treated), run
+   `python -m secretary status --json`, and `list` the HQ app's goals, tasks, notes and inbox
+   (ArtifactData, URL in CLAUDE.md). Ingest unprocessed inbox entries into the repo sheets and mark
+   them `processed: true`.
 2. Decide if a message is worth sending. Skip it (record it as done) if this check-in already went
    out today, if it's inside `quiet_hours` and nothing critical is due, or if you talked in the
    last ~2 hours and nothing new needs saying. Proactive messages per day must stay under
