@@ -12,15 +12,20 @@ https://claude.ai/artifact/GToYoRfQBUL9F9bVoT4oio is pinned in their claude.ai s
 (remember / appointment / idea / **fact** = what you've learned about them), `wins`, `meals` (photo
 meals with macros, verdict and XP), `programs` (gym, and later work/habit programs: sessions with
 days and items, versioned with a changelog), `sessions` (logged workouts with sets), `suggestions`
-(the Ideas board), `config/nutrition` (targets) and `inbox` (mood, sleep, body, water). The app's
-built-in Claude (their subscription) writes all of these too.
+(the Ideas board), `config/nutrition` (targets), `health/<YYYY-MM-DD>` (steps, active kcal, km from
+Health-app screenshots), `places` (from Google Maps Timeline screenshots), `drafts` (ideas parked
+for later; the app resurfaces them at 3/7/14/30/60/90 days) and `inbox` (mood, sleep, body, water).
+The app's built-in Claude (their subscription) writes all of these too.
 - Start of every session: `list` the collections you need. Pin every write with `if_version`.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.
 - Sync at every check-in: unprocessed `meals` → `meal add`, `sessions` sets → `log`, `inbox` →
-  `day set` / `body`; then set `processed: true`. The repo CSVs are the long-term sheets.
+  `day set` / `body`, `health` → `day set --steps --active-kcal --distance-km`, `places` →
+  `place add`; then set `processed: true`. The repo CSVs are the long-term sheets.
+- Drafts are NOT tasks: never act on a parked draft unless they ask. The app brings them back; at
+  most once a week, a check-in may mention one that fits what they're working on.
 - XP: task +10 (important +20, someday +5), goal steps 10–60, goal done +100, session +40, meal
   −20…+20 judged against their goal (+2 with photo), daily nutrition bonus (protein hit +15,
-  calories on target +15, way over −10), other logs +5 (max 30 a day).
+  calories on target +15, way over −10), steps goal hit +15 (half +5), other logs +5 (max 30 a day).
 - Programs evolve: every few sessions, adjust loads and volume from the logged sets and add a
   changelog note. Add new programs (work tracker etc.) when they ask or accept an idea.
 - Ideas board: add at most one genuinely useful suggestion per conversation. Accepted ideas that
@@ -62,7 +67,9 @@ The conversation should feel effortless, but every fact lands in the right file 
 | Food or drink (text or photo) | `python -m secretary meal add …`, one line per item, using `nutrition/foods.yaml` refs when they fit; estimate portions honestly; `--source photo/label/estimate` |
 | Mood, energy, stress, sleep, studio state | `python -m secretary day set --mood 7 --energy 6 --sleep-h 7.5 --tidy ok …` |
 | A workout | `python -m secretary log "Bench Press" 80x8 80x8 77.5x7@9` (this also marks the day as trained) |
-| Body weight | `python -m secretary body --weight 78.4` |
+| Body weight | `python -m secretary body --weight 78.4
+python -m secretary day set --steps 8432 --active-kcal 410 --distance-km 6.3
+python -m secretary place add "Fitness First Ari" --kind gym --arrived 18:30 --minutes 75 ; python -m secretary place top` |
 | An appointment, deadline or promise | a reminder (appointments: `--category appointment --critical --before 1d,3h`), plus an HQ note, plus a prep task if something must be ready first |
 | A goal | an HQ goal with steps (see above) |
 | A training or work goal | an HQ program (`programs`), optimised over time |
@@ -126,7 +133,8 @@ Read `profile/me.md`, `goals/goals.md` and `memory/playbook.md`. Run
 | `memory/playbook.md` | Living strategy: learned preferences, patterns, experiments, change log |
 | HQ app database | Goals, tasks, notes, wins, inbox (see above) |
 | `data/reminders.yaml` | Everything that pings them (schema in file header) |
-| `data/daily.csv` | Daily life log: mood, energy, stress, sleep, trained, training, tidy, water, priorities |
+| `data/daily.csv` | Daily life log: mood, energy, stress, sleep, trained, training, tidy, water, steps, active kcal, km, priorities |
+| `data/places.csv` | Places visited (date, time, name, kind, minutes, approximate coordinates) |
 | `data/settings.yaml` | Timezone, check-in times, quiet hours, delivery rules |
 | `nutrition/meals.csv` → `nutrition/daily.csv` | Every food eaten → per-day totals vs targets (the "sheet") |
 | `nutrition/foods.yaml` · `nutrition/targets.yaml` | Reference foods (Thai and 7-Eleven) · calorie and macro targets |
@@ -150,6 +158,8 @@ python -m secretary meal today ; python -m secretary meal foods
 python -m secretary day set --mood 7 --energy 6 --stress 3 --sleep-h 7.5 --tidy ok --priorities 2/3
 python -m secretary log "Squat" 100x5 100x5 100x5@8 ; python -m secretary progress "Squat" ; python -m secretary prs
 python -m secretary body --weight 78.4
+python -m secretary day set --steps 8432 --active-kcal 410 --distance-km 6.3
+python -m secretary place add "Fitness First Ari" --kind gym --arrived 18:30 --minutes 75 ; python -m secretary place top
 python -m secretary remind add "Orthodontist" --due 2026-11-04 --time 15:00 --category appointment --critical --before 1d,3h
 python -m secretary remind done <id> [--next-due YYYY-MM-DD] ; python -m secretary upcoming --days 30
 python -m secretary task add "…" --due … --priority high --area home ; python -m secretary task done t-0007

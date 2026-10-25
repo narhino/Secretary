@@ -6,7 +6,8 @@ from datetime import date, timedelta
 from . import config, store
 
 FIELDS = ["date", "mood", "energy", "stress", "sleep_h", "trained", "training", "tidy",
-          "water_l", "priorities", "highlight", "notes"]
+          "water_l", "steps", "active_kcal", "distance_km", "priorities", "highlight", "notes"]
+COUNTS = {"steps", "active_kcal"}
 SCALES = {"mood": (1, 10), "energy": (1, 10), "stress": (1, 10)}
 CHOICES = {"trained": {"yes", "no", "rest"}, "tidy": {"clean", "ok", "messy"}}
 CORE = ["mood", "energy", "sleep_h", "trained", "tidy"]
@@ -25,8 +26,13 @@ def _check(field: str, value) -> str:
         if not lo <= v <= hi:
             raise ValueError(f"{field} must be {lo}-{hi}")
         return str(int(v)) if v.is_integer() else str(v)
-    if field in ("sleep_h", "water_l"):
+    if field in ("sleep_h", "water_l", "distance_km"):
         return str(round(float(value), 1))
+    if field in COUNTS:
+        v = float(value)
+        if v < 0:
+            raise ValueError(f"{field} can't be negative")
+        return str(int(round(v)))
     if field in CHOICES:
         v = str(value).strip().lower()
         if v not in CHOICES[field]:
@@ -95,6 +101,7 @@ def week_stats(end: date, days: int = 7) -> dict:
         "avg_mood": avg("mood"), "avg_energy": avg("energy"), "avg_stress": avg("stress"),
         "avg_sleep_h": avg("sleep_h"),
         "trained_days": sum(1 for r in rows if r.get("trained") == "yes"),
+        "avg_steps": avg("steps"),
         "tidy": {k: sum(1 for r in rows if r.get("tidy") == k) for k in ("clean", "ok", "messy")},
         "low_mood_days": [r["date"] for r in rows if r.get("mood") and float(r["mood"]) <= 4],
     }
@@ -111,6 +118,8 @@ def format_day(row: dict) -> str:
         parts.append(f"slept {row['sleep_h']} h")
     if row.get("trained"):
         parts.append(f"trained: {row['trained']}" + (f" ({row['training']})" if row.get("training") else ""))
+    if row.get("steps"):
+        parts.append(f"{int(float(row['steps'])):,} steps")
     if row.get("tidy"):
         parts.append(f"studio {row['tidy']}")
     if row.get("priorities"):

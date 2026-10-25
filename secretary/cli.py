@@ -6,7 +6,7 @@ import json
 import os
 import sys
 
-from . import brief, config, daylog, fitness, nutrition, reminders, scheduler, status, store, tasks
+from . import brief, config, daylog, fitness, nutrition, places, reminders, scheduler, status, store, tasks
 
 
 def _day(args):
@@ -221,11 +221,23 @@ def cmd_day(args) -> int:
     return 0
 
 
+def cmd_place(args) -> int:
+    day = _day(args)
+    if args.action == "add":
+        row = places.add(day, args.name, args.kind, args.area or "", args.arrived or "", args.minutes, args.lat, args.lon,
+                         args.source or "manual")
+        print(f"added {row['name']} on {row['date']}")
+    else:
+        for name, count in places.top(day, args.days):
+            print(f"{count:>3}x  {name}")
+    return 0
+
+
 def cmd_validate(args) -> int:
     settings = config.load_settings()
     errors = reminders.validate(reminders.load_reminders(), config.tz(settings))
     errors += tasks.validate(tasks.load_tasks())
-    for path in (config.WORKOUTS_FILE, config.BODY_FILE, nutrition.meals_file(), daylog.log_file()):
+    for path in (config.WORKOUTS_FILE, config.BODY_FILE, nutrition.meals_file(), daylog.log_file(), places.places_file()):
         try:
             store.read_csv(path)
         except Exception as exc:  # noqa: BLE001 - report any parse problem
@@ -337,7 +349,7 @@ def build_parser() -> argparse.ArgumentParser:
     ds = s.add_subparsers(dest="action", required=True)
     a = ds.add_parser("set")
     a.add_argument("--date")
-    for name in ("mood", "energy", "stress", "sleep_h", "water_l"):
+    for name in ("mood", "energy", "stress", "sleep_h", "water_l", "steps", "active_kcal", "distance_km"):
         a.add_argument(f"--{name.replace('_', '-')}", dest=name, type=float)
     a.add_argument("--trained", choices=sorted(daylog.CHOICES["trained"]))
     a.add_argument("--tidy", choices=sorted(daylog.CHOICES["tidy"]))
@@ -347,6 +359,23 @@ def build_parser() -> argparse.ArgumentParser:
     sh.add_argument("--days", type=int, default=7)
     sh.add_argument("--date")
     s.set_defaults(func=cmd_day)
+
+    s = sub.add_parser("place", help="places visited")
+    ps = s.add_subparsers(dest="action", required=True)
+    a = ps.add_parser("add")
+    a.add_argument("name")
+    a.add_argument("--kind", default="other", choices=places.KINDS)
+    a.add_argument("--area")
+    a.add_argument("--arrived", help="HH:MM")
+    a.add_argument("--minutes", type=int)
+    a.add_argument("--lat", type=float)
+    a.add_argument("--lon", type=float)
+    a.add_argument("--source")
+    a.add_argument("--date")
+    t = ps.add_parser("top")
+    t.add_argument("--days", type=int, default=30)
+    t.add_argument("--date")
+    s.set_defaults(func=cmd_place)
 
     s = sub.add_parser("log", help="log gym sets, e.g. log 'Bench Press' 80x8 80x8 77.5x7@9")
     s.add_argument("exercise")

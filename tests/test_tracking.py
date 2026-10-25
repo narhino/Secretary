@@ -107,3 +107,22 @@ def test_fitness_goals_progress(home):
     assert goals["Bench 100"]["current"] == 101.3 and goals["Bench 100"]["days_left"] == 71
     assert goals["75 kg"]["remaining"] == -4.5
     assert config.load_settings()["checkins"]["evening"] == "21:00"
+
+
+def test_activity_fields_and_places(home, capsys):
+    from secretary import places
+    day = date(2026, 10, 25)
+    row = daylog.update(day, steps=8432.4, active_kcal=410, distance_km=6.27)
+    assert row["steps"] == "8432" and row["distance_km"] == "6.3"
+    assert "8,432 steps" in daylog.format_day(row)
+    with pytest.raises(ValueError):
+        daylog.update(day, steps=-5)
+    assert daylog.week_stats(day)["avg_steps"] == 8432.0
+    assert cli.main(["place", "add", "Fitness First Ari", "--kind", "gym", "--arrived", "18:30", "--minutes", "75",
+                     "--lat", "13.779", "--lon", "100.544", "--date", "2026-10-24"]) == 0
+    places.add(day, "Fitness First Ari", "gym")
+    places.add(day, "Terminal 21", "shop", area="Asok")
+    assert places.top(day)[0] == ("Fitness First Ari", 2)
+    with pytest.raises(ValueError):
+        places.add(day, "Somewhere", "spaceport")
+    assert cli.main(["validate"]) == 0
