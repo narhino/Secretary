@@ -4,6 +4,7 @@ _My living strategy document. I read it at the start of every session and update
 The weekly review always ends with a change-log entry._
 
 ## What I know works for you
+- Brief and straight to the point: short messages, lead with the next action, no long explanations (said 2026-10-25).
 - (learning… e.g. "replies faster to short questions than to lists", "prefers a nudge at 18:30 on
   gym days", "mornings are rushed: keep the morning message to 2 lines")
 
@@ -30,4 +31,5 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-25: User asked for briefer replies focused on next actions. Applied to every message.
 - 2026-10-21: Playbook created. Starting with baseline tracking for 1–2 weeks before changing anything.
