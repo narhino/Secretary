@@ -21,6 +21,9 @@ The app's built-in Claude (their subscription) writes all of these too.
 - Sync at every check-in: unprocessed `meals` → `meal add`, `sessions` sets → `log`, `inbox` →
   `day set` / `body`, `health` → `day set --steps --active-kcal --distance-km`, `places` →
   `place add`; then set `processed: true`. The repo CSVs are the long-term sheets.
+- Phone sync (docs/phone-sync.md) pushes steps and locations into the repo automatically. At every
+  check-in run `python -m secretary app-sync --days 3` and send its output as one ArtifactData
+  `batch` (ids are stable, so re-sending is harmless).
 - Drafts are NOT tasks: never act on a parked draft unless they ask. The app brings them back; at
   most once a week, a check-in may mention one that fits what they're working on.
 - XP: task +10 (important +20, someday +5), goal steps 10–60, goal done +100, session +40, meal

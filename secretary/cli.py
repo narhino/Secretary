@@ -5,8 +5,9 @@ import argparse
 import json
 import os
 import sys
+from datetime import timedelta
 
-from . import brief, config, daylog, fitness, nutrition, places, reminders, scheduler, status, store, tasks
+from . import brief, config, daylog, fitness, ingest, nutrition, places, reminders, scheduler, status, store, tasks
 
 
 def _day(args):
@@ -233,11 +234,25 @@ def cmd_place(args) -> int:
     return 0
 
 
+def cmd_ingest(args) -> int:
+    payload = args.payload if args.payload is not None else os.environ.get("PAYLOAD", "{}")
+    row = ingest.ingest(args.event, payload)
+    print(f"ingested {args.event}: {json.dumps(row, default=str)}")
+    return 0
+
+
+def cmd_app_sync(args) -> int:
+    since = reminders.parse_date(args.since) if args.since else config.now().date() - timedelta(days=args.days)
+    _print_json(ingest.app_writes(since))
+    return 0
+
+
 def cmd_validate(args) -> int:
     settings = config.load_settings()
     errors = reminders.validate(reminders.load_reminders(), config.tz(settings))
     errors += tasks.validate(tasks.load_tasks())
-    for path in (config.WORKOUTS_FILE, config.BODY_FILE, nutrition.meals_file(), daylog.log_file(), places.places_file()):
+    for path in (config.WORKOUTS_FILE, config.BODY_FILE, nutrition.meals_file(), daylog.log_file(), places.places_file(),
+                 ingest.locations_file()):
         try:
             store.read_csv(path)
         except Exception as exc:  # noqa: BLE001 - report any parse problem
@@ -399,6 +414,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--date")
     s.add_argument("--notes")
     s.set_defaults(func=cmd_body)
+
+    s = sub.add_parser("ingest", help="store data pushed from the phone (health | location)")
+    s.add_argument("event", choices=["health", "location"])
+    s.add_argument("--payload", help="JSON object (default: $PAYLOAD)")
+    s.set_defaults(func=cmd_ingest)
+
+    s = sub.add_parser("app-sync", help="ArtifactData batch writes mirroring phone data into the HQ app")
+    s.add_argument("--days", type=int, default=3)
+    s.add_argument("--since", help="YYYY-MM-DD")
+    s.set_defaults(func=cmd_app_sync)
 
     sub.add_parser("validate", help="check data files").set_defaults(func=cmd_validate)
     return p

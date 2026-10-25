@@ -1,0 +1,46 @@
+name: Phone sync
+
+# Receives steps/calories and location from the phone automation (iOS Shortcuts or Android) via
+#   POST https://api.github.com/repos/<owner>/<repo>/dispatches
+#   {"event_type": "health" | "location", "client_payload": {...}}
+# and stores them in data/daily.csv, data/locations.csv and data/places.csv. See docs/phone-sync.md.
+on:
+  repository_dispatch:
+    types: [health, location]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phone-sync
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refuse while the repository is public
+        if: ${{ !github.event.repository.private }}
+        run: |
+          echo "::error::This repo is public. Make it private before syncing health and location data."
+          exit 1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet pyyaml tzdata
+      - name: Store the data
+        env:
+          EVENT: ${{ github.event.action }}
+          PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+        run: python -m secretary ingest "$EVENT"
+      - name: Commit
+        run: |
+          git config user.name "secretary-bot"
+          git config user.email "secretary-bot@users.noreply.github.com"
+          git add data/
+          if ! git diff --cached --quiet; then
+            git commit -m "secretary: phone sync (${{ github.event.action }}) [skip ci]"
+            for i in 1 2 3; do git pull --rebase --quiet && git push --quiet && break; sleep 5; done
+          fi
