@@ -12,9 +12,9 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Work / income (remote? local job? business?): TODO
 
 ## Visa & legal status
-- Visa type (DTV, Non-B, Non-O, ED, retirement, tourist/exemption…): TODO
-- Last entry date: TODO
-- Permitted to stay until (stamp date): TODO
+- Visa type: DTV (Destination Thailand Visa)
+- Last entry date: TODO (stamp photo coming)
+- Permitted to stay until (stamp date): TODO (stamp photo coming)
 - Next 90-day report due: TODO
 - Re-entry permit (if on an extension): TODO
 - Passport expiry (month/year only): TODO
@@ -22,7 +22,7 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Work permit (if any) expiry: TODO
 
 ## Orthodontic treatment
-- Type (braces / clear aligners), started when, expected end: TODO
+- Status: planning stage (as of 2026-10-25). The next visit decides the treatment.
 - Clinic + orthodontist, how to book (LINE / phone): TODO
 - Next appointment: TODO
 - Routine (aligner change every N days, elastics hours, wear time, foods to avoid): TODO
@@ -62,7 +62,7 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 ## How I want my secretary to work
 - Tone (gentle / direct / drill sergeant): TODO
 - Reminder intensity (minimal / normal / nag me): TODO
-- Preferred channel (Discord DM / Claude app): TODO
+- Preferred channel: Claude app (no always-on computer, so Discord is one-way only)
 
 ## People & contacts
 - Landlord / condo office: TODO
@@ -71,3 +71,4 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 
 ## Notes
 - 2026-10-21: Secretary system created.
+- 2026-10-25: Visa is DTV. Ortho treatment being planned. No always-on computer → Plan A (Claude app + cloud check-ins).

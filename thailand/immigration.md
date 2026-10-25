@@ -7,7 +7,7 @@
 ## Your status (fill in / kept in sync with profile/me.md)
 | Item | Value |
 |---|---|
-| Visa type | TODO |
+| Visa type | DTV (180 days per entry, one 180-day extension per entry) |
 | Last entry | TODO |
 | Permitted to stay until | TODO |
 | Next 90-day report | TODO |

@@ -9,7 +9,7 @@ tasks:
   due: '2026-10-23'
   created: '2026-10-21'
 - id: t-0002
-  title: Set up Discord (server, webhook, bot) — see docs/setup.md
+  title: 'Discord safety net: create server + webhook, add DISCORD_WEBHOOK_URL secret (docs/setup.md)'
   status: todo
   priority: high
   area: personal
@@ -17,10 +17,11 @@ tasks:
   created: '2026-10-21'
 - id: t-0003
   title: Tell me your visa type, permitted-to-stay date and next 90-day report date
-  status: todo
+  status: done
   priority: high
   area: thailand
   created: '2026-10-21'
+  completed: '2026-10-25'
 - id: t-0004
   title: 'Thai driving licence: confirm eligibility for your visa type and gather documents'
   status: todo
@@ -29,12 +30,12 @@ tasks:
   notes: Checklist in thailand/drivers-license.md
   created: '2026-10-21'
 - id: t-0005
-  title: Tell me about your orthodontic treatment and next appointment (date, time, clinic)
-  status: todo
+  title: 'Orthodontist: tell me the outcome of the next visit (treatment plan + next appointment)'
+  status: waiting
   priority: high
-  due: '2026-10-23'
   area: health
   created: '2026-10-21'
+  waiting_on: next ortho visit
 - id: t-0006
   title: Set calorie/protein targets and gym goals (needs height, weight, goal)
   status: todo
@@ -42,3 +43,10 @@ tasks:
   due: '2026-10-24'
   area: fitness
   created: '2026-10-21'
+- id: t-0007
+  title: Send photo of latest entry stamp (sets permitted-to-stay, 90-day and extension reminders)
+  status: todo
+  priority: high
+  due: '2026-10-27'
+  area: thailand
+  created: '2026-10-25'
