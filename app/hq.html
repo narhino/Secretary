@@ -4,8 +4,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: one calm phone-first column. Header = level + streak; then Ask, Up next, Goals (progress
-   bars), Remember, Today's log, Done & praised. Jade = progress, gold = XP and rewards. */
+/* Layout: one calm phone-first column with a sticky section bar. Header = level + streak; then Ask,
+   Up next, Food (photo meals, XP +/-), Training (programs), Goals, Remember, Ideas, Done & praised.
+   Jade = progress, gold = XP and rewards, coral = penalties and overdue. */
 :root {
   --bg: #F2F5F1; --surface: #FFFFFF; --sunk: #E8EEE9; --ink: #13201C; --muted: #5A6A64; --line: #D8E1DB;
   --jade: #0B7A5E; --jade-soft: #D5ECE3; --gold: #B57A00; --gold-bright: #E9A91C; --gold-soft: #FAEFD2;
@@ -28,7 +29,9 @@
   --coral: #F08470; --coral-soft: #3E1E18; --on-accent: #08130F; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+html { scroll-padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
 body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 .app {
   max-width: 760px; margin: 0 auto; display: grid; gap: 22px;
   padding-block: 20px 72px;
@@ -39,14 +42,23 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+[hidden] { display: none !important; }
 .label { font: 600 11px/1 var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
+.small { font-size: 13px; }
 .section { display: grid; gap: 10px; }
-.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .section-head h2 { font: 700 15px/1.2 var(--font-display); letter-spacing: .01em; }
 .link-btn { background: none; border: 0; padding: 4px 0; color: var(--jade); font-weight: 600; }
-.empty { padding: 14px 16px; border: 1px dashed var(--line); border-radius: var(--r); color: var(--muted); }
+.empty { padding: 14px 16px; border: 1px dashed var(--line); border-radius: var(--r); color: var(--muted); display: grid; gap: 10px; justify-items: start; }
+
+/* sticky section bar */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin: 0 -4px; padding: 8px 4px;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { flex: none; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 13px; padding: 5px 11px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+.nav a .n { color: var(--gold); margin-left: 4px; font-family: var(--font-mono); }
 
 /* header */
 .top { display: grid; grid-template-columns: 1fr auto; gap: 14px 18px; align-items: center; }
@@ -60,6 +72,8 @@ button { cursor: pointer; }
 .xpbar { grid-column: 1 / -1; display: grid; gap: 8px; }
 .track { height: 10px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
 .track > i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--gold-bright); transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.track.jade > i { background: var(--jade); }
+.track.over > i { background: var(--coral); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; }
 .chip.gold { background: var(--gold-soft); border-color: transparent; color: var(--ink); }
@@ -72,6 +86,8 @@ button { cursor: pointer; }
 .ask-row .spacer { flex: 1; }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
 .btn.primary { background: var(--jade); border-color: var(--jade); color: var(--on-accent); }
+.btn.gold { background: var(--gold-bright); border-color: var(--gold-bright); color: #1E1500; }
+.btn.small { padding: 5px 10px; font-size: 13px; }
 .btn:disabled { opacity: .5; cursor: default; }
 .suggest { display: flex; gap: 6px; flex-wrap: wrap; }
 .suggest button { border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 4px 10px; font-size: 13px; color: var(--muted); }
@@ -81,13 +97,13 @@ button { cursor: pointer; }
 .photo-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 8px; border-radius: 8px; background: var(--sunk); }
 .photo-chip button { border: 0; background: none; padding: 0 2px; color: var(--muted); }
 
-/* rows (tasks, steps, notes) */
+/* rows */
 .list { display: grid; gap: 6px; }
 .row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.row.two { grid-template-columns: 1fr auto; }
 .row .main { min-width: 0; }
 .row .title { overflow-wrap: anywhere; }
 .row .meta { font-size: 12px; color: var(--muted); margin-top: 2px; display: flex; gap: 4px 8px; flex-wrap: wrap; align-items: center; }
-[hidden] { display: none !important; }
 .check { width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--jade); background: transparent; display: grid; place-items: center; padding: 0; flex: none; }
 .check[aria-checked="true"] { background: var(--jade); color: var(--on-accent); }
 .check svg { width: 14px; height: 14px; opacity: 0; }
@@ -97,16 +113,20 @@ button { cursor: pointer; }
 .tag.due-today { background: var(--gold-soft); color: var(--gold); }
 .tag.goal { background: var(--jade-soft); color: var(--jade); }
 .xp { font: 600 12px var(--font-mono); color: var(--gold); white-space: nowrap; }
+.xp.neg { color: var(--coral); }
 .icon-btn { border: 0; background: none; color: var(--muted); padding: 2px 4px; font-size: 13px; border-radius: 6px; }
 .icon-btn.confirm { color: var(--coral); font-weight: 600; }
 .done .title { text-decoration: line-through; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h3 { font: 700 16px/1.25 var(--font-display); overflow-wrap: anywhere; }
+details > summary { cursor: pointer; font-size: 13px; color: var(--jade); font-weight: 600; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary { margin-bottom: 8px; }
 
 /* goals */
 .goals { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
-.goal { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
 .goal.complete { border-color: var(--gold-bright); }
 .goal-top { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
-.goal h3 { font: 700 16px/1.25 var(--font-display); overflow-wrap: anywhere; }
 .goal .why { font-size: 13px; color: var(--muted); margin-top: 4px; }
 .pct { font: 600 26px/1 var(--font-mono); color: var(--jade); text-align: right; }
 .pct small { font-size: 13px; }
@@ -117,11 +137,38 @@ button { cursor: pointer; }
 .goal-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
 .next-step { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; background: var(--jade-soft); border-radius: 12px; padding: 10px 12px; }
 .next-step .when { font-size: 12px; color: var(--muted); }
-details.steps summary { cursor: pointer; font-size: 13px; color: var(--jade); font-weight: 600; list-style: none; }
-details.steps summary::-webkit-details-marker { display: none; }
-details.steps .list { margin-top: 8px; }
 details.steps .row { background: var(--bg); }
 .trophy { font: 700 12px var(--font-display); color: var(--gold); letter-spacing: .04em; }
+
+/* food */
+.macros { display: grid; gap: 10px; }
+.macro { display: grid; gap: 4px; }
+.macro .lbl { display: flex; justify-content: space-between; font-size: 13px; }
+.snap { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.meal { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: start; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.meal .thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--sunk); display: grid; place-items: center; color: var(--muted); font-size: 11px; text-align: center; }
+.meal .name { font-weight: 600; overflow-wrap: anywhere; }
+.meal .nums { font: 500 12px var(--font-mono); color: var(--muted); margin-top: 2px; }
+.meal .verdict { font-size: 13px; margin-top: 4px; }
+.bonus { font-size: 13px; padding: 8px 12px; border-radius: 10px; background: var(--sunk); }
+
+/* training */
+.program .sub { font-size: 13px; color: var(--muted); }
+.session { background: var(--bg); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.session-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.session-head b { font-weight: 700; }
+.ex { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 14px; padding: 6px 0; border-top: 1px solid var(--line); }
+.ex:first-of-type { border-top: 0; }
+.ex .d { color: var(--muted); font: 500 12px var(--font-mono); text-align: right; }
+.days { display: flex; gap: 4px; flex-wrap: wrap; }
+.days span { font: 600 11px var(--font-mono); padding: 2px 6px; border-radius: 6px; background: var(--sunk); color: var(--muted); }
+.days span.on { background: var(--jade); color: var(--on-accent); }
+
+/* ideas */
+.idea { display: grid; gap: 8px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; border-left: 3px solid var(--jade); }
+.idea .t { font-weight: 700; }
+.idea .d { font-size: 14px; color: var(--muted); }
+.idea .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
 /* log + wins */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
@@ -129,6 +176,7 @@ details.steps .row { background: var(--bg); }
 .stat b { display: block; font: 600 20px var(--font-mono); }
 .stat span { font-size: 12px; color: var(--muted); }
 .win { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 10px 12px; border-left: 3px solid var(--gold-bright); background: var(--surface); border-radius: 0 12px 12px 0; }
+.win.neg { border-left-color: var(--coral); }
 .win .praise { font-weight: 600; }
 .win .what { font-size: 13px; color: var(--muted); grid-column: 1 / 2; overflow-wrap: anywhere; }
 .win .when { font-size: 12px; color: var(--muted); text-align: right; }
@@ -144,8 +192,8 @@ details.steps .row { background: var(--bg); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 19; }
 .offline { padding: 16px; border-radius: var(--r); background: var(--gold-soft); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-@media (max-width: 420px) { .level { width: 64px; height: 64px; } .level .num b { font-size: 20px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+@media (max-width: 420px) { .level { width: 64px; height: 64px; } .level .num b { font-size: 20px; } .meal { grid-template-columns: 52px 1fr auto; } .meal .thumb { width: 52px; height: 52px; } }
 </style>
 
 <main class="app">
@@ -165,19 +213,24 @@ details.steps .row { background: var(--bg); }
       <div class="track" role="progressbar" aria-label="XP to next level" id="xptrack"><i id="xpfill"></i></div>
       <div class="chips">
         <span class="chip gold mono" id="xptext">0 XP</span>
-        <span class="chip" id="streak">No streak yet</span>
-        <span class="chip jade" id="week">0 XP this week</span>
+        <span class="chip" id="streak">Start a streak today</span>
+        <span class="chip jade" id="week">+0 XP this week</span>
       </div>
     </div>
   </header>
 
+  <nav class="nav" aria-label="Sections">
+    <a href="#today">Today</a><a href="#food">Food</a><a href="#training">Training</a><a href="#goals-sec">Goals</a>
+    <a href="#remember">Remember</a><a href="#ideas">Ideas<span class="n" id="ideacount"></span></a><a href="#wins-sec">Wins</a>
+  </nav>
+
   <section class="ask" id="ask" aria-label="Talk to your secretary">
     <label class="label" for="askbox">Tell your secretary</label>
-    <textarea id="askbox" placeholder="New goal, a task, something to remember, what you ate, how you feel…"></textarea>
+    <textarea id="askbox" placeholder="A goal, a task, what you ate, your workout, how you feel…"></textarea>
     <div class="suggest" id="suggest">
       <button type="button" data-fill="New goal: ">New goal</button>
       <button type="button" data-fill="Remind me to ">Remind me</button>
-      <button type="button" data-fill="I just ate ">Log a meal</button>
+      <button type="button" data-fill="Workout done: ">Log workout</button>
       <button type="button" data-fill="I finished ">I finished…</button>
       <button type="button" data-fill="How am I doing this week?">How am I doing?</button>
     </div>
@@ -193,7 +246,7 @@ details.steps .row { background: var(--bg); }
     <div class="reply" id="reply" hidden></div>
   </section>
 
-  <section class="section" aria-labelledby="h-next">
+  <section class="section" id="today" aria-labelledby="h-next">
     <div class="section-head"><h2 id="h-next">Up next</h2><button class="link-btn" type="button" id="addtaskbtn">+ Task</button></div>
     <form class="quick" id="taskform" hidden>
       <input type="text" id="tasktitle" placeholder="What needs doing?" aria-label="Task">
@@ -204,12 +257,34 @@ details.steps .row { background: var(--bg); }
     <div class="list" id="next"><div class="empty">Loading your tasks…</div></div>
   </section>
 
-  <section class="section" aria-labelledby="h-goals">
+  <section class="section" id="food" aria-labelledby="h-food">
+    <div class="section-head"><h2 id="h-food">Food</h2><span class="muted small" id="foodgoal"></span></div>
+    <div class="card">
+      <div class="macros" id="macros"></div>
+      <div class="snap">
+        <input type="file" id="camera" accept="image/*" capture="environment" hidden>
+        <button type="button" class="btn gold" id="snap">Snap a meal</button>
+        <button type="button" class="btn small" id="typemeal">Type it instead</button>
+        <span class="muted small">Photo meals earn +2 XP. Meals that fight your goal cost XP.</span>
+      </div>
+    </div>
+    <div class="list" id="meals"><div class="empty">Loading…</div></div>
+    <div class="bonus" id="bonus" hidden></div>
+    <div class="list" id="logs"></div>
+  </section>
+
+  <section class="section" id="training" aria-labelledby="h-train">
+    <div class="section-head"><h2 id="h-train">Training</h2><button class="link-btn" type="button" id="newprogram">+ Program</button></div>
+    <div class="list" id="programs"><div class="empty">Loading…</div></div>
+    <details id="recentwrap" hidden><summary>Recent sessions</summary><div class="list" id="recent"></div></details>
+  </section>
+
+  <section class="section" id="goals-sec" aria-labelledby="h-goals">
     <div class="section-head"><h2 id="h-goals">Goals</h2><button class="link-btn" type="button" id="newgoal">+ Goal</button></div>
     <div class="goals" id="goals"><div class="empty">Loading your goals…</div></div>
   </section>
 
-  <section class="section" aria-labelledby="h-rem">
+  <section class="section" id="remember" aria-labelledby="h-rem">
     <div class="section-head"><h2 id="h-rem">Remember</h2></div>
     <form class="quick" id="noteform">
       <input type="text" id="notetext" placeholder="Something to keep in mind" aria-label="Note">
@@ -218,15 +293,16 @@ details.steps .row { background: var(--bg); }
       <button class="btn" type="submit">Save</button>
     </form>
     <div class="list" id="notes"><div class="empty">Loading…</div></div>
+    <details id="factswrap" hidden><summary id="factssum">What I've learned about you</summary><div class="list" id="facts"></div></details>
   </section>
 
-  <section class="section" aria-labelledby="h-log">
-    <div class="section-head"><h2 id="h-log">Today's log</h2><span class="muted" style="font-size:12px">Synced to your sheets at the next check-in</span></div>
-    <div class="stats" id="logstats"></div>
-    <div class="list" id="log"></div>
+  <section class="section" id="ideas" aria-labelledby="h-ideas">
+    <div class="section-head"><h2 id="h-ideas">Ideas from your secretary</h2></div>
+    <div class="list" id="idealist"><div class="empty">Loading…</div></div>
+    <details id="acceptedwrap" hidden><summary id="acceptedsum">Accepted</summary><div class="list" id="accepted"></div></details>
   </section>
 
-  <section class="section" aria-labelledby="h-wins">
+  <section class="section" id="wins-sec" aria-labelledby="h-wins">
     <div class="section-head"><h2 id="h-wins">Done &amp; praised</h2></div>
     <div class="list" id="wins"><div class="empty">Loading…</div></div>
   </section>
@@ -238,9 +314,13 @@ details.steps .row { background: var(--bg); }
 (() => {
   "use strict";
   const TZ = "Asia/Bangkok";
+  const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const $ = (s) => document.querySelector(s);
-  const S = { goals: [], tasks: [], notes: [], wins: [], inbox: [], loaded: new Set() };
-  let db = null, sample = null, ctl = null, photo = null, canTools = true, maxTools = 16, fatal = false;
+  const COLLS = ["goals", "tasks", "notes", "wins", "inbox", "meals", "programs", "sessions", "suggestions", "config"];
+  const S = Object.fromEntries(COLLS.map((c) => [c, []]));
+  S.loaded = new Set();
+  let db = null, sample = null, assets = null, ctl = null, photo = null, pending = null;
+  let canTools = true, maxTools = 16, fatal = false;
 
   // ------------------------------------------------------------ helpers
   function h(tag, props, ...kids) {
@@ -259,11 +339,16 @@ details.steps .row { background: var(--bg); }
   const dayKey = (d = new Date()) => fmtDay.format(new Date(d));
   const shiftDay = (key, n) => { const d = new Date(key + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
   const daysBetween = (a, b) => Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / 864e5);
+  const weekday = (key = dayKey()) => DAYS[(new Date(key + "T12:00:00Z").getUTCDay() + 6) % 7];
+  const hourNow = () => Number(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "numeric", hour12: false }).format(new Date()));
   const nowIso = () => new Date().toISOString();
   const sid = () => Math.random().toString(36).slice(2, 10);
   const clip = (v, n) => String(v ?? "").trim().slice(0, n);
+  const num = (v) => (v === undefined || v === null || v === "" || isNaN(Number(v)) ? null : Number(v));
   const normDate = (v) => { const m = String(v || "").match(/^\d{4}-\d{2}-\d{2}/); return m ? m[0] : null; };
   const nice = (key) => new Date(key + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  const clock = (iso) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+  const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(n);
   function relTime(iso) {
     const diff = (Date.now() - new Date(iso)) / 1000;
     if (diff < 60) return "just now";
@@ -283,24 +368,63 @@ details.steps .row { background: var(--bg); }
   }
   const CHECK = () => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 16 16");
     s.innerHTML = '<path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'; return s; };
-  function checkBtn(checked, label, onclick) {
-    return h("button", { class: "check", type: "button", role: "checkbox", "aria-checked": String(!!checked), "aria-label": label, onclick }, CHECK());
-  }
+  const checkBtn = (checked, label, onclick) =>
+    h("button", { class: "check", type: "button", role: "checkbox", "aria-checked": String(!!checked), "aria-label": label, onclick }, CHECK());
   function store(key, val) { try { if (val === undefined) return JSON.parse(localStorage.getItem(key) || "null"); localStorage.setItem(key, JSON.stringify(val)); } catch { return null; } }
   let toastTimer;
-  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2600); }
+  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800); }
+  const cfg = (id) => (S.config.find((c) => c.id === id) || null);
+  function fill(text) { const box = $("#askbox"); box.value = text; box.focus(); box.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  function delBtn(label, action) {
+    const b = h("button", { class: "icon-btn", type: "button", "aria-label": label }, "Delete");
+    let armed = false, timer;
+    b.addEventListener("click", () => {
+      if (!armed) { armed = true; b.textContent = "Sure?"; b.classList.add("confirm"); timer = setTimeout(() => { armed = false; b.textContent = "Delete"; b.classList.remove("confirm"); }, 3000); return; }
+      clearTimeout(timer); run(action);
+    });
+    return b;
+  }
+  async function run(fn) {
+    try { await fn(); } catch (e) { console.error(e); toast(e && e.code === "quota_exceeded" ? "Storage is full. Delete some old items." : "That didn't save. Try again."); }
+  }
+
+  // ------------------------------------------------------------ nutrition math
+  const mealsOn = (day) => S.meals.filter((m) => m.day === day);
+  const sumOf = (rows, k) => rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
+  function dayBonus(day) {
+    const t = cfg("nutrition"); if (!t || !t.kcal || !t.protein_g) return null;
+    const ms = mealsOn(day); if (ms.length < 2) return null;
+    const kcal = sumOf(ms, "kcal"), prot = sumOf(ms, "protein_g");
+    const parts = [];
+    if (prot >= 0.9 * t.protein_g) parts.push(["protein target hit", 15]);
+    if (Math.abs(kcal - t.kcal) <= 0.1 * t.kcal) parts.push(["calories on target", 15]);
+    else if (kcal > 1.15 * t.kcal) parts.push(["calories way over", -10]);
+    return { kcal, prot, parts, xp: parts.reduce((a, p) => a + p[1], 0) };
+  }
+  const closedMealDays = () => [...new Set(S.meals.map((m) => m.day))].filter((d) => d < dayKey());
 
   // ------------------------------------------------------------ XP, levels, streaks
   const LOG_XP = 5, LOG_XP_DAY_CAP = 30;
-  function logXp() {
+  function logXp(since = "") {
     const perDay = {};
-    for (const e of S.inbox) perDay[e.day] = (perDay[e.day] || 0) + LOG_XP;
+    for (const e of S.inbox) if (e.day >= since) perDay[e.day] = (perDay[e.day] || 0) + LOG_XP;
     return Object.values(perDay).reduce((a, v) => a + Math.min(v, LOG_XP_DAY_CAP), 0);
   }
-  const totalXp = () => S.wins.reduce((a, w) => a + (Number(w.xp) || 0), 0) + logXp();
+  function xpSince(since = "") {
+    const wins = S.wins.filter((w) => dayKey(w.at) >= since).reduce((a, w) => a + (Number(w.xp) || 0), 0);
+    const meals = S.meals.filter((m) => m.day >= since).reduce((a, m) => a + (Number(m.xp) || 0), 0);
+    const bonus = closedMealDays().filter((d) => d >= since).reduce((a, d) => a + ((dayBonus(d) || {}).xp || 0), 0);
+    return wins + meals + bonus + logXp(since);
+  }
+  const totalXp = () => Math.max(0, xpSince(""));
   function levelFor(xp) { let lvl = 1, need = 100, acc = 0; while (xp >= acc + need) { acc += need; lvl++; need = Math.round(need * 1.25 / 10) * 10; } return { lvl, into: xp - acc, need }; }
   const TITLES = ["Getting started", "Warming up", "Building momentum", "On a roll", "Locked in", "Machine", "Unstoppable", "Legend"];
-  function activeDays() { const s = new Set(S.wins.map((w) => dayKey(w.at))); for (const e of S.inbox) s.add(e.day); return s; }
+  function activeDays() {
+    const s = new Set(S.wins.map((w) => dayKey(w.at)));
+    for (const e of S.inbox) s.add(e.day);
+    for (const m of S.meals) s.add(m.day);
+    return s;
+  }
   function streak() {
     // Consecutive active days; a single rest day doesn't break it (two in a row does).
     const days = activeDays(); let d = dayKey(); if (!days.has(d)) d = shiftDay(d, -1);
@@ -312,10 +436,7 @@ details.steps .row { background: var(--bg); }
     }
     return { n, today: days.has(dayKey()) };
   }
-  function weekXp() {
-    const t = dayKey(), wd = (new Date(t + "T12:00:00Z").getUTCDay() + 6) % 7, monday = shiftDay(t, -wd);
-    return S.wins.filter((w) => dayKey(w.at) >= monday).reduce((a, w) => a + (Number(w.xp) || 0), 0);
-  }
+  const monday = () => shiftDay(dayKey(), -DAYS.indexOf(weekday()));
 
   // ------------------------------------------------------------ praise
   const PRAISE = {
@@ -323,8 +444,9 @@ details.steps .row { background: var(--bg); }
     step: ["Step locked in.", "Progress you can see.", "Another brick in the wall.", "Moving. Keep going.", "That bar just grew.", "Real progress, not busywork."],
     goal: ["GOAL COMPLETE. You actually did it.", "Finished. Take a second to feel that.", "Goal crushed. That's who you are now."],
     "goal-start": ["New goal on the board. Step one is already done.", "Committed. The hardest part is starting, and you've started."],
+    session: ["Session in the bank.", "Trained. Future you is stronger for it.", "Showed up and did the work.", "That's another one logged. Consistency wins."],
   };
-  function makePraise(kind, title, extra) {
+  function makePraise(kind, extra) {
     const list = PRAISE[kind] || PRAISE.task;
     let p = list[Math.floor(Math.random() * list.length)];
     if (kind === "step" && extra) p += ` ${extra.goal} is at ${extra.pct}%.`;
@@ -336,7 +458,7 @@ details.steps .row { background: var(--bg); }
   // ------------------------------------------------------------ writes
   async function addWin(kind, text, xp, ref, extra) {
     const doc = db.collection("wins").doc();
-    const praise = makePraise(kind, text, extra);
+    const praise = makePraise(kind, extra);
     await doc.set({ kind, text: clip(text, 200), xp, ref: ref || null, praise, at: nowIso() });
     toast(`${praise}  +${xp} XP`);
     return doc.id;
@@ -381,7 +503,7 @@ details.steps .row { background: var(--bg); }
     await db.doc("goals/" + g.id).update(patch);
     return { pct: goalPct({ steps }), complete: all };
   }
-  const clampXp = (v) => Math.max(5, Math.min(100, Math.round(Number(v) || 20)));
+  const clampXp = (v, lo = 5, hi = 100) => Math.max(lo, Math.min(hi, Math.round(Number(v) || 20)));
   const cleanStep = (s) => ({ id: sid(), title: clip(s.title, 160), when: s.when ? clip(s.when, 120) : null, xp: clampXp(s.xp), done: false, doneAt: null, winId: null });
   async function createGoal(i) {
     const ref = db.collection("goals").doc(), now = nowIso();
@@ -401,27 +523,89 @@ details.steps .row { background: var(--bg); }
     return ref.id;
   }
   async function addNote(i) {
+    const kind = ["remember", "appointment", "idea", "fact"].includes(i.kind) ? i.kind : "remember";
+    const text = clip(i.text, 300);
+    if (kind === "fact" && S.notes.some((n) => n.kind === "fact" && n.text.toLowerCase() === text.toLowerCase())) return "duplicate";
     const ref = db.collection("notes").doc();
-    await ref.set({ text: clip(i.text, 300), kind: ["remember", "appointment", "idea"].includes(i.kind) ? i.kind : "remember",
-      date: normDate(i.date), pinned: !!i.pinned, createdAt: nowIso() });
+    await ref.set({ text, kind, date: normDate(i.date), pinned: !!i.pinned, createdAt: nowIso() });
     return ref.id;
   }
   async function addLog(i) {
     const ref = db.collection("inbox").doc();
-    const num = (v) => (v === undefined || v === null || v === "" || isNaN(Number(v)) ? null : Number(v));
-    const kind = ["meal", "drink", "mood", "workout", "sleep", "body", "other"].includes(i.kind) ? i.kind : "other";
-    await ref.set({ kind, text: clip(i.text, 300), at: nowIso(), day: dayKey(), kcal: num(i.kcal), protein_g: num(i.protein_g),
-      carbs_g: num(i.carbs_g), fat_g: num(i.fat_g), mood: num(i.mood), energy: num(i.energy), sleep_h: num(i.sleep_h),
-      weight_kg: num(i.weight_kg), processed: false });
+    const kind = ["mood", "sleep", "body", "water", "other"].includes(i.kind) ? i.kind : "other";
+    await ref.set({ kind, text: clip(i.text, 300), at: nowIso(), day: dayKey(), mood: num(i.mood), energy: num(i.energy),
+      stress: num(i.stress), sleep_h: num(i.sleep_h), weight_kg: num(i.weight_kg), water_l: num(i.water_l), processed: false });
     return ref.id;
+  }
+  async function addMeal(i) {
+    const ref = db.collection("meals").doc();
+    const fromPhoto = !!i.from_photo && !!pending;
+    let photoUrl = null;
+    if (fromPhoto && pending.upload) photoUrl = await pending.upload.catch(() => null);
+    const items = (Array.isArray(i.items) ? i.items : []).slice(0, 12).map((x) => ({ name: clip(x && x.name, 80), kcal: num(x && x.kcal) }));
+    const xp = Math.max(-20, Math.min(20, Math.round(Number(i.xp) || 0))) + (fromPhoto ? 2 : 0);
+    await ref.set({ day: dayKey(), at: nowIso(), meal: ["breakfast", "lunch", "dinner", "snack", "drink"].includes(i.meal) ? i.meal : "snack",
+      name: clip(i.name, 120), items, kcal: num(i.kcal) ?? 0, protein_g: num(i.protein_g) ?? 0, carbs_g: num(i.carbs_g), fat_g: num(i.fat_g),
+      fiber_g: num(i.fiber_g), sugar_g: num(i.sugar_g), verdict: clip(i.verdict, 140), xp, photo: fromPhoto, photoUrl, processed: false });
+    if (fromPhoto) pending.used = true;
+    toast(`${clip(i.verdict, 80) || "Logged."}  ${signed(xp)} XP`);
+    if (xp >= 10) burst(24);
+    const today = mealsOn(dayKey());
+    return { meal_id: ref.id, xp, today_kcal: Math.round(sumOf(today, "kcal") + (num(i.kcal) || 0)), today_protein_g: Math.round(sumOf(today, "protein_g") + (num(i.protein_g) || 0)) };
+  }
+  function cleanSessions(list, old) {
+    return (Array.isArray(list) ? list : []).slice(0, 10).filter((s) => s && s.name).map((s) => {
+      const prev = (old || []).find((o) => o.name.toLowerCase() === String(s.name).toLowerCase());
+      const days = (Array.isArray(s.days) ? s.days : []).map((d) => String(d).toLowerCase().slice(0, 3)).filter((d) => DAYS.includes(d));
+      return { id: prev ? prev.id : sid(), name: clip(s.name, 60), days, focus: s.focus ? clip(s.focus, 80) : null,
+        items: (Array.isArray(s.items) ? s.items : []).slice(0, 14).filter((x) => x && x.name).map((x) => ({ name: clip(x.name, 60), detail: x.detail ? clip(x.detail, 80) : null })) };
+    });
+  }
+  async function saveProgram(i) {
+    const existing = i.program_id ? S.programs.find((p) => p.id === String(i.program_id)) : null;
+    if (i.program_id && !existing) throw new Error("unknown program_id");
+    const note = { at: nowIso(), note: clip(i.change_note || (existing ? "Updated" : "Created"), 200) };
+    if (existing) {
+      const patch = { updatedAt: nowIso(), version: (existing.version || 1) + 1, changelog: [...(existing.changelog || []), note].slice(-20) };
+      if (i.title) patch.title = clip(i.title, 80);
+      if (i.goal) patch.goal = clip(i.goal, 200);
+      if (i.rules) patch.rules = clip(i.rules, 600);
+      if (i.status && ["active", "paused", "done"].includes(i.status)) patch.status = i.status;
+      if (Array.isArray(i.sessions)) patch.sessions = cleanSessions(i.sessions, existing.sessions);
+      await db.doc("programs/" + existing.id).update(patch);
+      return { program_id: existing.id, version: patch.version };
+    }
+    const ref = db.collection("programs").doc();
+    await ref.set({ type: clip(i.type || "gym", 20).toLowerCase(), title: clip(i.title || "My program", 80), goal: i.goal ? clip(i.goal, 200) : null,
+      rules: i.rules ? clip(i.rules, 600) : null, status: "active", sessions: cleanSessions(i.sessions, []), version: 1,
+      changelog: [note], createdAt: nowIso(), updatedAt: nowIso() });
+    burst(40);
+    return { program_id: ref.id, version: 1 };
+  }
+  async function logSession(p, session, i = {}) {
+    const ref = db.collection("sessions").doc();
+    const sets = (Array.isArray(i.sets) ? i.sets : []).slice(0, 60).filter((s) => s && s.exercise)
+      .map((s) => ({ exercise: clip(s.exercise, 60), weight_kg: num(s.weight_kg), reps: num(s.reps), rpe: num(s.rpe) }));
+    const winId = await addWin("session", `${p.title}: ${session ? session.name : "session"}`, 40, ref.id);
+    await ref.set({ programId: p.id, sessionId: session ? session.id : null, name: session ? session.name : clip(i.name || "Session", 60),
+      type: p.type, day: dayKey(), at: nowIso(), notes: i.notes ? clip(i.notes, 300) : null, sets, xp: 40, winId, processed: false });
+    burst(60);
+    return { session_log_id: ref.id };
+  }
+  async function addSuggestion(i) {
+    const title = clip(i.title, 90);
+    if (!title) throw new Error("title required");
+    if (S.suggestions.some((s) => s.title.toLowerCase() === title.toLowerCase())) return { skipped: "already suggested" };
+    const ref = db.collection("suggestions").doc();
+    await ref.set({ title, detail: clip(i.detail, 400), kind: ["feature", "program", "habit", "optimization"].includes(i.kind) ? i.kind : "feature",
+      status: "new", createdAt: nowIso() });
+    return { suggestion_id: ref.id };
   }
 
   // ------------------------------------------------------------ render
-  function render() {
-    renderHeader(); renderNext(); renderGoals(); renderNotes(); renderLog(); renderWins();
-  }
+  function render() { renderHeader(); renderNext(); renderFood(); renderTraining(); renderGoals(); renderNotes(); renderIdeas(); renderWins(); }
   function renderHeader() {
-    const hr = Number(new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "numeric", hour12: false }).format(new Date()));
+    const hr = hourNow();
     $("#hello").textContent = hr < 5 ? "Up late?" : hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
     const t = dayKey(), be = Number(t.slice(0, 4)) + 543;
     $("#dateline").textContent = `${new Date(t + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })} · ${be} BE · Bangkok`;
@@ -433,17 +617,17 @@ details.steps .row { background: var(--bg); }
     $("#xptext").textContent = `${xp} XP · ${L.need - L.into} to level ${L.lvl + 1} · ${TITLES[Math.min(L.lvl - 1, TITLES.length - 1)]}`;
     const st = streak();
     $("#streak").textContent = st.n ? `🔥 ${st.n}-day streak${st.today ? "" : " · keep it alive today"}` : "Start a streak today";
-    $("#week").textContent = `+${weekXp()} XP this week`;
+    const w = xpSince(monday());
+    $("#week").textContent = `${signed(w)} XP this week`;
+    const n = S.suggestions.filter((s) => s.status === "new").length;
+    $("#ideacount").textContent = n ? String(n) : "";
   }
-  function nextItems() {
-    const today = dayKey();
-    const rank = { high: 0, med: 1, low: 2 };
-    const open = S.tasks.filter((t) => t.status !== "done").sort((a, b) =>
-      (a.due || "9999") .localeCompare(b.due || "9999") || (rank[a.priority] ?? 1) - (rank[b.priority] ?? 1));
-    const goalNext = S.goals.filter((g) => g.status !== "done").map((g) => ({ g, s: (g.steps || []).find((x) => !x.done) })).filter((x) => x.s);
-    const urgent = open.filter((t) => t.due && t.due <= today);
-    const rest = open.filter((t) => !(t.due && t.due <= today));
-    return { urgent, goalNext, rest };
+
+  function scheduledToday() {
+    const wd = weekday(), today = dayKey(), out = [];
+    for (const p of S.programs.filter((x) => x.status === "active")) for (const s of p.sessions || [])
+      if ((s.days || []).includes(wd) && !S.sessions.some((l) => l.sessionId === s.id && l.day === today)) out.push({ p, s });
+    return out;
   }
   function taskRow(t) {
     const goal = t.goalId ? S.goals.find((g) => g.id === t.goalId) : null;
@@ -455,39 +639,137 @@ details.steps .row { background: var(--bg); }
       h("span", { class: "xp" }, `+${t.priority === "high" ? 20 : t.priority === "low" ? 5 : 10}`));
   }
   function renderNext() {
-    const box = $("#next"); if (!S.loaded.has("tasks") || !S.loaded.has("goals")) return;
-    const { urgent, goalNext, rest } = nextItems();
+    const box = $("#next"); if (!["tasks", "goals", "meals", "programs", "sessions"].every((c) => S.loaded.has(c))) return;
+    const today = dayKey(), rank = { high: 0, med: 1, low: 2 };
+    const open = S.tasks.filter((t) => t.status !== "done").sort((a, b) =>
+      (a.due || "9999").localeCompare(b.due || "9999") || (rank[a.priority] ?? 1) - (rank[b.priority] ?? 1));
+    const urgent = open.filter((t) => t.due && t.due <= today), rest = open.filter((t) => !(t.due && t.due <= today));
+    const goalNext = S.goals.filter((g) => g.status !== "done").map((g) => ({ g, s: (g.steps || []).find((x) => !x.done) })).filter((x) => x.s);
     box.replaceChildren();
+    for (const { p, s } of scheduledToday()) box.append(h("div", { class: "row" },
+      checkBtn(false, "Session done: " + s.name, () => run(() => logSession(p, s))),
+      h("div", { class: "main" }, h("div", { class: "title" }, `Train: ${s.name}`),
+        h("div", { class: "meta" }, h("span", { class: "tag goal" }, p.title), h("span", {}, `${(s.items || []).length} exercises`))),
+      h("span", { class: "xp" }, "+40")));
+    const hr = hourNow(), eaten = mealsOn(today).length;
+    if (hr >= 10 && eaten === 0) box.append(h("div", { class: "row" },
+      h("button", { class: "btn small gold", type: "button", onclick: () => $("#camera").click() }, "Snap"),
+      h("div", { class: "main" }, h("div", { class: "title" }, "Log your first meal today"), h("div", { class: "meta" }, "A photo is enough")),
+      h("span", { class: "xp" }, "+XP")));
     for (const t of urgent) box.append(taskRow(t));
     for (const { g, s } of goalNext.slice(0, 3)) box.append(h("div", { class: "row" },
       checkBtn(false, "Done: " + s.title, () => run(() => toggleStep(g, s.id))),
       h("div", { class: "main" }, h("div", { class: "title" }, s.title),
         h("div", { class: "meta" }, h("span", { class: "tag goal" }, g.title), s.when ? h("span", {}, s.when) : null)),
       h("span", { class: "xp" }, `+${s.xp || 20}`)));
-    for (const t of rest.slice(0, Math.max(0, 7 - box.children.length))) box.append(taskRow(t));
+    const room = Math.max(0, 8 - box.children.length);
+    for (const t of rest.slice(0, room)) box.append(taskRow(t));
     if (!box.children.length) box.append(h("div", { class: "empty" }, "Nothing waiting. Add a task, or tell your secretary a goal."));
-    const more = rest.length - Math.max(0, 7 - urgent.length - Math.min(3, goalNext.length));
-    if (more > 0) box.append(h("div", { class: "muted", style: "font-size:13px;padding-left:4px" }, `+ ${more} more open task${more > 1 ? "s" : ""}`));
+    if (rest.length > room) box.append(h("div", { class: "muted small", style: "padding-left:4px" }, `+ ${rest.length - room} more open task${rest.length - room > 1 ? "s" : ""}`));
   }
+
+  function macroBar(label, val, target, unit) {
+    const pct = target ? Math.min(100, Math.round(100 * val / target)) : 0;
+    const over = target && val > target * 1.1;
+    return h("div", { class: "macro" },
+      h("div", { class: "lbl" }, h("span", {}, label), h("span", { class: "mono" }, `${Math.round(val)}${target ? " / " + target : ""} ${unit}`)),
+      h("div", { class: "track jade" + (over ? " over" : ""), role: "progressbar", "aria-label": label, "aria-valuenow": String(pct) }, h("i", { style: `width:${pct}%` })));
+  }
+  function renderFood() {
+    if (!S.loaded.has("meals") || !S.loaded.has("config")) return;
+    const t = cfg("nutrition"), today = dayKey(), ms = mealsOn(today).sort((a, b) => a.at.localeCompare(b.at));
+    $("#foodgoal").textContent = t && t.goal ? `Goal: ${t.goal}` : "";
+    const macros = $("#macros");
+    if (t && t.kcal) {
+      macros.replaceChildren(macroBar("Calories", sumOf(ms, "kcal"), t.kcal, "kcal"), macroBar("Protein", sumOf(ms, "protein_g"), t.protein_g, "g"),
+        h("div", { class: "muted small mono" }, `Carbs ${Math.round(sumOf(ms, "carbs_g"))}${t.carbs_g ? "/" + t.carbs_g : ""} g · Fat ${Math.round(sumOf(ms, "fat_g"))}${t.fat_g ? "/" + t.fat_g : ""} g`));
+    } else {
+      macros.replaceChildren(h("div", { class: "small" }, `Today so far: ${Math.round(sumOf(ms, "kcal"))} kcal · ${Math.round(sumOf(ms, "protein_g"))} g protein. `,
+        h("button", { class: "link-btn", type: "button", onclick: () => fill("Set my nutrition targets. My goal is ") }, "Set your targets"), " so meals can earn or lose XP fairly."));
+    }
+    const box = $("#meals");
+    box.replaceChildren(...ms.map((m) => h("div", { class: "meal" },
+      m.photoUrl ? h("img", { class: "thumb", src: m.photoUrl, alt: m.name, loading: "lazy" }) : h("div", { class: "thumb" }, m.photo ? "photo" : "no photo"),
+      h("div", { style: "min-width:0" }, h("div", { class: "name" }, m.name),
+        h("div", { class: "nums" }, `${m.meal} · ${clock(m.at)} · ${Math.round(m.kcal || 0)} kcal · P ${Math.round(m.protein_g || 0)} · C ${Math.round(m.carbs_g || 0)} · F ${Math.round(m.fat_g || 0)}`),
+        m.verdict ? h("div", { class: "verdict" }, m.verdict) : null),
+      h("div", { style: "display:grid;justify-items:end;gap:6px" }, h("span", { class: "xp" + (m.xp < 0 ? " neg" : "") }, `${signed(m.xp || 0)} XP`),
+        m.processed ? h("span", { class: "tag goal" }, "synced") : delBtn("Delete meal", () => db.doc("meals/" + m.id).delete())))));
+    if (!ms.length) box.append(h("div", { class: "empty" }, "No meals yet today. Snap a photo of everything you eat. I'll estimate it, log it and score it against your goal."));
+    const y = shiftDay(today, -1), b = dayBonus(y), bonus = $("#bonus");
+    if (b) { bonus.hidden = false; bonus.textContent = `Yesterday: ${Math.round(b.kcal)} kcal · ${Math.round(b.prot)} g protein · ` + (b.parts.length ? b.parts.map((p) => `${p[0]} ${signed(p[1])}`).join(", ") : "no bonus") + " XP"; }
+    else bonus.hidden = true;
+    const logs = S.inbox.filter((e) => e.day === today);
+    $("#logs").replaceChildren(...logs.map((e) => h("div", { class: "row two" },
+      h("div", { class: "main" }, h("div", { class: "title" }, e.text), h("div", { class: "meta" }, h("span", { class: "tag" }, e.kind),
+        e.mood != null ? h("span", {}, `mood ${e.mood}/10`) : null, e.energy != null ? h("span", {}, `energy ${e.energy}/10`) : null,
+        e.sleep_h != null ? h("span", {}, `${e.sleep_h} h sleep`) : null, e.weight_kg != null ? h("span", {}, `${e.weight_kg} kg`) : null, h("span", {}, clock(e.at)))),
+      e.processed ? h("span", { class: "tag goal" }, "synced") : delBtn("Delete entry", () => db.doc("inbox/" + e.id).delete()))));
+  }
+
+  function renderTraining() {
+    if (!S.loaded.has("programs") || !S.loaded.has("sessions")) return;
+    const box = $("#programs"), wd = weekday(), today = dayKey();
+    const progs = S.programs.filter((p) => p.status !== "done").sort((a, b) => (a.status === "paused") - (b.status === "paused"));
+    box.replaceChildren(...progs.map((p) => {
+      const sessions = p.sessions || [];
+      const todays = sessions.filter((s) => (s.days || []).includes(wd));
+      let nextS = null;
+      for (let k = 1; k <= 7 && !nextS && !todays.length; k++) { const d = DAYS[(DAYS.indexOf(wd) + k) % 7]; const s = sessions.find((x) => (x.days || []).includes(d)); if (s) nextS = { s, d }; }
+      const show = todays[0] || (nextS && nextS.s) || sessions[0];
+      const doneToday = show && S.sessions.some((l) => l.sessionId === show.id && l.day === today);
+      const last = S.sessions.filter((l) => l.programId === p.id).sort((a, b) => b.at.localeCompare(a.at))[0];
+      const weekCount = S.sessions.filter((l) => l.programId === p.id && l.day >= monday()).length;
+      const planned = new Set(sessions.flatMap((s) => s.days || [])).size;
+      return h("article", { class: "card program" },
+        h("div", { class: "goal-top" },
+          h("div", {}, h("h3", {}, p.title), p.goal ? h("div", { class: "sub" }, p.goal) : null),
+          h("span", { class: "tag" + (p.status === "paused" ? "" : " goal") }, p.status === "paused" ? "paused" : p.type)),
+        h("div", { class: "days" }, DAYS.map((d) => h("span", { class: sessions.some((s) => (s.days || []).includes(d)) ? "on" : "" }, d))),
+        show ? h("div", { class: "session" },
+          h("div", { class: "session-head" }, h("b", {}, (todays.length ? "Today: " : nextS ? `Next (${nextS.d}): ` : "") + show.name),
+            show.focus ? h("span", { class: "muted small" }, show.focus) : null),
+          h("div", {}, (show.items || []).map((x) => h("div", { class: "ex" }, h("span", {}, x.name), h("span", { class: "d" }, x.detail || "")))),
+          h("div", { class: "ask-row" },
+            doneToday ? h("span", { class: "tag goal" }, "Done today ✓") :
+              h("button", { class: "btn primary small", type: "button", onclick: () => run(() => logSession(p, show)) }, "Session done +40 XP"),
+            h("button", { class: "btn small", type: "button", onclick: () => fill(`Log my ${show.name} sets: `) }, "Log sets"))) : null,
+        h("div", { class: "goal-meta" }, h("span", {}, planned ? `This week: ${weekCount}/${planned}` : ""), h("span", {}, last ? `Last: ${last.name}, ${relTime(last.at)}` : "No sessions yet"),
+          h("span", { class: "mono" }, `v${p.version || 1}`)),
+        h("details", {}, h("summary", {}, `Full program (${sessions.length} sessions)`),
+          h("div", { class: "list" }, sessions.map((s) => h("div", { class: "session" },
+            h("div", { class: "session-head" }, h("b", {}, s.name), h("span", { class: "muted small" }, (s.days || []).join(" · ") || "flexible")),
+            h("div", {}, (s.items || []).map((x) => h("div", { class: "ex" }, h("span", {}, x.name), h("span", { class: "d" }, x.detail || ""))))))),
+          p.rules ? h("p", { class: "small muted" }, p.rules) : null,
+          (p.changelog || []).length ? h("div", { class: "small" }, h("div", { class: "label", style: "margin:8px 0 4px" }, "How it evolved"),
+            [...p.changelog].reverse().slice(0, 6).map((c) => h("div", { class: "muted" }, `${dayKey(c.at)} · ${c.note}`))) : null,
+          h("div", { style: "display:flex;justify-content:flex-end" }, delBtn("Delete program", () => db.doc("programs/" + p.id).delete()))));
+    }));
+    if (!progs.length) box.append(h("div", { class: "empty" }, "No program yet. Tell me your goal, your days and your gym, and I'll build your plan and adjust it as you progress.",
+      h("button", { class: "btn primary small", type: "button", onclick: () => fill("Build my gym program. Goal: … Days per week: … Session length: … Gym equipment: … Injuries: none") }, "Build my gym program")));
+    const recent = [...S.sessions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 6);
+    $("#recentwrap").hidden = !recent.length;
+    $("#recent").replaceChildren(...recent.map((l) => h("div", { class: "row two" },
+      h("div", { class: "main" }, h("div", { class: "title" }, l.name), h("div", { class: "meta" }, h("span", {}, relTime(l.at)),
+        l.sets && l.sets.length ? h("span", {}, l.sets.slice(0, 4).map((s) => `${s.exercise} ${s.weight_kg ?? ""}×${s.reps ?? ""}`).join(", ") + (l.sets.length > 4 ? "…" : "")) : null,
+        l.notes ? h("span", {}, l.notes) : null)), h("span", { class: "xp" }, `+${l.xp || 40}`))));
+  }
+
   function goalCard(g) {
     const steps = g.steps || [], pct = goalPct(g), next = steps.find((s) => !s.done), left = steps.filter((s) => !s.done).length;
     const earned = steps.filter((s) => s.done).reduce((a, s) => a + (Number(s.xp) || 10), 0), all = steps.reduce((a, s) => a + (Number(s.xp) || 10), 0);
     const dl = g.deadline ? daysBetween(dayKey(), g.deadline) : null;
-    const bar = h("div", { class: "segbar", role: "progressbar", "aria-label": `${g.title} progress`, "aria-valuenow": String(pct) },
-      steps.map((s) => h("i", { class: s.done ? "on" : s === next ? "next" : "", style: `--w:${Number(s.xp) || 10}`, title: s.title })));
-    return h("article", { class: "goal" + (g.status === "done" ? " complete" : "") },
-      h("div", { class: "goal-top" },
-        h("div", {}, h("h3", {}, g.title), g.why ? h("div", { class: "why" }, g.why) : null),
+    return h("article", { class: "card goal" + (g.status === "done" ? " complete" : "") },
+      h("div", { class: "goal-top" }, h("div", {}, h("h3", {}, g.title), g.why ? h("div", { class: "why" }, g.why) : null),
         h("div", { class: "pct" }, pct, h("small", {}, "%"))),
-      bar,
+      h("div", { class: "segbar", role: "progressbar", "aria-label": `${g.title} progress`, "aria-valuenow": String(pct) },
+        steps.map((s) => h("i", { class: s.done ? "on" : s === next ? "next" : "", style: `--w:${Number(s.xp) || 10}`, title: s.title }))),
       h("div", { class: "goal-meta" },
         h("span", {}, g.status === "done" ? h("span", { class: "trophy" }, "COMPLETED") : `${left} step${left === 1 ? "" : "s"} to go`),
         h("span", { class: "mono" }, `${earned}/${all} XP`),
-        dl === null ? null : h("span", {}, g.status === "done" ? "" : dl < 0 ? `${-dl} days past deadline` : dl === 0 ? "deadline today" : `${dl} days left`)),
-      next ? h("div", { class: "next-step" },
-        checkBtn(false, "Done: " + next.title, () => run(() => toggleStep(g, next.id))),
-        h("div", {}, h("div", { class: "label", style: "margin-bottom:4px" }, "Next step"), h("div", {}, next.title),
-          next.when ? h("div", { class: "when" }, next.when) : null)) : null,
+        dl === null || g.status === "done" ? null : h("span", {}, dl < 0 ? `${-dl} days past deadline` : dl === 0 ? "deadline today" : `${dl} days left`)),
+      next ? h("div", { class: "next-step" }, checkBtn(false, "Done: " + next.title, () => run(() => toggleStep(g, next.id))),
+        h("div", {}, h("div", { class: "label", style: "margin-bottom:4px" }, "Next step"), h("div", {}, next.title), next.when ? h("div", { class: "when" }, next.when) : null)) : null,
       h("details", { class: "steps" }, h("summary", {}, `All ${steps.length} steps`),
         h("div", { class: "list" }, steps.map((s) => h("div", { class: "row" + (s.done ? " done" : "") },
           checkBtn(s.done, (s.done ? "Undo: " : "Done: ") + s.title, () => run(() => toggleStep(g, s.id))),
@@ -499,80 +781,94 @@ details.steps .row { background: var(--bg); }
     const box = $("#goals"); if (!S.loaded.has("goals")) return;
     const order = [...S.goals].sort((a, b) => (a.status === "done") - (b.status === "done") || String(a.deadline || "9999").localeCompare(String(b.deadline || "9999")));
     box.replaceChildren(...order.map(goalCard));
-    if (!order.length) box.append(h("div", { class: "empty" }, "No goals yet. Type one above, e.g. “New goal: bench 100 kg by March”, and I’ll build the plan."));
-  }
-  function delBtn(label, action) {
-    const b = h("button", { class: "icon-btn", type: "button", "aria-label": label }, "Delete");
-    let armed = false, timer;
-    b.addEventListener("click", () => {
-      if (!armed) { armed = true; b.textContent = "Sure?"; b.classList.add("confirm"); timer = setTimeout(() => { armed = false; b.textContent = "Delete"; b.classList.remove("confirm"); }, 3000); return; }
-      clearTimeout(timer); run(action);
-    });
-    return b;
+    if (!order.length) box.append(h("div", { class: "empty" }, "No goals yet. Type one above, e.g. “New goal: bench 100 kg by March”, and I'll build the plan."));
   }
   function renderNotes() {
     const box = $("#notes"); if (!S.loaded.has("notes")) return;
     const today = dayKey();
-    const order = [...S.notes].sort((a, b) => (!!b.pinned - !!a.pinned) || String(a.date || "9999").localeCompare(String(b.date || "9999")) || String(b.createdAt).localeCompare(String(a.createdAt)));
-    box.replaceChildren(...order.map((n) => h("div", { class: "row", style: "grid-template-columns:1fr auto" },
+    const visible = S.notes.filter((n) => n.kind !== "fact");
+    const order = visible.sort((a, b) => (!!b.pinned - !!a.pinned) || String(a.date || "9999").localeCompare(String(b.date || "9999")) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    box.replaceChildren(...order.map((n) => h("div", { class: "row two" },
       h("div", { class: "main" }, h("div", { class: "title" }, n.text),
         h("div", { class: "meta" }, n.kind !== "remember" ? h("span", { class: "tag" + (n.kind === "appointment" ? " due-today" : "") }, n.kind) : null,
           n.date ? (n.date < today && n.kind === "appointment" ? h("span", { class: "tag" }, "past") : dueTag(n.date)) : null, n.pinned ? h("span", { class: "tag goal" }, "pinned") : null)),
       delBtn("Delete note", () => db.doc("notes/" + n.id).delete()))));
     if (!order.length) box.append(h("div", { class: "empty" }, "Nothing saved yet. Add things you don't want to forget."));
+    const facts = S.notes.filter((n) => n.kind === "fact").sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    $("#factswrap").hidden = !facts.length;
+    $("#factssum").textContent = `What I've learned about you (${facts.length})`;
+    $("#facts").replaceChildren(...facts.map((n) => h("div", { class: "row two" }, h("div", { class: "main title" }, n.text), delBtn("Forget this", () => db.doc("notes/" + n.id).delete()))));
   }
-  function renderLog() {
-    if (!S.loaded.has("inbox")) return;
-    const today = S.inbox.filter((e) => e.day === dayKey()).sort((a, b) => a.at.localeCompare(b.at));
-    const sum = (k) => today.reduce((a, e) => a + (Number(e[k]) || 0), 0);
-    const mood = [...today].reverse().find((e) => e.mood != null);
-    $("#logstats").replaceChildren(
-      h("div", { class: "stat" }, h("b", {}, Math.round(sum("kcal"))), h("span", {}, "kcal today (est.)")),
-      h("div", { class: "stat" }, h("b", {}, Math.round(sum("protein_g")) + " g"), h("span", {}, "protein")),
-      h("div", { class: "stat" }, h("b", {}, today.filter((e) => e.kind === "meal" || e.kind === "drink").length), h("span", {}, "meals & drinks")),
-      h("div", { class: "stat" }, h("b", {}, mood ? `${mood.mood}/10` : "—"), h("span", {}, "mood")));
-    $("#log").replaceChildren(...today.map((e) => h("div", { class: "row", style: "grid-template-columns:1fr auto" },
-      h("div", { class: "main" }, h("div", { class: "title" }, e.text),
-        h("div", { class: "meta" }, h("span", { class: "tag" }, e.kind), e.kcal != null ? h("span", {}, `${e.kcal} kcal · ${e.protein_g ?? 0} g protein`) : null,
-          h("span", {}, new Date(e.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ })))),
-      e.processed ? h("span", { class: "tag goal" }, "synced") : delBtn("Delete entry", () => db.doc("inbox/" + e.id).delete()))));
-    if (!today.length) $("#log").append(h("div", { class: "empty" }, "Tell me what you eat and how you feel. It all lands here, then in your sheets."));
+  function renderIdeas() {
+    if (!S.loaded.has("suggestions")) return;
+    const fresh = S.suggestions.filter((s) => s.status === "new").sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const box = $("#idealist");
+    box.replaceChildren(...fresh.map((s) => h("div", { class: "idea" },
+      h("div", { class: "t" }, s.title), s.detail ? h("div", { class: "d" }, s.detail) : null,
+      h("div", { class: "acts" }, h("span", { class: "tag" }, s.kind),
+        h("button", { class: "btn primary small", type: "button", onclick: () => run(() => acceptIdea(s)) }, "Let's do it"),
+        h("button", { class: "btn small", type: "button", onclick: () => run(() => db.doc("suggestions/" + s.id).update({ status: "dismissed", decidedAt: nowIso() })) }, "Not now")))));
+    if (!fresh.length) box.append(h("div", { class: "empty" }, "No new ideas right now. The more we talk, the more I'll suggest."));
+    const acc = S.suggestions.filter((s) => s.status === "accepted" || s.status === "built");
+    $("#acceptedwrap").hidden = !acc.length;
+    $("#acceptedsum").textContent = `Accepted (${acc.length})`;
+    $("#accepted").replaceChildren(...acc.map((s) => h("div", { class: "row two" }, h("div", { class: "main" }, h("div", { class: "title" }, s.title)),
+      h("span", { class: "tag" + (s.status === "built" ? " goal" : "") }, s.status === "built" ? "live" : "in progress"))));
+  }
+  async function acceptIdea(s) {
+    await db.doc("suggestions/" + s.id).update({ status: "accepted", decidedAt: nowIso() });
+    toast("Accepted. On it.");
+    if (sample && !fatal) { $("#askbox").value = `I accept your idea "${s.title}": ${s.detail || ""} Set it up now with your tools if you can. If it needs a new app feature, tell me in one line that it's queued for the next build.`; send(); }
   }
   function renderWins() {
-    const box = $("#wins"); if (!S.loaded.has("wins")) return;
-    const order = [...S.wins].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 15);
-    box.replaceChildren(...order.map((w) => h("div", { class: "win" },
-      h("div", { class: "praise" }, w.praise || "Nice work."), h("span", { class: "xp" }, `+${w.xp} XP`),
+    const box = $("#wins"); if (!S.loaded.has("wins") || !S.loaded.has("meals")) return;
+    const feed = [...S.wins.map((w) => ({ at: w.at, praise: w.praise || "Nice work.", text: w.text, xp: Number(w.xp) || 0 })),
+      ...S.meals.filter((m) => (m.xp || 0) <= -5).map((m) => ({ at: m.at, praise: m.verdict || "That meal fought your goal.", text: m.name, xp: m.xp }))]
+      .sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 15);
+    box.replaceChildren(...feed.map((w) => h("div", { class: "win" + (w.xp < 0 ? " neg" : "") },
+      h("div", { class: "praise" }, w.praise), h("span", { class: "xp" + (w.xp < 0 ? " neg" : "") }, `${signed(w.xp)} XP`),
       h("div", { class: "what" }, w.text), h("div", { class: "when" }, relTime(w.at)))));
-    if (!order.length) box.append(h("div", { class: "empty" }, "Finish anything and it shows up here, with the credit you deserve."));
-  }
-
-  async function run(fn) {
-    try { await fn(); } catch (e) { console.error(e); toast(e && e.code === "quota_exceeded" ? "Storage is full. Delete some old items." : "That didn't save. Try again."); }
+    if (!feed.length) box.append(h("div", { class: "empty" }, "Finish anything and it shows up here, with the credit you deserve."));
   }
 
   // ------------------------------------------------------------ the secretary (Claude, on the viewer's plan)
+  const sched = { type: "array", items: { type: "string", enum: DAYS } };
   const TOOLS = [
+    { name: "log_meal", description: "Log ONE meal (all items on the plate together) with honest estimates, a verdict and an XP score judged against their nutrition goal. Returns today's running totals.",
+      inputSchema: { type: "object", required: ["name", "meal", "kcal", "protein_g", "xp", "verdict"], properties: {
+        name: { type: "string", description: "e.g. 'Khao man gai + iced Americano'" }, meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "snack", "drink"] },
+        items: { type: "array", items: { type: "object", properties: { name: { type: "string" }, kcal: { type: "number" } } } },
+        kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, fiber_g: { type: "number" }, sugar_g: { type: "number" },
+        xp: { type: "integer", description: "-20..20, see the rubric" }, verdict: { type: "string", description: "Max 10 words, human" },
+        from_photo: { type: "boolean", description: "true when this meal is the attached photo" } } },
+      execute: async (i) => { status("Logging your meal…"); return addMeal(i); } },
+    { name: "save_program", description: "Create a program (omit program_id) or update one (give program_id): gym plan, work tracker, habit routine, etc. Each session has scheduled days and items (exercises with sets×reps @ load and rest, or work blocks). Always give change_note when updating.",
+      inputSchema: { type: "object", properties: { program_id: { type: "string" }, type: { type: "string", description: "gym | work | habit | mobility | other" },
+        title: { type: "string" }, goal: { type: "string" }, rules: { type: "string", description: "Progression/optimisation rules in 1-3 sentences" },
+        status: { type: "string", enum: ["active", "paused", "done"] }, change_note: { type: "string" },
+        sessions: { type: "array", items: { type: "object", required: ["name", "items"], properties: { name: { type: "string" }, days: sched, focus: { type: "string" },
+          items: { type: "array", items: { type: "object", required: ["name"], properties: { name: { type: "string" }, detail: { type: "string", description: "e.g. '4×6-8 @ 80 kg · rest 2 min'" } } } } } } } } },
+      execute: async (i) => { status("Saving your program…"); return saveProgram(i); } },
+    { name: "log_session", description: "Log a completed program session (e.g. today's workout) with optional sets. +40 XP.",
+      inputSchema: { type: "object", required: ["program_id"], properties: { program_id: { type: "string" }, session_id: { type: "string" }, notes: { type: "string" },
+        sets: { type: "array", items: { type: "object", properties: { exercise: { type: "string" }, weight_kg: { type: "number" }, reps: { type: "integer" }, rpe: { type: "number" } } } } } },
+      execute: async (i) => { const p = S.programs.find((x) => x.id === String(i.program_id)); if (!p) throw new Error("unknown program_id");
+        const s = (p.sessions || []).find((x) => x.id === String(i.session_id)) || null; return logSession(p, s, i); } },
     { name: "create_goal", description: "Create a goal with an ordered plan of 4-8 concrete steps. A 'Commit to this goal' step is added and ticked automatically. Returns the goal id and step ids.",
       inputSchema: { type: "object", required: ["title", "steps"], properties: {
-        title: { type: "string", description: "Short, specific, measurable" }, why: { type: "string", description: "Their reason, in their words, one line" },
-        area: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" },
-        steps: { type: "array", items: { type: "object", required: ["title", "xp"], properties: {
-          title: { type: "string", description: "A concrete milestone with a clear finish line" },
-          when: { type: "string", description: "If-then cue: when and where they will do it" },
-          xp: { type: "integer", description: "10-60 by effort" } } } } } },
+        title: { type: "string" }, why: { type: "string" }, area: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" },
+        steps: { type: "array", items: { type: "object", required: ["title", "xp"], properties: { title: { type: "string" }, when: { type: "string", description: "When and where they'll do it" }, xp: { type: "integer", description: "10-60 by effort" } } } } } },
       execute: async (i) => { status("Building your plan…"); if (!i.title) throw new Error("title required"); return createGoal(i); } },
-    { name: "add_steps", description: "Append steps to an existing goal.",
-      inputSchema: { type: "object", required: ["goal_id", "steps"], properties: { goal_id: { type: "string" },
-        steps: { type: "array", items: { type: "object", properties: { title: { type: "string" }, when: { type: "string" }, xp: { type: "integer" } } } } } },
+    { name: "update_goal", description: "Tick a goal step done (complete_step_id) and/or append steps (add_steps).",
+      inputSchema: { type: "object", required: ["goal_id"], properties: { goal_id: { type: "string" }, complete_step_id: { type: "string" },
+        add_steps: { type: "array", items: { type: "object", properties: { title: { type: "string" }, when: { type: "string" }, xp: { type: "integer" } } } } } },
       execute: async (i) => { const g = S.goals.find((x) => x.id === String(i.goal_id)); if (!g) throw new Error("unknown goal_id");
-        const steps = [...(g.steps || []), ...(i.steps || []).filter((s) => s && s.title).map(cleanStep)];
-        await db.doc("goals/" + g.id).update({ steps, status: "active", updatedAt: nowIso() }); return { ok: true, total_steps: steps.length }; } },
-    { name: "complete_step", description: "Mark a goal step done (the user did it). Returns the new progress %.",
-      inputSchema: { type: "object", required: ["goal_id", "step_id"], properties: { goal_id: { type: "string" }, step_id: { type: "string" } } },
-      execute: async (i) => { const g = S.goals.find((x) => x.id === String(i.goal_id)); if (!g) throw new Error("unknown goal_id");
-        const s = (g.steps || []).find((x) => x.id === String(i.step_id)); if (!s) throw new Error("unknown step_id"); if (s.done) return { already_done: true, pct: goalPct(g) };
-        return toggleStep(g, s.id); } },
+        let out = {};
+        if (Array.isArray(i.add_steps) && i.add_steps.length) { const steps = [...(g.steps || []), ...i.add_steps.filter((s) => s && s.title).map(cleanStep)];
+          await db.doc("goals/" + g.id).update({ steps, status: "active", updatedAt: nowIso() }); out.total_steps = steps.length; }
+        if (i.complete_step_id) { const fresh = S.goals.find((x) => x.id === g.id) || g; const s = (fresh.steps || []).find((x) => x.id === String(i.complete_step_id));
+          if (!s) throw new Error("unknown step id"); if (!s.done) out = { ...out, ...(await toggleStep(fresh, s.id)) }; }
+        return out; } },
     { name: "add_task", description: "Add a to-do. Use due dates for anything time-bound.",
       inputSchema: { type: "object", required: ["title"], properties: { title: { type: "string" }, due: { type: "string", description: "YYYY-MM-DD" },
         priority: { type: "string", enum: ["high", "med", "low"] }, area: { type: "string" }, goal_id: { type: "string" }, notes: { type: "string" } } },
@@ -581,43 +877,59 @@ details.steps .row { background: var(--bg); }
       inputSchema: { type: "object", required: ["task_id"], properties: { task_id: { type: "string" } } },
       execute: async (i) => { const t = S.tasks.find((x) => x.id === String(i.task_id)); if (!t) throw new Error("unknown task_id"); if (t.status === "done") return { already_done: true };
         await toggleTask(t); return { ok: true }; } },
-    { name: "remember", description: "Save something to remember: a fact, an appointment (with date), or an idea.",
-      inputSchema: { type: "object", required: ["text"], properties: { text: { type: "string" }, kind: { type: "string", enum: ["remember", "appointment", "idea"] },
+    { name: "remember", description: "Save a note. kind: remember (to keep in mind), appointment (with date), idea, or fact (a durable fact about the user you learned: preference, routine, constraint, like/dislike).",
+      inputSchema: { type: "object", required: ["text"], properties: { text: { type: "string" }, kind: { type: "string", enum: ["remember", "appointment", "idea", "fact"] },
         date: { type: "string", description: "YYYY-MM-DD" }, pinned: { type: "boolean" } } },
       execute: async (i) => { if (!i.text) throw new Error("text required"); return { note_id: await addNote(i) }; } },
-    { name: "log_entry", description: "Log one item to today's journal: a meal or drink (estimate kcal and macros honestly), mood/energy (1-10), sleep hours, a workout, or body weight. One call per food item.",
-      inputSchema: { type: "object", required: ["kind", "text"], properties: { kind: { type: "string", enum: ["meal", "drink", "mood", "workout", "sleep", "body", "other"] },
-        text: { type: "string", description: "What it was, e.g. 'Khao man gai, large'" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" },
-        fat_g: { type: "number" }, mood: { type: "number" }, energy: { type: "number" }, sleep_h: { type: "number" }, weight_kg: { type: "number" } } },
+    { name: "log_entry", description: "Log mood/energy/stress (1-10), sleep hours, body weight, water, or another short check-in.",
+      inputSchema: { type: "object", required: ["kind", "text"], properties: { kind: { type: "string", enum: ["mood", "sleep", "body", "water", "other"] }, text: { type: "string" },
+        mood: { type: "number" }, energy: { type: "number" }, stress: { type: "number" }, sleep_h: { type: "number" }, weight_kg: { type: "number" }, water_l: { type: "number" } } },
       execute: async (i) => { if (!i.text) throw new Error("text required"); return { entry_id: await addLog(i) }; } },
+    { name: "set_nutrition_targets", description: "Set daily nutrition targets from their goal (cut / maintain / bulk / recomp) and stats.",
+      inputSchema: { type: "object", required: ["goal", "kcal", "protein_g"], properties: { goal: { type: "string" }, kcal: { type: "number" }, protein_g: { type: "number" },
+        carbs_g: { type: "number" }, fat_g: { type: "number" }, rationale: { type: "string" } } },
+      execute: async (i) => { await db.doc("config/nutrition").set({ goal: clip(i.goal, 40), kcal: Math.round(num(i.kcal) || 0), protein_g: Math.round(num(i.protein_g) || 0),
+        carbs_g: num(i.carbs_g) && Math.round(num(i.carbs_g)), fat_g: num(i.fat_g) && Math.round(num(i.fat_g)), rationale: clip(i.rationale, 300), updatedAt: nowIso() }); return { ok: true }; } },
+    { name: "suggest", description: "Add an idea to their Ideas board: a new feature, program, habit or optimisation that would genuinely help, based on what you've learned. Max one per conversation; never repeat existing ones.",
+      inputSchema: { type: "object", required: ["title", "detail", "kind"], properties: { title: { type: "string" }, detail: { type: "string" }, kind: { type: "string", enum: ["feature", "program", "habit", "optimization"] } } },
+      execute: async (i) => addSuggestion(i) },
   ];
 
   function appState() {
-    const today = dayKey();
+    const today = dayKey(), t = cfg("nutrition"), ms = mealsOn(today);
     return JSON.stringify({
-      today, weekday: new Date(today + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" }),
-      level: levelFor(totalXp()).lvl, xp: totalXp(), streak_days: streak().n,
+      today, weekday: weekday(), hour: hourNow(), level: levelFor(totalXp()).lvl, xp: totalXp(), streak_days: streak().n,
+      nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
+      meals_today: ms.map((m) => ({ name: m.name, meal: m.meal, kcal: m.kcal, protein_g: m.protein_g, xp: m.xp })),
+      today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")) },
+      programs: S.programs.filter((p) => p.status !== "done").map((p) => ({ id: p.id, type: p.type, title: p.title, goal: p.goal, status: p.status, version: p.version, rules: p.rules,
+        sessions: (p.sessions || []).map((s) => ({ id: s.id, name: s.name, days: s.days, items: (s.items || []).map((x) => `${x.name}${x.detail ? " " + x.detail : ""}`) })) })),
+      recent_sessions: [...S.sessions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8).map((l) => ({ name: l.name, day: l.day, sets: (l.sets || []).slice(0, 12), notes: l.notes })),
       goals: S.goals.filter((g) => g.status !== "done").map((g) => ({ id: g.id, title: g.title, deadline: g.deadline, pct: goalPct(g),
         steps: (g.steps || []).map((s) => ({ id: s.id, title: s.title, done: !!s.done })) })),
-      completed_goals: S.goals.filter((g) => g.status === "done").map((g) => g.title).slice(0, 10),
-      open_tasks: S.tasks.filter((t) => t.status !== "done").map((t) => ({ id: t.id, title: t.title, due: t.due, priority: t.priority })).slice(0, 40),
-      notes: S.notes.map((n) => ({ text: n.text, kind: n.kind, date: n.date })).slice(0, 30),
-      today_log: S.inbox.filter((e) => e.day === today).map((e) => ({ kind: e.kind, text: e.text, kcal: e.kcal, protein_g: e.protein_g, mood: e.mood })),
-      recent_wins: [...S.wins].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 8).map((w) => w.text),
+      open_tasks: S.tasks.filter((x) => x.status !== "done").map((x) => ({ id: x.id, title: x.title, due: x.due, priority: x.priority })).slice(0, 40),
+      notes: S.notes.filter((n) => n.kind !== "fact").map((n) => ({ text: n.text, kind: n.kind, date: n.date })).slice(0, 30),
+      facts_about_user: S.notes.filter((n) => n.kind === "fact").map((n) => n.text).slice(0, 60),
+      ideas_board: S.suggestions.map((s) => `${s.title} [${s.status}]`).slice(0, 30),
+      other_logs_today: S.inbox.filter((e) => e.day === today).map((e) => e.text),
+      recent_wins: [...S.wins].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 6).map((w) => w.text),
     });
   }
-  const RULES = () => `You are the user's personal secretary and coach, inside their "Secretary HQ" app. They live alone in a studio in Thailand.
-Voice: brief and straight to the point, warm, like a friend texting. 1-3 short sentences. No headers, no lists unless they ask. At most one emoji.
-You change the app with the tools. Whenever they give a goal, a to-do, something to remember, a meal, their mood, or say they did something, use the tools first, then reply. Don't narrate tool calls.
-Goals: make the goal specific and measurable, then call create_goal with 4-8 ordered steps. Each step is a milestone with a clear finish line. Make the first step tiny (under 10 minutes) so they can start today. Give each step a "when" cue (when and where they'll do it). xp 10-60 by effort. Then reply with one line of energy and the first step.
-Progress: if they say they did something, complete the matching task or step by id from the state below, then praise them specifically (name what they did and what it unlocks).
-Meals: log each item with honest kcal/macro estimates (Thai street-food portions); then one line on how today looks.
-If they seem low, be kind first, tasks second. If anything is unclear, ask one short question instead of guessing. Never invent appointments or dates.
+  const RULES = () => `You are the user's personal secretary and coach (she/her), inside their "Secretary HQ" app. They live alone in a studio in Thailand.
+Voice: brief and straight to the point, warm, like a friend texting. 1-3 short sentences. No headers or lists unless asked. At most one emoji.
+Act with the tools first, then reply. Don't narrate tool calls.
+MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
+Meal XP rubric, judged against nutrition_targets.goal and what's left today: +15..+20 high protein, whole food, fits the remaining budget; +5..+10 decent; 0 neutral; -5..-10 sugary drink, deep-fried or oversized; -15..-20 blows the day or directly fights the goal. If no targets yet, score on general quality and suggest setting targets. Verdict: max 10 words, specific ("Protein bomb, light on oil. Perfect cut meal."). Reply with one line: what today looks like now and one tip.
+TRAINING: when they give fitness goals, build a gym program with save_program: sessions on fixed days, each exercise with sets×reps @ load and rest, progression rules. When they report a workout, log_session with sets. Every few sessions, optimise: update loads/volume from the logged sets (save_program with program_id and a change_note). Other areas (work, habits) can get programs too.
+GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, the first tiny (<10 min), each with a when/where cue, xp 10-60. Complete steps/tasks by id when they say they did something, then praise specifically.
+LEARN: when you learn a durable fact about them (routine, preference, constraint, what motivates them), save it with remember kind "fact". Use facts_about_user to personalise everything.
+IDEAS: when you spot something that would genuinely help (a new program, a smarter feature, a habit), add ONE suggestion; check ideas_board first so you never repeat.
+If they seem low, be kind first, tasks second. If anything is unclear, ask one short question. Never invent appointments or dates.
 App state (JSON): ${appState()}`;
   let turns = store("hq.turns") || [];
 
   function status(t) { $("#status").textContent = t || ""; }
-  function setBusy(b) { $("#send").disabled = b; $("#stop").hidden = !b; $("#askbox").disabled = b; }
+  function setBusy(b) { $("#send").disabled = b; $("#stop").hidden = !b; $("#askbox").disabled = b; $("#snap").disabled = b; }
   const ERR = {
     not_granted: "Claude isn't allowed on this page yet. Allow it from the page's Permissions menu.",
     sampling_disabled: "Claude isn't available on this account.", rate_limited: "You've hit a usage limit. Try again a bit later.",
@@ -625,17 +937,32 @@ App state (JSON): ${appState()}`;
     image_rejected: "That photo couldn't be read. Try a JPEG or PNG under 20 MB.", session_expired: "Sign in to Claude again to keep going.",
     tools_unavailable: "This view can't let Claude edit your HQ. Use the buttons for now.", prompt_too_large: "That's too much at once. Try a shorter message.",
   };
+  async function downscale(file, max = 1280) {
+    try {
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise((r) => c.toBlob((b) => r(b || file), "image/jpeg", 0.82));
+    } catch { return file; }
+  }
   async function send() {
     const text = $("#askbox").value.trim();
     if (!text && !photo) return;
     if (!sample) { status("Your secretary is available when this page is open in Claude."); return; }
     ctl = new AbortController(); setBusy(true);
     const reply = $("#reply"); reply.hidden = false; reply.classList.remove("err"); reply.textContent = "Thinking…"; status("");
-    const userText = (text || "Here's a photo.") + (photo ? "\n[Photo attached: describe and log what matters, e.g. the meal with estimated nutrition.]" : "");
+    let image = null;
+    if (photo) {
+      image = await downscale(photo);
+      pending = { used: false, upload: assets ? assets.upload(image).then((r) => r.url) : null };
+      if (pending.upload) pending.upload.catch(() => {});
+    } else pending = null;
+    const userText = (text || "Log this meal.") + (image ? "\n[Photo attached. If it's food, log it with log_meal and from_photo true.]" : "");
     turns.push({ role: "user", content: userText });
     const opts = { signal: ctl.signal, onText: ({ text: t }) => { reply.textContent = t; } };
     if (canTools) opts.tools = TOOLS.slice(0, maxTools);
-    if (photo) opts.images = [photo];
+    if (image) opts.images = [image];
     try {
       const res = await sample([{ role: "user", content: RULES() }, ...turns.slice(-12)], opts);
       const out = res.text.trim();
@@ -652,10 +979,14 @@ App state (JSON): ${appState()}`;
       }
     } finally {
       turns = turns.slice(-20); store("hq.turns", turns); setBusy(false); status("");
-      if (fatal) $("#send").disabled = true;
+      if (fatal) { $("#send").disabled = true; $("#snap").disabled = true; }
     }
   }
-  function clearPhoto() { photo = null; $("#photo").value = ""; $("#photochip").replaceChildren(); }
+  function clearPhoto() { photo = null; $("#photo").value = ""; $("#camera").value = ""; $("#photochip").replaceChildren(); }
+  function setPhoto(f) {
+    photo = f;
+    $("#photochip").replaceChildren(h("span", { class: "photo-chip" }, "📷 " + clip(f.name || "photo", 24), h("button", { type: "button", "aria-label": "Remove photo", onclick: clearPhoto }, "✕")));
+  }
 
   // ------------------------------------------------------------ confetti
   const cv = $("#confetti"), cx = cv.getContext("2d"); let parts = [], raf = 0;
@@ -679,42 +1010,48 @@ App state (JSON): ${appState()}`;
   $("#send").addEventListener("click", send);
   $("#stop").addEventListener("click", () => ctl && ctl.abort());
   $("#askbox").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); });
-  $("#suggest").addEventListener("click", (e) => { const b = e.target.closest("button[data-fill]"); if (!b) return; const box = $("#askbox"); box.value = b.dataset.fill; box.focus(); });
-  $("#newgoal").addEventListener("click", () => { const box = $("#askbox"); box.value = "New goal: "; box.focus(); box.scrollIntoView({ behavior: "smooth", block: "center" }); });
+  $("#suggest").addEventListener("click", (e) => { const b = e.target.closest("button[data-fill]"); if (b) fill(b.dataset.fill); });
+  $("#newgoal").addEventListener("click", () => fill("New goal: "));
+  $("#newprogram").addEventListener("click", () => fill("Build me a program for "));
+  $("#typemeal").addEventListener("click", () => fill("I just ate "));
+  $("#snap").addEventListener("click", () => $("#camera").click());
+  $("#camera").addEventListener("change", () => { const f = $("#camera").files[0]; if (!f) return; setPhoto(f); if (!$("#askbox").value.trim()) $("#askbox").value = "Log this meal."; send(); });
   $("#addtaskbtn").addEventListener("click", () => { const f = $("#taskform"); f.hidden = !f.hidden; if (!f.hidden) $("#tasktitle").focus(); });
   $("#taskform").addEventListener("submit", (e) => { e.preventDefault(); const title = $("#tasktitle").value.trim(); if (!title || !db) return;
     run(async () => { await addTask({ title, due: $("#taskdue").value, priority: $("#taskprio").value }); $("#tasktitle").value = ""; $("#taskdue").value = ""; toast("Added. Future you says thanks."); }); });
   $("#noteform").addEventListener("submit", (e) => { e.preventDefault(); const text = $("#notetext").value.trim(); if (!text || !db) return;
     run(async () => { await addNote({ text, kind: $("#notekind").value, date: $("#notedate").value }); $("#notetext").value = ""; $("#notedate").value = ""; toast("Saved. I'll keep it in mind."); }); });
   $("#photobtn").addEventListener("click", () => $("#photo").click());
-  $("#photo").addEventListener("change", () => { const f = $("#photo").files[0]; if (!f) return; photo = f;
-    $("#photochip").replaceChildren(h("span", { class: "photo-chip" }, "📷 " + clip(f.name, 24), h("button", { type: "button", "aria-label": "Remove photo", onclick: clearPhoto }, "✕"))); });
+  $("#photo").addEventListener("change", () => { const f = $("#photo").files[0]; if (f) setPhoto(f); });
 
   render();
-  setInterval(renderHeader, 60000);
+  setInterval(() => { renderHeader(); renderNext(); }, 60000);
 
   const C = window.claude;
+  const offline = (msg) => document.querySelectorAll("#next,#meals,#programs,#goals,#notes,#idealist,#wins").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, msg)));
   if (!C || typeof C.use !== "function") {
-    document.querySelectorAll(".list,.goals").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, "Your HQ data lives in Claude. Open this page on claude.ai to see it.")));
+    offline("Your HQ data lives in Claude. Open this page on claude.ai to see it.");
     status("Your secretary is available when this page is open in Claude.");
+    $("#send").disabled = true; $("#snap").disabled = true;
     return;
   }
   C.use("db").then((d) => {
     db = d;
-    if (!db) { document.querySelectorAll(".list,.goals").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, "Sign in to Claude to load your HQ."))); return; }
+    if (!db) { offline("Sign in to Claude to load your HQ."); return; }
     const sub = (name, q) => q.onSnapshot((snap) => { S[name] = snap.docs.map((x) => ({ id: x.id, ...x.data() })); S.loaded.add(name); render(); },
       (err) => { console.error(name, err); toast("Lost connection to your data. Reload the page."); });
-    sub("goals", db.collection("goals"));
-    sub("tasks", db.collection("tasks"));
-    sub("notes", db.collection("notes"));
-    sub("wins", db.collection("wins"));
+    for (const c of ["goals", "tasks", "notes", "wins", "programs", "suggestions", "config"]) sub(c, db.collection(c));
     sub("inbox", db.collection("inbox").orderBy("at", "desc").limit(300));
+    sub("meals", db.collection("meals").orderBy("at", "desc").limit(600));
+    sub("sessions", db.collection("sessions").orderBy("at", "desc").limit(300));
   });
+  C.use("assets").then((a) => { assets = a; });
   C.use("sample").then(async (s) => {
     sample = s;
-    if (!sample) { status("Your secretary can't run in this view. Buttons still work."); $("#send").disabled = true; return; }
+    if (!sample) { status("Your secretary can't run in this view. Buttons still work."); $("#send").disabled = true; $("#snap").disabled = true; return; }
     const lim = await sample.limits().catch(() => null);
     if (lim && lim.images) { $("#photobtn").hidden = false; $("#photo").accept = lim.images.mediaTypes.join(","); }
+    else { $("#snap").disabled = true; $("#snap").title = "Photos can't be sent from this view"; }
     if (lim && !lim.tools) canTools = false;
     if (lim && lim.tools && lim.tools.maxCount) maxTools = lim.tools.maxCount;
   });

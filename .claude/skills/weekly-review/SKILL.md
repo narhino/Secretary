@@ -19,9 +19,12 @@ description: Sunday weekly review and strategy session. Turns the week's data (t
 4. Agree on **2–3 specific strategies** for next week. Small, measurable, tied to a pattern.
    Example: "on late-work days, train at 7:00 instead of 19:00"; "prep 2 extra chicken boxes for
    Wed–Thu"; "10-min reset before Netflix".
-5. Apply the changes. Update *This week* and the key-result statuses in `goals/goals.md`; adjust
+5. In the HQ app: optimise each active program from its logged sessions (save a new version with a
+   changelog note), review meal XP trends, set next week's goal steps, and add one idea to the
+   Ideas board if the data suggests a useful new program or feature.
+6. Apply the changes. Update *This week* and the key-result statuses in `goals/goals.md`; adjust
    `nutrition/targets.yaml` (e.g. a 2-week weight stall on a cut → −150–200 kcal), `fitness/program.md`,
    routines, reminders and check-in times if the data says so. Plan meal prep in
    `nutrition/meal-prep.md`. Add the experiments, observed patterns and a change-log line to
    `memory/playbook.md`. Write `journal/YYYY-Www-review.md`.
-6. Commit and push.
+7. Commit and push.

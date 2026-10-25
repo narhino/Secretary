@@ -41,6 +41,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-25: HQ v2: photo meal tracker with XP up or down, training programs that evolve, Ideas board, learned facts.
 - 2026-10-25: Built the HQ app (pinned home page). Goals, tasks, notes and wins now live there; tasks.yaml retired.
 - 2026-10-25: User asked for briefer replies focused on next actions. Applied to every message.
 - 2026-10-21: Playbook created. Starting with baseline tracking for 1–2 weeks before changing anything.

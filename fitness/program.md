@@ -1,5 +1,8 @@
 # Training program
 
+_The live program is in the HQ app (Training section): it's built from your goals there and updated as
+you log sessions. This file is the long-term reference copy._
+
 _Status: **placeholder until onboarding** — the secretary will replace this with a program built around
 your experience, schedule, gym equipment and goal._
 
