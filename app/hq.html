@@ -445,6 +445,16 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .pick .n { grid-area: n; font: 500 12px var(--font-mono); color: var(--muted); }
 .pick .act { grid-area: act; } .pick .x { grid-area: x; }
 .pick.eaten .pick-t { color: var(--muted); text-decoration: line-through; }
+.daynav { display: flex; gap: 8px; align-items: center; }
+.daynav .fchips { flex: 1; }
+.dayview { touch-action: pan-y; }
+.meal-step { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.meal-step:first-of-type { border-top: 0; }
+.meal-step .slotname { font: 600 11px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.meal-step .mt { text-align: left; border: 0; background: none; padding: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+.meal-step .d { font: 500 12px var(--font-mono); color: var(--muted); text-align: right; white-space: nowrap; }
+.meal-step.eaten .mt { color: var(--muted); text-decoration: line-through; }
+.meal-step .tag.next { background: var(--sec, var(--jade)); color: #FFFFFF; }
 .pickbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 2px dashed var(--sec, var(--jade)); font-weight: 600; font-size: 14px; }
 .rcard { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
 .rcard-main, .food { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 0; color: inherit; min-width: 0; }
@@ -527,7 +537,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   </header>
 
   <nav class="nav" aria-label="Tabs">
-    <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Recipes</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
+    <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Meal plan</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
   </nav>
 
   <div class="notices" id="notices" data-tab="home" hidden></div>
@@ -602,17 +612,11 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   </section>
 
   <section class="section" id="recipes" data-tab="recipes" aria-labelledby="h-recipes">
-    <div class="section-head"><h2 id="h-recipes">Recipe book</h2><button class="link-btn" type="button" id="newrecipe">+ Recipe</button></div>
-    <div class="card">
-      <div class="section-head"><h3 class="h3s">Build a day</h3>
-        <div class="seg" role="group" aria-label="Day to plan"><button type="button" data-day="today" aria-pressed="true">Today</button><button type="button" data-day="tomorrow" aria-pressed="false">Tomorrow</button></div></div>
-      <div class="macros" id="planbars"></div>
-      <div class="slots" id="planslots"></div>
-      <div class="ask-row"><button class="btn small" type="button" id="planask">Ask <span class="mname">Mali</span> to fill it</button></div>
-    </div>
-    <div class="pickbar" id="pickbar" hidden></div>
-    <div class="fchips" id="recipechips" role="group" aria-label="Filter recipes"></div>
-    <div class="list" id="recipelist"><div class="empty">Loading…</div></div>
+    <div class="section-head"><h2 id="h-recipes">Meal plan</h2><button class="link-btn" type="button" id="newday">+ New day</button></div>
+    <div class="card" id="todayplan"></div>
+    <div class="card dayview" id="dayview"></div>
+    <details id="librarywrap"><summary id="librarysum">Meal library</summary>
+      <div class="list"><div class="fchips" id="recipechips" role="group" aria-label="Filter meals"></div><div class="list" id="recipelist"></div></div></details>
   </section>
 
   <section class="section" id="meter" data-tab="meter" aria-labelledby="h-meter">
@@ -735,7 +739,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const $ = (s) => document.querySelector(s);
   const COLLS = ["goals", "tasks", "notes", "wins", "inbox", "meals", "programs", "sessions", "suggestions", "config", "health", "places", "drafts",
-    "commitments", "checks", "chat", "foods", "recipes", "plans"];
+    "commitments", "checks", "chat", "foods", "recipes", "plans", "days"];
   const RESURFACE_DAYS = [3, 7, 14, 30, 60, 90];
   const S = Object.fromEntries(COLLS.map((c) => [c, []]));
   S.loaded = new Set();
@@ -1066,13 +1070,14 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
   const INFO = [["about", "About"], ["cooking", "How to cook"], ["good", "Why it's good"], ["watch", "Watch out"], ["buy", "Where to buy"], ["storage", "Storage"]];
   // Writes made during one reply, visible before the snapshot catches up (a recipe right after its foods).
-  const localFoods = new Map(), localRecipes = new Map(), localPlans = new Map();
+  const localFoods = new Map(), localRecipes = new Map(), localPlans = new Map(), localDays = new Map();
   const foodById = (id) => S.foods.find((f) => f.id === id) || localFoods.get(id) || null;
   const recipeById = (id) => S.recipes.find((r) => r.id === id) || localRecipes.get(id) || null;
   const planOf = (day) => localPlans.get(day) || S.plans.find((p) => p.id === day) || null;
   function reconcileLocal() {
     for (const id of localFoods.keys()) if (S.foods.some((f) => f.id === id)) localFoods.delete(id);
     for (const id of localRecipes.keys()) if (S.recipes.some((r) => r.id === id)) localRecipes.delete(id);
+    for (const id of localDays.keys()) if (S.days.some((d) => d.id === id)) localDays.delete(id);
     for (const [d, lp] of localPlans) { const sp = S.plans.find((p) => p.id === d); if (sp && String(sp.updatedAt) >= String(lp.updatedAt)) localPlans.delete(d); }
   }
   const slug = (s) => String(s || "").toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").slice(0, 60);
@@ -1092,7 +1097,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     return t;
   }
   async function savePlan(day, picks) {
-    const doc = { day, picks, updatedAt: nowIso() };
+    const cur = planOf(day) || {};
+    const doc = { day, picks, template: cur.template || null, title: cur.title || null, updatedAt: nowIso() };
     localPlans.set(day, { id: day, ...doc });
     await db.doc("plans/" + day).set(doc);
   }
@@ -1539,13 +1545,14 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       sub ? h("span", { class: "s" }, sub) : null);
   }
   function renderGlance() {
-    if (!["meals", "config", "health", "programs", "sessions", "goals", "plans", "recipes", "commitments", "checks"].every((c) => S.loaded.has(c))) return;
+    if (!["meals", "config", "health", "programs", "sessions", "goals", "plans", "recipes", "days", "commitments", "checks"].every((c) => S.loaded.has(c))) return;
     const today = dayKey(), t = cfg("nutrition"), ms = mealsOn(today), kcal = sumOf(ms, "kcal"), prot = sumOf(ms, "protein_g"), tiles = [];
     tiles.push(tile("food", "Food", t && t.kcal ? `${Math.round(kcal)} / ${t.kcal} kcal` : `${Math.round(kcal)} kcal`,
       `${Math.round(prot)}${t && t.protein_g ? " / " + t.protein_g : ""} g protein · ${ms.length} meal${ms.length === 1 ? "" : "s"}`, t && t.kcal ? 100 * kcal / t.kcal : null));
-    const picks = (planOf(today) || {}).picks || [], left = picks.filter((k) => !k.eaten);
-    tiles.push(tile("recipes", "Today's plan", !picks.length ? "Nothing planned" : left.length ? `${left.length} meal${left.length > 1 ? "s" : ""} to go` : "All eaten ✓",
-      !picks.length ? "Build your day from recipes" : left.map((k) => (recipeById(k.recipe) || {}).title).filter(Boolean).slice(0, 2).join(" · ") || `${Math.round(planTotals(today).kcal)} kcal planned`));
+    const plan = planOf(today), picks = planPicks(plan), next = picks.find((k) => !k.eaten), nr = next && recipeById(next.recipe);
+    tiles.push(tile("recipes", "Meal plan", !picks.length ? "No day picked" : nr ? `Next: ${nr.title}` : "Day complete ✓",
+      !picks.length ? "Pick Day 1, 2 or 3 to follow" : `${plan.title || "Today's plan"} · ${picks.filter((k) => k.eaten).length}/${picks.length} eaten`,
+      picks.length ? 100 * picks.filter((k) => k.eaten).length / picks.length : null));
     const hd = S.health.find((x) => x.id === today), steps = hd ? Number(hd.steps) || 0 : 0;
     tiles.push(tile("move", "Steps", hd ? steps.toLocaleString("en-US") : "No data yet",
       hd ? `goal ${stepGoal().toLocaleString("en-US")}${hd.distance_km ? ` · ${hd.distance_km} km` : ""}` : "Syncs from your phone", hd ? 100 * steps / stepGoal() : null));
@@ -1717,60 +1724,118 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       e.processed ? h("span", { class: "tag goal" }, "synced") : delBtn("Delete entry", () => db.doc("inbox/" + e.id).delete()))));
   }
 
-  let planDay = "today", recipeFilter = "all", pickSlot = null, meterQ = "", meterCat = "all", meterAll = false;
+  let recipeFilter = "all", dayId = null, meterQ = "", meterCat = "all", meterAll = false;
   let plate = (store("hq.plate") || []).filter((p) => p && p.food);
-  const curPlanDay = () => (planDay === "tomorrow" ? shiftDay(dayKey(), 1) : dayKey());
   const macroLine = (n, k = 1) => `${Math.round(n.kcal * k)} kcal · P ${Math.round(n.protein_g * k)} · C ${Math.round(n.carbs_g * k)} · F ${Math.round(n.fat_g * k)}`;
   function leftLine(tot, base) {
     const t = cfg("nutrition"); if (!t || !t.kcal) return "";
     const k = Math.round(t.kcal - base.kcal - tot.kcal), p = Math.round((t.protein_g || 0) - base.protein_g - tot.protein_g);
     return `${k >= 0 ? `${k} kcal left` : `${-k} kcal over`} · ${p > 0 ? `${p} g protein to go` : "protein covered ✓"}`;
   }
+  const dayList = () => [...S.days, ...[...localDays.values()].filter((d) => !S.days.some((x) => x.id === d.id))]
+    .sort((a, b) => (Number(a.number) || 99) - (Number(b.number) || 99) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  // A followed day keeps its own meal order; a hand-made plan reads breakfast → lunch → snack → dinner.
+  const SLOT_ORDER = { breakfast: 0, lunch: 1, snack: 2, dinner: 3 };
+  const planPicks = (plan) => { const ps = [...((plan && plan.picks) || [])]; return plan && plan.template ? ps : ps.sort((a, b) => (SLOT_ORDER[a.slot] ?? 9) - (SLOT_ORDER[b.slot] ?? 9)); };
+  const dayById = (id) => S.days.find((d) => d.id === id) || localDays.get(id) || null;
+  function dayTotals(d) { const t = zeroN(); for (const m of d.meals || []) { const r = recipeById(m.recipe); if (r) addN(t, recipeTotals(r).per, Number(m.servings) || 1); } return t; }
+  // Following a day copies its meals into plans/<date>; meals already eaten that day stay.
+  async function followDay(d, date) {
+    const eaten = ((planOf(date) || {}).picks || []).filter((k) => k.eaten);
+    const picks = [...eaten, ...(d.meals || []).filter((m) => !eaten.some((k) => k.recipe === m.recipe && k.slot === m.slot))
+      .map((m) => ({ id: sid(), recipe: m.recipe, slot: m.slot, servings: Number(m.servings) || 1, eaten: false }))];
+    const doc = { day: date, template: d.id, title: `Day ${d.number || "?"} · ${d.title}`, picks, updatedAt: nowIso() };
+    localPlans.set(date, { id: date, ...doc });
+    await db.doc("plans/" + date).set(doc);
+  }
+  async function saveDay(i) {
+    const prev = i.day_id ? dayById(i.day_id) : null;
+    if (i.day_id && !prev) throw new Error("No day plan with that id. Use an id from day_plans_library.");
+    if (i.delete) { if (!prev) throw new Error("day_id required to delete"); await db.doc("days/" + prev.id).delete(); toast(`Removed Day ${prev.number}`); return { deleted: prev.id }; }
+    const meals = Array.isArray(i.meals) ? i.meals.slice(0, 8).map((m) => ({ slot: SLOTS.includes(m && m.slot) ? m.slot : "snack", recipe: clip(m && m.recipe_id, 60),
+      servings: Math.max(0.5, Math.min(4, num(m && m.servings) || 1)) })).filter((m) => m.recipe) : null;
+    if (!prev && (!meals || !meals.length)) throw new Error("A new day needs meals (recipe ids from recipes, in eating order).");
+    const missing = (meals || []).filter((m) => !recipeById(m.recipe)).map((m) => m.recipe);
+    if (missing.length) throw new Error(`Unknown recipe ids: ${missing.join(", ")}. Create those meals with save_recipe first.`);
+    const doc = prev ? {} : { createdAt: nowIso(), number: Math.max(0, ...dayList().map((d) => Number(d.number) || 0)) + 1, title: "Day plan" };
+    if (i.title != null) doc.title = clip(i.title, 60);
+    if (num(i.number) != null) doc.number = Math.max(1, Math.round(num(i.number)));
+    if (i.notes != null) doc.notes = clip(i.notes, 300);
+    if (meals) doc.meals = meals;
+    doc.updatedAt = nowIso();
+    let id = prev && prev.id;
+    if (prev) await db.doc("days/" + id).update(doc);
+    else { const ref = db.collection("days").doc(); id = ref.id; await ref.set(doc); }
+    const d = { ...(prev || {}), ...doc, id };
+    localDays.set(id, d); dayId = id;
+    let followed = null;
+    if (i.follow_date) { followed = normDate(i.follow_date) || dayKey(); await followDay(d, followed); }
+    const t = dayTotals(d);
+    toast(prev ? `Day ${d.number} updated` : `New: Day ${d.number} · ${d.title}`);
+    return { day_id: id, number: d.number, totals: { kcal: Math.round(t.kcal), protein_g: Math.round(t.protein_g), carbs_g: Math.round(t.carbs_g), fat_g: Math.round(t.fat_g) }, followed };
+  }
+  function mealStep(slot, r, servings, extra) {
+    const per = recipeTotals(r).per, m = Number(servings) || 1;
+    return h("div", { class: "meal-step" + (extra && extra.eaten ? " eaten" : "") }, extra && extra.check ? extra.check : h("span", { class: "emoji" }, r.emoji || "🍽️"),
+      h("div", { style: "min-width:0" }, h("span", { class: "slotname" }, slot, extra && extra.next ? h("span", { class: "tag next", style: "margin-left:6px" }, "next") : null),
+        h("button", { class: "mt", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot }, false) }, `${extra && extra.check ? (r.emoji || "") + " " : ""}${r.title}${m !== 1 ? ` ×${m}` : ""}`)),
+      h("span", { class: "d" }, `${Math.round(per.kcal * m)} kcal`, h("br"), `${Math.round(per.protein_g * m)} g P`));
+  }
   function renderRecipes() {
-    if (!["recipes", "foods", "plans", "config"].every((c) => S.loaded.has(c))) return;
+    if (!["recipes", "foods", "plans", "config", "days", "meals"].every((c) => S.loaded.has(c))) return;
     reconcileLocal();
-    const t = cfg("nutrition"), today = dayKey(), day = curPlanDay(), picks = (planOf(day) || {}).picks || [], tot = planTotals(day);
-    document.querySelectorAll("#recipes .seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === planDay)));
-    $("#planbars").replaceChildren(macroBar("Calories", tot.kcal, t && t.kcal, "kcal"), macroBar("Protein", tot.protein_g, t && t.protein_g, "g"),
-      h("div", { class: "muted small mono" }, `Carbs ${Math.round(tot.carbs_g)}${t && t.carbs_g ? "/" + t.carbs_g : ""} g · Fat ${Math.round(tot.fat_g)}${t && t.fat_g ? "/" + t.fat_g : ""} g`
-        + (t && t.kcal && picks.length ? ` · ${leftLine(tot, zeroN())}` : "")));
-    $("#planslots").replaceChildren(...SLOTS.map((slot) => {
-      const ps = picks.filter((k) => k.slot === slot);
-      return h("div", { class: "slot" },
-        h("div", { class: "slot-head" }, h("span", { class: "label" }, slot),
-          h("button", { class: "link-btn", type: "button", onclick: () => { pickSlot = slot; recipeFilter = slot; renderRecipes(); $("#pickbar").scrollIntoView({ behavior: "smooth", block: "start" }); } }, ps.length ? "+ Add" : "Choose")),
-        ...ps.map((k) => {
-          const r = recipeById(k.recipe), m = Number(k.servings) || 1;
-          const x = h("button", { class: "icon-btn x", type: "button", "aria-label": "Remove from plan", onclick: () => run(() => savePlan(day, picks.filter((p) => p.id !== k.id))) }, "✕");
-          if (!r) return h("div", { class: "pick" }, h("span", { class: "pick-t muted" }, "Recipe removed"), x);
-          const per = recipeTotals(r).per;
-          return h("div", { class: "pick" + (k.eaten ? " eaten" : "") },
-            h("button", { class: "pick-t", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot, day: planDay }, false) }, `${r.emoji || "🍽️"} ${r.title}${m !== 1 ? ` ×${m}` : ""}`),
-            h("span", { class: "n" }, `${Math.round(per.kcal * m)} kcal · ${Math.round(per.protein_g * m)} g protein`),
-            day === today ? (k.eaten ? h("span", { class: "tag goal act" }, "eaten ✓") : h("button", { class: "btn small act", type: "button", onclick: () => run(() => eatPick(day, k)) }, "Ate it")) : h("span", { class: "act" }),
-            x);
-        }));
-    }));
-    const bar = $("#pickbar");
-    bar.hidden = !pickSlot;
-    if (pickSlot) bar.replaceChildren(h("span", {}, `Pick a recipe for ${pickSlot}, ${planDay}`), h("button", { class: "btn small", type: "button", onclick: () => { pickSlot = null; recipeFilter = "all"; renderRecipes(); } }, "Cancel"));
+    const t = cfg("nutrition"), today = dayKey(), tom = shiftDay(today, 1);
+    // today's guide
+    const plan = planOf(today), picks = planPicks(plan), tp = $("#todayplan");
+    if (!picks.length) tp.replaceChildren(h("div", { class: "section-head" }, h("h3", { class: "h3s" }, "Today"), h("span", { class: "muted small" }, "no plan yet")),
+      h("p", { class: "muted small", style: "margin:0" }, "Pick a day below and tap “Follow today”. It becomes your guide: tick each meal as you eat it."));
+    else {
+      const next = picks.find((k) => !k.eaten), ms = mealsOn(today);
+      tp.replaceChildren(h("div", { class: "section-head" }, h("h3", { class: "h3s" }, plan.title || "Today's plan"), h("span", { class: "muted small" }, `${picks.filter((k) => k.eaten).length}/${picks.length} eaten`)),
+        macroBar("Calories", sumOf(ms, "kcal"), t && t.kcal, "kcal"), macroBar("Protein", sumOf(ms, "protein_g"), t && t.protein_g, "g"),
+        h("div", {}, picks.map((k) => { const r = recipeById(k.recipe); if (!r) return null;
+          return mealStep(k.slot, r, k.servings, { eaten: k.eaten, next: k === next, check: checkBtn(k.eaten, `Ate ${r.title}`, () => { if (!k.eaten) run(() => eatPick(today, k)); }) }); })),
+        h("p", { class: "muted small", style: "margin:0" }, next ? "Tick a meal when you eat it: it's logged with its XP." : "Day complete. Proud of you. 🎉"));
+    }
+    const tomPlan = planOf(tom);
+    if (tomPlan && (tomPlan.picks || []).length) tp.append(h("p", { class: "small", style: "margin:0" }, `Tomorrow: ${tomPlan.title || `${tomPlan.picks.length} meals planned`}`));
+    // day pages
+    const list = dayList(), dv = $("#dayview");
+    if (!list.length) { dv.replaceChildren(h("div", { class: "empty" }, "No day plans yet.", h("button", { class: "btn small", type: "button", onclick: () => fill("Build me a full day of eating that hits my targets: ") }, `Ask ${persona()} for one`))); }
+    else {
+      if (!list.some((d) => d.id === dayId)) dayId = ((plan && list.find((d) => d.id === plan.template)) || list[0]).id;
+      const idx = list.findIndex((d) => d.id === dayId), d = list[idx], tot = dayTotals(d);
+      const go = (k) => { dayId = list[(idx + k + list.length) % list.length].id; renderRecipes(); };
+      const following = (plan && plan.template === d.id) ? "today" : (tomPlan && tomPlan.template === d.id) ? "tomorrow" : null;
+      dv.replaceChildren(
+        h("div", { class: "daynav" }, h("button", { class: "btn small", type: "button", "aria-label": "Previous day plan", onclick: () => go(-1) }, "‹"),
+          h("div", { class: "fchips", role: "tablist" }, list.map((x) => h("button", { class: "fchip", type: "button", role: "tab", "aria-selected": String(x.id === d.id), "aria-pressed": String(x.id === d.id),
+            onclick: () => { dayId = x.id; renderRecipes(); } }, `Day ${x.number || "?"}`))),
+          h("button", { class: "btn small", type: "button", "aria-label": "Next day plan", onclick: () => go(1) }, "›")),
+        h("div", {}, h("h3", {}, `Day ${d.number || "?"} · ${d.title}`), d.notes ? h("p", { class: "muted small", style: "margin:4px 0 0" }, d.notes) : null),
+        macroBar("Calories", tot.kcal, t && t.kcal, "kcal"), macroBar("Protein", tot.protein_g, t && t.protein_g, "g"),
+        h("div", { class: "muted small mono" }, `Carbs ${Math.round(tot.carbs_g)}${t && t.carbs_g ? "/" + t.carbs_g : ""} g · Fat ${Math.round(tot.fat_g)}${t && t.fat_g ? "/" + t.fat_g : ""} g · fibre ${Math.round(tot.fiber_g)} g`),
+        h("div", {}, (d.meals || []).map((m) => { const r = recipeById(m.recipe); return r ? mealStep(m.slot, r, m.servings) : h("div", { class: "meal-step" }, h("span"), h("span", { class: "muted" }, `${m.slot}: meal removed`), h("span")); })),
+        h("div", { class: "ask-row" },
+          following ? h("span", { class: "tag goal" }, `Following ${following} ✓`) : null,
+          following === "today" ? null : h("button", { class: "btn primary", type: "button", onclick: () => run(async () => { await followDay(d, today); toast(`Today: Day ${d.number}. Tick each meal as you eat it.`); renderRecipes(); window.scrollTo({ top: 0, behavior: "smooth" }); }) }, "Follow today"),
+          following === "tomorrow" ? null : h("button", { class: "btn", type: "button", onclick: () => run(async () => { await followDay(d, tom); toast(`Tomorrow: Day ${d.number}.`); renderRecipes(); }) }, "Follow tomorrow")),
+        h("div", { class: "ask-row" }, h("button", { class: "btn small", type: "button", onclick: () => fill(`Tweak Day ${d.number} (${d.title}): `) }, `Ask ${persona()} to tweak it`),
+          h("span", { class: "spacer" }), delBtn("Delete day plan", async () => { await db.doc("days/" + d.id).delete(); localDays.delete(d.id); dayId = null; })));
+    }
+    // meal library: the building blocks
+    $("#librarysum").textContent = `Meal library (${S.recipes.length})`;
     $("#recipechips").replaceChildren(...["all", ...SLOTS].map((m) => h("button", { class: "fchip", type: "button", "aria-pressed": String(recipeFilter === m),
       onclick: () => { recipeFilter = m; renderRecipes(); } }, m === "all" ? `All ${S.recipes.length}` : m)));
-    const list = S.recipes.filter((r) => recipeFilter === "all" || r.meal === recipeFilter)
+    const lib = S.recipes.filter((r) => recipeFilter === "all" || r.meal === recipeFilter)
       .sort((a, b) => SLOTS.indexOf(a.meal) - SLOTS.indexOf(b.meal) || String(a.title).localeCompare(String(b.title)));
-    $("#recipelist").replaceChildren(...list.map((r) => {
+    $("#recipelist").replaceChildren(...lib.map((r) => {
       const per = recipeTotals(r).per;
-      return h("div", { class: "rcard" },
-        h("button", { class: "rcard-main", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id }, false) }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
-          h("span", { class: "rc-text" }, h("b", {}, r.title), h("span", { class: "mono small muted" }, `${Math.round(per.kcal)} kcal · ${Math.round(per.protein_g)} g protein`),
-            h("span", { class: "small muted" }, [r.meal, r.minutes ? r.minutes + " min" : null, ...(r.tags || []).slice(0, 2)].filter(Boolean).join(" · ")))),
-        h("div", { class: "rc-side" }, h("span", { class: "xp" + ((r.xp || 0) < 0 ? " neg" : "") }, `${signed(r.xp || 0)} XP`),
-          h("button", { class: "btn small" + (pickSlot ? " primary" : ""), type: "button", onclick: () => run(async () => {
-            const slot = pickSlot || r.meal; await addToPlan(curPlanDay(), r.id, slot, 1); if (pickSlot) recipeFilter = "all"; pickSlot = null; toast(`Added to ${slot}, ${planDay}.`); renderRecipes();
-            $("#planslots").scrollIntoView({ behavior: "smooth", block: "center" }); }) }, pickSlot ? `Add to ${pickSlot}` : "+ Plan")));
+      return h("button", { class: "rcard rcard-main", type: "button", style: "grid-template-columns:auto 1fr", onclick: () => openSheet({ type: "recipe", id: r.id }, false) }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
+        h("span", { class: "rc-text" }, h("b", {}, r.title), h("span", { class: "mono small muted" }, `${Math.round(per.kcal)} kcal · ${Math.round(per.protein_g)} g protein`),
+          h("span", { class: "small muted" }, [r.meal, r.minutes ? r.minutes + " min" : null, ...(r.tags || []).slice(0, 2)].filter(Boolean).join(" · "))));
     }));
-    if (!list.length) $("#recipelist").append(h("div", { class: "empty" }, S.recipes.length ? "No recipes for this meal yet." : `No recipes yet. Ask ${persona()} for one that fits your goal.`,
-      h("button", { class: "btn small", type: "button", onclick: () => fill(`Add a ${recipeFilter === "all" ? "" : recipeFilter + " "}recipe that fits my goal: `) }, `Ask ${persona()}`)));
+    if (!lib.length) $("#recipelist").append(h("div", { class: "empty" }, "No meals here yet."));
   }
   function renderMeter() {
     if (!S.loaded.has("foods")) return;
@@ -1871,7 +1936,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const r = recipeById(v.id); if (!r) return null;
     if (v.servings == null) v.servings = 1;
     if (!v.slot) v.slot = r.meal;
-    if (!v.day) v.day = planDay;
+    if (!v.day) v.day = "today";
     const { total, per, missing } = recipeTotals(r), s = Math.max(1, Number(r.servings) || 1);
     const out = h("div", { class: "calc-out" }), amt = h("b");
     const draw = () => {
@@ -2268,7 +2333,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     { name: "suggest", description: "Add an idea to their Ideas board: a new feature, program, habit or optimisation that would genuinely help, based on what you've learned. Max one per conversation; never repeat existing ones.",
       inputSchema: { type: "object", required: ["title", "detail", "kind"], properties: { title: { type: "string" }, detail: { type: "string" }, kind: { type: "string", enum: ["feature", "program", "habit", "optimization"] } } },
       execute: async (i) => addSuggestion(i) },
-    { name: "save_recipe", description: "Create (omit recipe_id) or update a recipe in their Recipe book. Ingredients are food_meter ids with grams for the WHOLE recipe; macros are computed from the meter, so add missing foods with save_foods first. plan_day + plan_slot also put it in their day plan. delete removes it.",
+    { name: "save_recipe", description: "Create (omit recipe_id) or update ONE meal in their Meal library (the building blocks of day plans). Ingredients are food_meter ids with grams for the WHOLE recipe; macros are computed from the meter, so add missing foods with save_foods first. plan_day + plan_slot also put it in their day plan. delete removes it.",
       kw: /recipe|cook|prep|plan|menu|dish|ingredient|breakfast|lunch|dinner|snack|tomorrow|full day|book/i,
       inputSchema: { type: "object", properties: {
         recipe_id: { type: "string" }, title: { type: "string" }, meal: { type: "string", enum: SLOTS }, emoji: { type: "string" },
@@ -2278,7 +2343,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         plan_day: { type: "string", description: "YYYY-MM-DD" }, plan_slot: { type: "string", enum: SLOTS }, plan_servings: { type: "number" }, delete: { type: "boolean" } } },
       execute: async (i) => { status("Writing the recipe…"); return saveRecipe(i); } },
     { name: "save_foods", description: "Add or update foods in their Food meter. Values per 100 g (typical USDA values or the pack label) with state raw/cooked/dry, plus a short honest info page: how easy it is to cook, lean or greasy, what to watch, where to buy in Thailand, storage. Use it for every recipe ingredient missing from food_meter and whenever they ask to add a food.",
-      kw: /food|meter|ingredient|recipe|gram|macro|nutri|calor|kcal|protein|cook|add .* to/i,
+      kw: /food|meter|ingredient|recipe|gram|macro|nutri|calor|kcal|protein|cook|add .* to|day|plan|menu|diet/i,
       inputSchema: { type: "object", required: ["foods"], properties: { foods: { type: "array", items: { type: "object", required: ["name", "kcal", "protein_g"], properties: {
         id: { type: "string", description: "Existing id to update; omit for new" }, name: { type: "string", description: "e.g. 'Chicken breast, skinless (raw)'" }, emoji: { type: "string" },
         category: { type: "string", enum: Object.keys(FOOD_CATS) }, state: { type: "string", description: "raw | cooked | dry | as sold" },
@@ -2286,6 +2351,13 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         unit_name: { type: "string", description: "e.g. '1 large egg'" }, unit_g: { type: "number" }, traits: { type: "string", description: "Comma-separated, e.g. 'lean, easy to cook'" },
         about: { type: "string" }, cooking: { type: "string" }, good: { type: "string" }, watch: { type: "string" }, buy: { type: "string" }, storage: { type: "string" }, source: { type: "string" } } } } } },
       execute: async (i) => { status("Updating your food meter…"); return saveFoods(i); } },
+    { name: "save_day", description: "Create (omit day_id) or update a full-day meal plan ('Day N'): the meals for one whole day, in eating order, that together land on their daily targets. They pick a day and follow it as a guide. Create missing meals with save_recipe first. follow_date makes them follow it on that date. delete removes it.",
+      kw: /day|plan|menu|diet|follow|recipe|meal prep|week|guide/i,
+      inputSchema: { type: "object", properties: { day_id: { type: "string" }, title: { type: "string", description: "e.g. 'Thai home cooking'" }, number: { type: "integer", description: "Shown as 'Day N'" },
+        notes: { type: "string", description: "1-2 lines: when this day fits, prep tips" },
+        meals: { type: "array", items: { type: "object", required: ["slot", "recipe_id"], properties: { slot: { type: "string", enum: SLOTS }, recipe_id: { type: "string" }, servings: { type: "number" } } } },
+        follow_date: { type: "string", description: "YYYY-MM-DD" }, delete: { type: "boolean" } } },
+      execute: async (i) => { status("Building the day…"); return saveDay(i); } },
     // Last on purpose: when the platform caps tools and a message isn't about meals, this is the one left out.
     { name: "update_meal", description: "Edit a meal already logged (any field, XP, verdict), delete it (duplicates, mistakes), or put the photo attached to this message on it as its thumbnail (attach_photo). Meal ids are in meals_today and recent_meals.",
       kw: /meal|ate|eat|food|breakfast|lunch|dinner|snack|drink|photo|pic|thumb|image|edit|fix|wrong|change|correct|actually|delete|remove|portion|kcal|calor|protein/i,
@@ -2322,7 +2394,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
       food_meter: S.foods.map((f) => `${f.id}: ${f.name} (${Math.round(f.kcal || 0)} kcal, ${fmtG(f.protein_g)} g P per 100 g)`).slice(0, 250),
       recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving`).slice(0, 100),
-      day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
+      day_plans_library: dayList().map((d) => `${d.id}: Day ${d.number} · ${d.title} = ${(d.meals || []).map((m) => `${m.slot} ${(recipeById(m.recipe) || {}).title || "?"}${m.servings !== 1 ? " ×" + m.servings : ""}`).join(", ")} → ${macroLine(dayTotals(d))}`).slice(0, 40),
+      day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, following: (planOf(d) || {}).title || null, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
         return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${k.eaten ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
       recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")), carbs_g: Math.round(sumOf(ms, "carbs_g")), fat_g: Math.round(sumOf(ms, "fat_g")) },
@@ -2345,7 +2418,7 @@ Voice: brief and straight to the point, warm, like a friend texting. 1-3 short s
 Act with the tools first, then reply. Don't narrate tool calls.
 MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
 You can edit any logged meal with update_meal: fix numbers, rename, delete duplicates, or put the attached photo on an existing meal (attach_photo) instead of logging it twice. Give text-only meals a food emoji icon.
-KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = their Recipe book (macros computed from the meter); day_plans = recipes they picked for today/tomorrow. New recipe: first save_foods every ingredient missing from food_meter (reuse existing ids; honest typical values; say raw/cooked/dry; short practical info), then save_recipe with grams for the whole recipe. Fit recipes to their goal, Thai markets and a simple studio kitchen; judge xp like a meal. To plan a day, add recipes with plan_day/plan_slot so the day lands near their targets. "Add X to my meter" → save_foods.
+KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = single meals (the library); day_plans_library = full days of eating ("Day 1", "Day 2"…) they follow as a guide; day_plans = what they follow today/tomorrow. A "recipe" or "day" request from them usually means a FULL DAY: save_foods for every missing ingredient (reuse ids; honest typical values; say raw/cooked/dry; short practical info) → save_recipe for each new meal → save_day with the meals in eating order. A day must land within ±5% of their kcal target with protein at or above target; fit Thai markets and a simple studio kitchen; judge meal xp honestly. "Add X to my meter" → save_foods.
 Meal XP rubric, judged against nutrition_targets.goal and what's left today: +15..+20 high protein, whole food, fits the remaining budget; +5..+10 decent; 0 neutral; -5..-10 sugary drink, deep-fried or oversized; -15..-20 blows the day or directly fights the goal. If no targets yet, score on general quality and suggest setting targets. Verdict: max 10 words, specific ("Protein bomb, light on oil. Perfect cut meal."). Reply with one line: what today looks like now and one tip.
 TRAINING: when they give fitness goals, build a gym program with save_program: sessions on fixed days, each exercise with sets×reps @ load and rest, progression rules. When they report a workout, log_session with sets. Every few sessions, optimise: update loads/volume from the logged sets (save_program with program_id and a change_note). Other areas (work, habits) can get programs too.
 GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, the first tiny (<10 min), each with a when/where cue, xp 10-60. Complete steps/tasks by id when they say they did something, then praise specifically.
@@ -2598,10 +2671,16 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   $("#shot").addEventListener("change", () => { const f = $("#shot").files[0]; if (!f) return; setPhoto(f); $("#shot").value = ""; talkNow(SHOT_TEXT[shotMode], true); });
   $("#draftform").addEventListener("submit", (e) => { e.preventDefault(); const text = $("#drafttext").value.trim(); if (!text || !db) return;
     run(async () => { await parkDraft({ text }); $("#drafttext").value = ""; }); });
-  $("#newrecipe").addEventListener("click", () => fill("Add a recipe that fits my goal: "));
+  $("#newday").addEventListener("click", () => fill("Build me a new full day of eating that hits my targets: "));
+  // swipe between day pages
+  let swipe = null;
+  $("#dayview").addEventListener("touchstart", (e) => { const p = e.touches[0]; swipe = { x: p.clientX, y: p.clientY }; }, { passive: true });
+  $("#dayview").addEventListener("touchend", (e) => {
+    if (!swipe) return; const p = e.changedTouches[0], dx = p.clientX - swipe.x, dy = p.clientY - swipe.y; swipe = null;
+    const list = dayList(); if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || list.length < 2) return;
+    const idx = Math.max(0, list.findIndex((d) => d.id === dayId)); dayId = list[(idx + (dx < 0 ? 1 : -1) + list.length) % list.length].id; renderRecipes();
+  }, { passive: true });
   $("#newfood").addEventListener("click", () => fill("Add to my food meter: "));
-  document.querySelectorAll("#recipes .seg button").forEach((b) => b.addEventListener("click", () => { planDay = b.dataset.day; renderRecipes(); }));
-  $("#planask").addEventListener("click", () => fill(`Fill my ${planDay === "tomorrow" ? "tomorrow" : "day today"} with recipes that land on my targets (new ones if needed): `));
   $("#foodq").addEventListener("input", () => { meterQ = $("#foodq").value; renderMeter(); });
   $("#foodmore").addEventListener("click", () => { meterAll = true; renderMeter(); });
   $("#plateclear").addEventListener("click", () => { plate = []; store("hq.plate", plate); renderPlate(); });
@@ -2648,6 +2727,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
     sub("sessions", db.collection("sessions").orderBy("at", "desc").limit(300));
     sub("foods", db.collection("foods"));
     sub("recipes", db.collection("recipes"));
+    sub("days", db.collection("days"));
     sub("plans", db.collection("plans").orderBy("day", "desc").limit(60));
   });
   C.use("assets").then((a) => { assets = a; });

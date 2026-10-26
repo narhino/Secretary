@@ -18,9 +18,11 @@ for later; the app resurfaces them at 3/7/14/30/60/90 days), `inbox` (mood, slee
 `commitments` (daily deadlines with a check-in window, reward/penalty XP and a punishment), `checks`
 (`<commitmentId>_<YYYY-MM-DD>`: done / missed / excused, with XP) and `chat/<YYYY-MM-DD>` (the full
 conversation with Mali, her name and animated face in the app; `config/persona` holds the name),
-`foods` (the Food meter: per-100 g values + an info page per food), `recipes` (the Recipe book:
-ingredients = food ids + grams, macros computed from the meter) and `plans/<YYYY-MM-DD>` (recipes
-picked for a day; "Ate it" logs a meal with `recipeId`). Every recipe ingredient must exist in `foods`.
+`foods` (the Food meter: per-100 g values + an info page per food), `recipes` (single meals, the
+Meal library: ingredients = food ids + grams, macros computed from the meter), `days` (the Meal plan:
+full days "Day N" = meals in eating order that land on the daily targets; they pick one and follow it)
+and `plans/<YYYY-MM-DD>` (the day they follow: `template` + picks; ticking a meal logs it with
+`recipeId`). Every recipe ingredient must exist in `foods`; every day's meal in `recipes`.
 The app's built-in Claude (their subscription) writes all of these too.
 - Start of every session: `list` the collections you need. Pin every write with `if_version`.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.

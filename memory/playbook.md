@@ -6,6 +6,7 @@ The weekly review always ends with a change-log entry._
 ## What I know works for you
 - Brief and straight to the point: short messages, lead with the next action, no long explanations (said 2026-10-25).
 - Likes a compact, uncluttered app: summaries at home, details one tap away (said 2026-10-26).
+- Eats by following a whole-day plan ("Day 2") as a guide, not by picking single recipes (said 2026-10-26).
 - (learning… e.g. "replies faster to short questions than to lists", "prefers a nudge at 18:30 on
   gym days", "mornings are rushed: keep the morning message to 2 lines")
 
@@ -43,6 +44,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v13: "recipes" means FULL DAYS to them. Meal plan tab = Day 1…6 pages (each a whole day on target), Follow today/tomorrow, tick meals as eaten. Days 1–3 are the ones Mali built with them; 4–6 starter days. Single meals moved to a Meal library.
 - 2026-10-26: HQ v12: "Can I eat this?" button (Home and Food): snap a product or plate before buying, get a fast verdict (yes / yes but / skip) against what's left today and the day's plan, plus what the next meal should be. Logged only if they tap "I'm eating it".
 - 2026-10-26: HQ v11: the long feed is now tabs. Home shows only notices (appointments, overdue, locks, ideas), Mali, the next 4 things and today-at-a-glance tiles; each section has its own tab. They asked for a compact home.
 - 2026-10-26: HQ v10: Recipe book (build a day from recipes, "Ate it" logs it) and Food meter (58 foods, each with a page, gram calculator and plate calculator). Mali adds recipes and foods herself. Targets synced to the repo: 2150 kcal / 165 g protein.
