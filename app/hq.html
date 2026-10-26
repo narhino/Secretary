@@ -839,16 +839,24 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       stress: num(i.stress), sleep_h: num(i.sleep_h), weight_kg: num(i.weight_kg), water_l: num(i.water_l), processed: false });
     return ref.id;
   }
+  function mealThumb(m) {
+    const none = () => h("div", { class: "thumb" }, m.photo ? "📷" : "no photo");
+    const src = m.thumb || (m.photoId ? "/_blob/" + m.photoId : m.photoUrl);
+    if (!src) return none();
+    return h("img", { class: "thumb", src, alt: m.name || "meal", loading: "lazy", onerror: (e) => e.target.replaceWith(none()) });
+  }
   async function addMeal(i) {
     const ref = db.collection("meals").doc();
     const fromPhoto = !!i.from_photo && !!pending;
-    let photoUrl = null;
-    if (fromPhoto && pending.upload) photoUrl = await pending.upload.catch(() => null);
+    let photoId = null, thumb = null;
+    if (fromPhoto && pending.upload) photoId = await pending.upload.catch(() => null);
+    if (fromPhoto && pending.thumb) thumb = await pending.thumb.catch(() => null);
     const items = (Array.isArray(i.items) ? i.items : []).slice(0, 12).map((x) => ({ name: clip(x && x.name, 80), kcal: num(x && x.kcal) }));
     const xp = Math.max(-20, Math.min(20, Math.round(Number(i.xp) || 0))) + (fromPhoto ? 2 : 0);
     await ref.set({ day: dayKey(), at: nowIso(), meal: ["breakfast", "lunch", "dinner", "snack", "drink"].includes(i.meal) ? i.meal : "snack",
       name: clip(i.name, 120), items, kcal: num(i.kcal) ?? 0, protein_g: num(i.protein_g) ?? 0, carbs_g: num(i.carbs_g), fat_g: num(i.fat_g),
-      fiber_g: num(i.fiber_g), sugar_g: num(i.sugar_g), verdict: clip(i.verdict, 140), xp, photo: fromPhoto, photoUrl, processed: false });
+      fiber_g: num(i.fiber_g), sugar_g: num(i.sugar_g), verdict: clip(i.verdict, 140), xp, photo: fromPhoto,
+      photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb, processed: false });
     if (fromPhoto) pending.used = true;
     toast(`${clip(i.verdict, 80) || "Logged."}  ${signed(xp)} XP`);
     if (xp >= 10) burst(24);
@@ -1301,7 +1309,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     }
     const box = $("#meals");
     box.replaceChildren(...ms.map((m) => h("div", { class: "meal" },
-      m.photoUrl ? h("img", { class: "thumb", src: m.photoUrl, alt: m.name, loading: "lazy" }) : h("div", { class: "thumb" }, m.photo ? "photo" : "no photo"),
+      mealThumb(m),
       h("div", { style: "min-width:0" }, h("div", { class: "name" }, m.name),
         h("div", { class: "nums" }, `${m.meal} · ${clock(m.at)} · ${Math.round(m.kcal || 0)} kcal · P ${Math.round(m.protein_g || 0)} · C ${Math.round(m.carbs_g || 0)} · F ${Math.round(m.fat_g || 0)}`),
         m.verdict ? h("div", { class: "verdict" }, m.verdict) : null),
@@ -1741,14 +1749,23 @@ App state (JSON): ${appState()}`;
     image_rejected: "That photo couldn't be read. Try a JPEG or PNG under 20 MB.", session_expired: "Sign in to Claude again to keep going.",
     tools_unavailable: "This view can't let Claude edit your HQ. Use the buttons for now.", prompt_too_large: "That's too much at once. Try a shorter message.",
   };
+  async function shrink(file, max) {
+    const bmp = await createImageBitmap(file);
+    const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return c;
+  }
   async function downscale(file, max = 1280) {
     try {
-      const bmp = await createImageBitmap(file);
-      const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
-      const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
-      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const c = await shrink(file, max);
       return await new Promise((r) => c.toBlob((b) => r(b || file), "image/jpeg", 0.82));
     } catch { return file; }
+  }
+  // Small preview stored inside the meal doc: some viewers (the iPhone app) can't load /_blob/ links.
+  async function thumbOf(file) {
+    const url = (await shrink(file, 160)).toDataURL("image/jpeg", 0.7);
+    return url.startsWith("data:image/jpeg") && url.length < 40000 ? url : null;
   }
   async function send(box = $("#askbox")) {
     const text = box.value.trim();
@@ -1761,8 +1778,9 @@ App state (JSON): ${appState()}`;
     try {
       if (photo) {
         image = await downscale(photo);
-        pending = { used: false, upload: assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.url) : null };
+        pending = { used: false, upload: assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.id) : null, thumb: thumbOf(image) };
         if (pending.upload) pending.upload.catch(() => {});
+        pending.thumb.catch(() => {});
       } else pending = null;
       const userText = (text || "Log this meal.") + (image ? "\n[Image attached. Food → log_meal with from_photo true. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
       appendChat("user", text || "📷", image ? { image: true } : {}); pushed = true;
