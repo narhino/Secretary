@@ -4,8 +4,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: one calm phone-first column with a sticky section bar. Header = level + streak; then Ask,
-   Up next, Food (photo meals, XP +/-), Training (programs), Goals, Remember, Ideas, Done & praised.
+/* Layout: one phone-first column with a sticky tab bar. Home holds only summaries: level + streak,
+   notices, Mali, the next 4 things and "today at a glance" tiles. Every section has its own tab.
    Jade = progress, gold = XP and rewards, coral = penalties and overdue. */
 :root {
   --bg: #F2F5F1; --surface: #FFFFFF; --sunk: #E8EEE9; --ink: #13201C; --muted: #5A6A64; --line: #D8E1DB;
@@ -70,7 +70,7 @@ html { scroll-padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
 body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-body); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 .app {
-  max-width: 760px; margin: 0 auto; display: grid; gap: 22px;
+  max-width: 760px; margin: 0 auto; display: grid; gap: 16px;
   padding-block: 20px 72px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -118,25 +118,33 @@ main > .section .pct { color: var(--sec-ink); }
 main > .section .btn.primary { background: var(--sec); border-color: var(--sec); color: #FFFFFF; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) main > .section .btn.primary { color: #0C1311; } }
 :root[data-theme="dark"] main > .section .btn.primary { color: #0C1311; }
-.nav a[href="#today"] { background: var(--t-today-soft); color: var(--t-today-ink); border-color: transparent; }
-.nav a[href="#commit"] { background: var(--t-commit-soft); color: var(--t-commit-ink); border-color: transparent; }
-.nav a[href="#food"] { background: var(--t-food-soft); color: var(--t-food-ink); border-color: transparent; }
-.nav a[href="#training"] { background: var(--t-training-soft); color: var(--t-training-ink); border-color: transparent; }
-.nav a[href="#move"] { background: var(--t-move-soft); color: var(--t-move-ink); border-color: transparent; }
-.nav a[href="#goals-sec"] { background: var(--t-goals-soft); color: var(--t-goals-ink); border-color: transparent; }
-.nav a[href="#remember"] { background: var(--t-remember-soft); color: var(--t-remember-ink); border-color: transparent; }
-.nav a[href="#drafts"] { background: var(--t-drafts-soft); color: var(--t-drafts-ink); border-color: transparent; }
-.nav a[href="#ideas"] { background: var(--t-ideas-soft); color: var(--t-ideas-ink); border-color: transparent; }
-.nav a[href="#wins-sec"] { background: var(--t-wins-soft); color: var(--t-wins-ink); border-color: transparent; }
-.nav a[href="#recipes"] { background: var(--t-recipes-soft); color: var(--t-recipes-ink); border-color: transparent; }
-.nav a[href="#meter"] { background: var(--t-meter-soft); color: var(--t-meter-ink); border-color: transparent; }
+/* one tone per tab: nav pills, home tiles and notices use the tab's colour */
+[data-tone="home"] { --tone: var(--jade); --tone-soft: var(--jade-soft); --tone-ink: var(--jade); }
+[data-tone="tasks"] { --tone: var(--t-today); --tone-soft: var(--t-today-soft); --tone-ink: var(--t-today-ink); }
+[data-tone="commit"] { --tone: var(--t-commit); --tone-soft: var(--t-commit-soft); --tone-ink: var(--t-commit-ink); }
+[data-tone="food"] { --tone: var(--t-food); --tone-soft: var(--t-food-soft); --tone-ink: var(--t-food-ink); }
+[data-tone="recipes"] { --tone: var(--t-recipes); --tone-soft: var(--t-recipes-soft); --tone-ink: var(--t-recipes-ink); }
+[data-tone="meter"] { --tone: var(--t-meter); --tone-soft: var(--t-meter-soft); --tone-ink: var(--t-meter-ink); }
+[data-tone="training"] { --tone: var(--t-training); --tone-soft: var(--t-training-soft); --tone-ink: var(--t-training-ink); }
+[data-tone="move"] { --tone: var(--t-move); --tone-soft: var(--t-move-soft); --tone-ink: var(--t-move-ink); }
+[data-tone="goals"] { --tone: var(--t-goals); --tone-soft: var(--t-goals-soft); --tone-ink: var(--t-goals-ink); }
+[data-tone="notes"] { --tone: var(--t-remember); --tone-soft: var(--t-remember-soft); --tone-ink: var(--t-remember-ink); }
+[data-tone="drafts"] { --tone: var(--t-drafts); --tone-soft: var(--t-drafts-soft); --tone-ink: var(--t-drafts-ink); }
+[data-tone="ideas"] { --tone: var(--t-ideas); --tone-soft: var(--t-ideas-soft); --tone-ink: var(--t-ideas-ink); }
+[data-tone="wins"] { --tone: var(--t-wins); --tone-soft: var(--t-wins-soft); --tone-ink: var(--t-wins-ink); }
+[data-tone="alert"] { --tone: var(--coral); --tone-soft: var(--coral-soft); --tone-ink: var(--coral); }
 
 /* sticky section bar */
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin: 0 -4px; padding: 8px 4px;
   display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
 .nav::-webkit-scrollbar { display: none; }
-.nav a { flex: none; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 13px; padding: 5px 11px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
-.nav a .n { color: var(--gold); margin-left: 4px; font-family: var(--font-mono); }
+.nav button { flex: none; font-weight: 600; font-size: 13px; padding: 6px 12px; border-radius: 99px; border: 0; background: var(--tone-soft, var(--surface)); color: var(--tone-ink, var(--muted)); }
+.nav button[aria-current="page"] { background: var(--tone); color: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nav button[aria-current="page"] { color: #0C1311; } }
+:root[data-theme="dark"] .nav button[aria-current="page"] { color: #0C1311; }
+.nav #navchat { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.nav .n { margin-left: 4px; font-family: var(--font-mono); }
+.nav .n:empty { display: none; }
 
 /* header */
 .top { display: grid; grid-template-columns: 1fr auto; gap: 14px 18px; align-items: center; }
@@ -158,8 +166,8 @@ main > .section .btn.primary { background: var(--sec); border-color: var(--sec);
 .chip.jade { background: var(--jade-soft); border-color: transparent; }
 
 /* ask */
-.ask { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
-.ask textarea { width: 100%; min-height: 52px; max-height: 180px; resize: vertical; border: 0; background: transparent; outline: none; font-size: 16px; }
+.ask { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px; display: grid; gap: 8px; }
+.ask textarea { width: 100%; min-height: 44px; max-height: 180px; resize: vertical; border: 0; background: transparent; outline: none; font-size: 16px; }
 .ask-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ask-row .spacer { flex: 1; }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
@@ -167,11 +175,14 @@ main > .section .btn.primary { background: var(--sec); border-color: var(--sec);
 .btn.gold { background: var(--gold-bright); border-color: var(--gold-bright); color: #1E1500; }
 .btn.small { padding: 5px 10px; font-size: 13px; }
 .btn:disabled { opacity: .5; cursor: default; }
-.suggest { display: flex; gap: 6px; flex-wrap: wrap; }
-.suggest button { border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 4px 10px; font-size: 13px; color: var(--muted); }
+.suggest { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.suggest::-webkit-scrollbar { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.suggest button { flex: none; border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 4px 10px; font-size: 13px; color: var(--muted); }
 .reply { white-space: pre-wrap; background: var(--jade-soft); border-radius: 12px; padding: 10px 12px; }
 .reply.err { background: var(--coral-soft); }
-.status { font-size: 13px; color: var(--muted); min-height: 1em; }
+.status { font-size: 13px; color: var(--muted); }
+.status:empty { display: none; }
 .photo-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 8px; border-radius: 8px; background: var(--sunk); }
 .photo-chip button { border: 0; background: none; padding: 0 2px; color: var(--muted); }
 
@@ -307,11 +318,11 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 
 /* secretary card + chat */
 .mali { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; }
-.mali .avatar { width: 72px; height: 72px; }
+.mali .avatar { width: 56px; height: 56px; }
 .mali-side { display: grid; gap: 6px; min-width: 0; }
 .mali-name { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .mali-name b { font: 700 15px var(--font-display); }
-.bubble { white-space: pre-wrap; background: var(--jade-soft); border-radius: 4px 16px 16px 16px; padding: 10px 12px; max-height: 260px; overflow: auto; overflow-wrap: anywhere; }
+.bubble { white-space: pre-wrap; background: var(--jade-soft); border-radius: 4px 16px 16px 16px; padding: 10px 12px; max-height: 180px; overflow: auto; overflow-wrap: anywhere; }
 .bubble.err { background: var(--coral-soft); }
 .fab { position: fixed; z-index: 15; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--surface); background: var(--jade-soft); padding: 0;
   right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
@@ -376,6 +387,23 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .win .praise { font-weight: 600; }
 .win .what { font-size: 13px; color: var(--muted); grid-column: 1 / 2; overflow-wrap: anywhere; }
 .win .when { font-size: 12px; color: var(--muted); text-align: right; }
+
+/* home: notices + today at a glance */
+.notices { display: grid; gap: 6px; }
+.notice { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 8px 12px; text-align: left; color: inherit;
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--tone); border-radius: 12px; }
+.notice .ic { font-size: 18px; line-height: 1; }
+.notice .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.notice .s { display: block; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.notice .go { color: var(--tone-ink); font-weight: 700; }
+.glance { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tile { display: grid; gap: 5px; align-content: start; min-width: 0; padding: 12px; text-align: left; color: var(--ink); background: var(--tone-soft); border: 0; border-radius: 16px; }
+.tile .label { color: var(--tone-ink); }
+.tile b { font: 700 15px/1.25 var(--font-body); overflow-wrap: anywhere; }
+.tile .s { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tile .track { height: 6px; background: var(--surface); }
+.tile .track > i { background: var(--tone); }
+.more-link { justify-self: start; }
 
 /* recipe book + food meter */
 .h3s { font: 700 14px var(--font-display); }
@@ -456,7 +484,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 </style>
 
 <main class="app">
-  <header class="top">
+  <header class="top" data-tab="home">
     <div>
       <h1 class="hello" id="hello">Hey there</h1>
       <div class="dateline" id="dateline"></div>
@@ -478,20 +506,21 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     </div>
   </header>
 
-  <nav class="nav" aria-label="Sections">
-    <a href="#chat" id="navchat">Chat</a><a href="#today">Today</a><a href="#commit">Commit</a><a href="#food">Food</a><a href="#recipes">Recipes</a><a href="#meter">Meter</a><a href="#training">Training</a><a href="#move">Move</a><a href="#goals-sec">Goals</a>
-    <a href="#remember">Remember</a><a href="#drafts">Drafts</a><a href="#ideas">Ideas<span class="n" id="ideacount"></span></a><a href="#wins-sec">Wins</a>
+  <nav class="nav" aria-label="Tabs">
+    <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Recipes</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
   </nav>
 
-  <section class="ask" id="ask" aria-label="Talk to your secretary">
+  <div class="notices" id="notices" data-tab="home" hidden></div>
+
+  <section class="ask" id="ask" data-tab="home" aria-label="Talk to your secretary">
     <div class="mali">
-      <div class="avslot" data-size="72"></div>
+      <div class="avslot" data-size="56"></div>
       <div class="mali-side">
         <div class="mali-name"><b class="mname">Mali</b><span class="muted small" id="mstate">here for you</span></div>
         <div class="bubble" id="reply" aria-live="polite">Hey! Tell me anything: a goal, a meal, a deadline. I'll handle the rest.</div>
       </div>
     </div>
-    <label class="label" for="askbox">Talk to <span class="mname">Mali</span></label>
+    <label class="sr-only" for="askbox">Talk to <span class="mname">Mali</span></label>
     <textarea id="askbox" placeholder="A goal, a deadline, what you ate, your workout, how you feel…"></textarea>
     <div class="suggest" id="suggest">
       <button type="button" data-fill="New goal: ">New goal</button>
@@ -513,7 +542,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <div class="status" id="status" aria-live="polite"></div>
   </section>
 
-  <section class="section" id="today" aria-labelledby="h-next">
+  <section class="section" id="today" data-tab="home tasks" aria-labelledby="h-next">
     <div class="section-head"><h2 id="h-next">Up next</h2><button class="link-btn" type="button" id="addtaskbtn">+ Task</button></div>
     <form class="quick" id="taskform" hidden>
       <input type="text" id="tasktitle" placeholder="What needs doing?" aria-label="Task">
@@ -524,12 +553,16 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <div class="list" id="next"><div class="empty">Loading your tasks…</div></div>
   </section>
 
-  <section class="section" id="commit" aria-labelledby="h-commit">
+  <section class="glance-wrap" id="glance" data-tab="home" aria-label="Today at a glance">
+    <div class="glance" id="glancegrid"></div>
+  </section>
+
+  <section class="section" id="commit" data-tab="commit" aria-labelledby="h-commit">
     <div class="section-head"><h2 id="h-commit">Commitments</h2><button class="link-btn" type="button" id="newcommit">+ Commitment</button></div>
     <div class="list" id="commitlist"><div class="empty">Loading…</div></div>
   </section>
 
-  <section class="section" id="food" aria-labelledby="h-food">
+  <section class="section" id="food" data-tab="food" aria-labelledby="h-food">
     <div class="section-head"><h2 id="h-food">Food</h2><span class="muted small" id="foodgoal"></span></div>
     <div class="card">
       <div class="macros" id="macros"></div>
@@ -545,7 +578,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <div class="list" id="logs"></div>
   </section>
 
-  <section class="section" id="recipes" aria-labelledby="h-recipes">
+  <section class="section" id="recipes" data-tab="recipes" aria-labelledby="h-recipes">
     <div class="section-head"><h2 id="h-recipes">Recipe book</h2><button class="link-btn" type="button" id="newrecipe">+ Recipe</button></div>
     <div class="card">
       <div class="section-head"><h3 class="h3s">Build a day</h3>
@@ -559,7 +592,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <div class="list" id="recipelist"><div class="empty">Loading…</div></div>
   </section>
 
-  <section class="section" id="meter" aria-labelledby="h-meter">
+  <section class="section" id="meter" data-tab="meter" aria-labelledby="h-meter">
     <div class="section-head"><h2 id="h-meter">Food meter</h2><button class="link-btn" type="button" id="newfood">+ Food</button></div>
     <input class="search" type="search" id="foodq" placeholder="Search: chicken, rice, egg, lean…" aria-label="Search foods">
     <div class="fchips" id="meterchips" role="group" aria-label="Food groups"></div>
@@ -574,13 +607,13 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     </div>
   </section>
 
-  <section class="section" id="training" aria-labelledby="h-train">
+  <section class="section" id="training" data-tab="training" aria-labelledby="h-train">
     <div class="section-head"><h2 id="h-train">Training</h2><button class="link-btn" type="button" id="newprogram">+ Program</button></div>
     <div class="list" id="programs"><div class="empty">Loading…</div></div>
     <details id="recentwrap" hidden><summary>Recent sessions</summary><div class="list" id="recent"></div></details>
   </section>
 
-  <section class="section" id="move" aria-labelledby="h-move">
+  <section class="section" id="move" data-tab="move" aria-labelledby="h-move">
     <div class="section-head"><h2 id="h-move">Move</h2><span class="muted small" id="stepgoal"></span></div>
     <div class="card">
       <input type="file" id="shot" accept="image/*" hidden>
@@ -601,12 +634,12 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     </div>
   </section>
 
-  <section class="section" id="goals-sec" aria-labelledby="h-goals">
+  <section class="section" id="goals-sec" data-tab="goals" aria-labelledby="h-goals">
     <div class="section-head"><h2 id="h-goals">Goals</h2><button class="link-btn" type="button" id="newgoal">+ Goal</button></div>
     <div class="goals" id="goals"><div class="empty">Loading your goals…</div></div>
   </section>
 
-  <section class="section" id="remember" aria-labelledby="h-rem">
+  <section class="section" id="remember" data-tab="notes" aria-labelledby="h-rem">
     <div class="section-head"><h2 id="h-rem">Remember</h2></div>
     <form class="quick" id="noteform">
       <input type="text" id="notetext" placeholder="Something to keep in mind" aria-label="Note">
@@ -618,7 +651,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <details id="factswrap" hidden><summary id="factssum">What I've learned about you</summary><div class="list" id="facts"></div></details>
   </section>
 
-  <section class="section" id="drafts" aria-labelledby="h-drafts">
+  <section class="section" id="drafts" data-tab="drafts" aria-labelledby="h-drafts">
     <div class="section-head"><h2 id="h-drafts">Drafts</h2><span class="muted small">Parked here, brought back now and then</span></div>
     <form class="draftbox" id="draftform">
       <textarea id="drafttext" placeholder="An idea, a plan, something to think about later. Nothing happens until you say so." aria-label="Draft"></textarea>
@@ -628,13 +661,13 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <details id="draftarchwrap" hidden><summary id="draftarchsum">Archived</summary><div class="list" id="draftarch"></div></details>
   </section>
 
-  <section class="section" id="ideas" aria-labelledby="h-ideas">
+  <section class="section" id="ideas" data-tab="ideas" aria-labelledby="h-ideas">
     <div class="section-head"><h2 id="h-ideas">Ideas from your secretary</h2></div>
     <div class="list" id="idealist"><div class="empty">Loading…</div></div>
     <details id="acceptedwrap" hidden><summary id="acceptedsum">Accepted</summary><div class="list" id="accepted"></div></details>
   </section>
 
-  <section class="section" id="wins-sec" aria-labelledby="h-wins">
+  <section class="section" id="wins-sec" data-tab="wins" aria-labelledby="h-wins">
     <div class="section-head"><h2 id="h-wins">Done &amp; praised</h2></div>
     <div class="list" id="wins"><div class="empty">Loading…</div></div>
   </section>
@@ -738,7 +771,17 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   let toastTimer;
   function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800); }
   const cfg = (id) => (S.config.find((c) => c.id === id) || null);
-  function fill(text) { const box = $("#askbox"); box.value = text; box.focus(); box.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  function fill(text) {
+    if (tab !== "home") { openChat(); $("#chatbox").value = text; return; }
+    const box = $("#askbox"); box.value = text; box.focus(); box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  // Send now from wherever they are: Home uses her card, other tabs the chat panel.
+  function talkNow(text, force) {
+    const box = tab === "home" ? $("#askbox") : $("#chatbox");
+    if (tab !== "home") openChat();
+    if (force || !box.value.trim()) box.value = text;
+    send(box);
+  }
   function delBtn(label, action) {
     const b = h("button", { class: "icon-btn", type: "button", "aria-label": label }, "Delete");
     let armed = false, timer;
@@ -1444,8 +1487,72 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     return all.length ? all[all.length - 1] : null;
   }
 
+
+  // ------------------------------------------------------------ home: notices + today at a glance
+  function notice(tone, icon, title, sub, to) {
+    return h("button", { class: "notice", type: "button", "data-tone": tone, onclick: () => showTab(to) },
+      h("span", { class: "ic", "aria-hidden": "true" }, icon), h("span", {}, h("span", { class: "t" }, title), sub ? h("span", { class: "s" }, sub) : null), h("span", { class: "go" }, "›"));
+  }
+  function renderNotices() {
+    if (!["tasks", "notes", "drafts", "suggestions"].every((c) => S.loaded.has(c))) return;
+    const today = dayKey(), tom = shiftDay(today, 1), out = [];
+    for (const t of S.tasks.filter((x) => x.lock && x.status !== "done" && x.lockAt).sort((a, b) => String(a.lockAt).localeCompare(String(b.lockAt))).slice(0, 1))
+      out.push(notice("alert", "⏱", t.title, `Locks the app ${dayKey(t.lockAt) === today ? "today" : nice(dayKey(t.lockAt))} at ${clock(t.lockAt)} until it's done`, "tasks"));
+    for (const n of S.notes.filter((x) => x.kind === "appointment" && x.date && x.date >= today && x.date <= tom))
+      out.push(notice("notes", "📅", n.text, n.date === today ? "Today" : "Tomorrow", "notes"));
+    const overdue = S.tasks.filter((t) => t.status !== "done" && t.due && t.due < today);
+    if (overdue.length) out.push(notice("alert", "⚠️", `${overdue.length} overdue task${overdue.length > 1 ? "s" : ""}`, overdue.map((t) => t.title).slice(0, 2).join(" · "), "tasks"));
+    const back = S.drafts.filter((d) => d.status === "parked" && d.resurfaceAt && d.resurfaceAt <= today);
+    if (back.length) out.push(notice("drafts", "💭", back.length > 1 ? `${back.length} parked ideas are back` : "A parked idea is back", back[0].title || clip(back[0].text, 70), "drafts"));
+    const ideas = S.suggestions.filter((x) => x.status === "new");
+    if (ideas.length) out.push(notice("ideas", "✨", `${ideas.length} new idea${ideas.length > 1 ? "s" : ""} from ${persona()}`, ideas[0].title, "ideas"));
+    const box = $("#notices");
+    box.replaceChildren(...out);
+    box.hidden = tab !== "home" || !out.length;
+  }
+  function tile(to, label, big, sub, pct) {
+    return h("button", { class: "tile", type: "button", "data-tone": to, onclick: () => showTab(to) }, h("span", { class: "label" }, label), h("b", {}, big),
+      pct != null ? h("span", { class: "track", "aria-hidden": "true" }, h("i", { style: `width:${Math.max(0, Math.min(100, Math.round(pct)))}%` })) : null,
+      sub ? h("span", { class: "s" }, sub) : null);
+  }
+  function renderGlance() {
+    if (!["meals", "config", "health", "programs", "sessions", "goals", "plans", "recipes", "commitments", "checks"].every((c) => S.loaded.has(c))) return;
+    const today = dayKey(), t = cfg("nutrition"), ms = mealsOn(today), kcal = sumOf(ms, "kcal"), prot = sumOf(ms, "protein_g"), tiles = [];
+    tiles.push(tile("food", "Food", t && t.kcal ? `${Math.round(kcal)} / ${t.kcal} kcal` : `${Math.round(kcal)} kcal`,
+      `${Math.round(prot)}${t && t.protein_g ? " / " + t.protein_g : ""} g protein · ${ms.length} meal${ms.length === 1 ? "" : "s"}`, t && t.kcal ? 100 * kcal / t.kcal : null));
+    const picks = (planOf(today) || {}).picks || [], left = picks.filter((k) => !k.eaten);
+    tiles.push(tile("recipes", "Today's plan", !picks.length ? "Nothing planned" : left.length ? `${left.length} meal${left.length > 1 ? "s" : ""} to go` : "All eaten ✓",
+      !picks.length ? "Build your day from recipes" : left.map((k) => (recipeById(k.recipe) || {}).title).filter(Boolean).slice(0, 2).join(" · ") || `${Math.round(planTotals(today).kcal)} kcal planned`));
+    const hd = S.health.find((x) => x.id === today), steps = hd ? Number(hd.steps) || 0 : 0;
+    tiles.push(tile("move", "Steps", hd ? steps.toLocaleString("en-US") : "No data yet",
+      hd ? `goal ${stepGoal().toLocaleString("en-US")}${hd.distance_km ? ` · ${hd.distance_km} km` : ""}` : "Syncs from your phone", hd ? 100 * steps / stepGoal() : null));
+    const sched = scheduledToday(), done = S.sessions.filter((l) => l.day === today);
+    tiles.push(tile("training", "Training", done.length ? `${done[0].name} ✓` : sched.length ? sched[0].s.name : S.programs.some((p) => p.status === "active") ? "Rest day" : "No program yet",
+      done.length ? "Done today" : sched.length ? sched[0].p.title : S.programs.some((p) => p.status === "active") ? "Recover well" : `Ask ${persona()} for one`));
+    const goals = S.goals.filter((g) => g.status !== "done").sort((a, b) => String(a.deadline || "9999").localeCompare(String(b.deadline || "9999")));
+    const g = goals[0];
+    tiles.push(tile("goals", goals.length > 1 ? `Goals · ${goals.length}` : "Goal", g ? g.title : "No goal yet",
+      g ? `${goalPct(g)}% · ${(g.steps || []).filter((x) => !x.done).length} steps to go` : `Tell ${persona()} one`, g ? goalPct(g) : null));
+    const cs = S.commitments.filter((c) => c.status !== "paused").sort((a, b) => String(a.window_start).localeCompare(String(b.window_start))), c = cs[0];
+    const streakOk = c ? Array.from({ length: 7 }, (_, k) => checkOf(c.id, shiftDay(today, -k))).filter((k) => k && k.status === "done").length : 0;
+    tiles.push(tile("commit", "Commitment", c ? c.title : "None yet", c ? `${c.window_start}–${c.window_end} · ${streakOk}/7 on time` : "Set a daily deadline"));
+    $("#glancegrid").replaceChildren(...tiles);
+  }
+
+  // ------------------------------------------------------------ tabs
+  const TAB_NAMES = ["home", "tasks", "food", "recipes", "meter", "training", "move", "goals", "commit", "notes", "drafts", "ideas", "wins"];
+  let tab = "home";
+  function showTab(name, keepScroll) {
+    tab = TAB_NAMES.includes(name) ? name : "home";
+    document.querySelectorAll("[data-tab]").forEach((el) => { el.hidden = !el.dataset.tab.split(" ").includes(tab); });
+    document.querySelectorAll(".nav [data-go]").forEach((b) => { if (b.dataset.go === tab) { b.setAttribute("aria-current", "page"); b.scrollIntoView({ block: "nearest", inline: "nearest" }); } else b.removeAttribute("aria-current"); });
+    try { history.replaceState(null, "", tab === "home" ? location.pathname + location.search : "#" + tab); } catch { /* sandboxed views may refuse */ }
+    renderNext(); renderNotices();
+    if (!keepScroll) window.scrollTo(0, 0);
+  }
+
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderNext(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
+  function render() { renderHeader(); renderNext(); renderNotices(); renderGlance(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
   function renderPersona() {
     document.querySelectorAll(".mname").forEach((el) => { el.textContent = persona(); });
     if (!live && S.loaded.has("chat")) {
@@ -1515,36 +1622,37 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       (a.due || "9999").localeCompare(b.due || "9999") || (rank[a.priority] ?? 1) - (rank[b.priority] ?? 1));
     const urgent = open.filter((t) => t.due && t.due <= today), rest = open.filter((t) => !(t.due && t.due <= today));
     const goalNext = S.goals.filter((g) => g.status !== "done").map((g) => ({ g, s: (g.steps || []).find((x) => !x.done) })).filter((x) => x.s);
-    box.replaceChildren();
+    const items = [];
     for (const { c, day, end } of openWindows()) {
       const left = Math.max(0, end - new Date()), mm = Math.floor(left / 60000), ss = Math.floor(left / 1000) % 60;
-      box.append(h("div", { class: "window-card" },
+      items.push(h("div", { class: "window-card" },
         h("div", { class: "goal-top" }, h("div", { class: "t" }, c.title), h("span", { class: "count", "aria-label": "Time left" }, `${mm}:${String(ss).padStart(2, "0")}`)),
         c.detail ? h("div", { class: "small" }, c.detail) : null,
         h("div", { class: "ask-row" }, h("button", { class: "btn primary", type: "button", onclick: () => run(() => checkDone(c, day)) }, `Done ✓ +${c.reward_xp} XP`),
           h("span", { class: "muted small" }, `Miss it and lose ${c.penalty_xp} XP`))));
     }
-    for (const { p, s } of scheduledToday()) box.append(h("div", { class: "row" },
+    for (const { p, s } of scheduledToday()) items.push(h("div", { class: "row" },
       checkBtn(false, "Session done: " + s.name, () => run(() => logSession(p, s))),
       h("div", { class: "main" }, h("div", { class: "title" }, `Train: ${s.name}`),
         h("div", { class: "meta" }, h("span", { class: "tag goal" }, p.title), h("span", {}, `${(s.items || []).length} exercises`))),
       h("span", { class: "xp" }, "+40")));
-    for (const d of S.drafts.filter((x) => x.status === "parked" && x.resurfaceAt && x.resurfaceAt <= today).slice(0, 2)) box.append(draftCard(d, true));
     const hr = hourNow(), eaten = mealsOn(today).length;
-    if (hr >= 10 && eaten === 0) box.append(h("div", { class: "row" },
+    if (hr >= 10 && eaten === 0) items.push(h("div", { class: "row" },
       h("button", { class: "btn small gold", type: "button", onclick: () => $("#camera").click() }, "Snap"),
       h("div", { class: "main" }, h("div", { class: "title" }, "Log your first meal today"), h("div", { class: "meta" }, "A photo is enough")),
       h("span", { class: "xp" }, "+XP")));
-    for (const t of urgent) box.append(taskRow(t));
-    for (const { g, s } of goalNext.slice(0, 3)) box.append(h("div", { class: "row" },
+    for (const t of urgent) items.push(taskRow(t));
+    for (const { g, s } of goalNext.slice(0, 3)) items.push(h("div", { class: "row" },
       checkBtn(false, "Done: " + s.title, () => run(() => toggleStep(g, s.id))),
       h("div", { class: "main" }, h("div", { class: "title" }, s.title),
         h("div", { class: "meta" }, h("span", { class: "tag goal" }, g.title), s.when ? h("span", {}, s.when) : null)),
       h("span", { class: "xp" }, `+${s.xp || 20}`)));
-    const room = Math.max(0, 8 - box.children.length);
-    for (const t of rest.slice(0, room)) box.append(taskRow(t));
-    if (!box.children.length) box.append(h("div", { class: "empty" }, "Nothing waiting. Add a task, or tell your secretary a goal."));
-    if (rest.length > room) box.append(h("div", { class: "muted small", style: "padding-left:4px" }, `+ ${rest.length - room} more open task${rest.length - room > 1 ? "s" : ""}`));
+    for (const t of rest) items.push(taskRow(t));
+    // Home keeps it short; the Tasks tab shows everything.
+    const cap = tab === "home" ? 4 : items.length;
+    box.replaceChildren(...items.slice(0, cap));
+    if (!items.length) box.append(h("div", { class: "empty" }, "Nothing waiting. Add a task, or tell your secretary a goal."));
+    if (items.length > cap) box.append(h("button", { class: "link-btn more-link", type: "button", onclick: () => showTab("tasks") }, `See all ${items.length} ›`));
   }
 
   function macroBar(label, val, target, unit) {
@@ -1936,8 +2044,9 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
   function renderDrafts() {
     if (!S.loaded.has("drafts")) return;
-    const parked = S.drafts.filter((d) => d.status === "parked").sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-    $("#draftlist").replaceChildren(...parked.map((d) => draftCard(d, false)));
+    const today = dayKey(), isBack = (d) => !!(d.resurfaceAt && d.resurfaceAt <= today);
+    const parked = S.drafts.filter((d) => d.status === "parked").sort((a, b) => isBack(b) - isBack(a) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    $("#draftlist").replaceChildren(...parked.map((d) => draftCard(d, isBack(d))));
     if (!parked.length) $("#draftlist").append(h("div", { class: "empty" }, "Nothing parked. Drop raw ideas here. I won't act on them, but I'll bring them back at 3, 7, 14, 30 and more days."));
     const old = S.drafts.filter((d) => d.status !== "parked");
     $("#draftarchwrap").hidden = !old.length;
@@ -2337,7 +2446,8 @@ App state (JSON): ${appState()}`;
   $("#chatbox").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send($("#chatbox")); } });
   $("#openchat").addEventListener("click", openChat);
   $("#fab").addEventListener("click", openChat);
-  $("#navchat").addEventListener("click", (e) => { e.preventDefault(); openChat(); });
+  $("#navchat").addEventListener("click", openChat);
+  document.querySelectorAll(".nav [data-go]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.go)));
   $("#closechat").addEventListener("click", closeChat);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#chatpanel").hidden) closeChat(); });
   // The floating chat button only shows once her card has scrolled away, so it never covers it.
@@ -2350,7 +2460,7 @@ App state (JSON): ${appState()}`;
   $("#newprogram").addEventListener("click", () => fill("Build me a program for "));
   $("#typemeal").addEventListener("click", () => fill("I just ate "));
   $("#snap").addEventListener("click", () => $("#camera").click());
-  $("#camera").addEventListener("change", () => { const f = $("#camera").files[0]; if (!f) return; setPhoto(f); if (!$("#askbox").value.trim()) $("#askbox").value = "Log this meal."; send(); });
+  $("#camera").addEventListener("change", () => { const f = $("#camera").files[0]; if (!f) return; setPhoto(f); talkNow("Log this meal."); });
   $("#addtaskbtn").addEventListener("click", () => { const f = $("#taskform"); f.hidden = !f.hidden; if (!f.hidden) $("#tasktitle").focus(); });
   $("#taskform").addEventListener("submit", (e) => { e.preventDefault(); const title = $("#tasktitle").value.trim(); if (!title || !db) return;
     run(async () => { await addTask({ title, due: $("#taskdue").value, priority: $("#taskprio").value }); $("#tasktitle").value = ""; $("#taskdue").value = ""; toast("Added. Future you says thanks."); }); });
@@ -2363,7 +2473,7 @@ App state (JSON): ${appState()}`;
   };
   $("#synchealth").addEventListener("click", () => { shotMode = "health"; $("#shot").click(); });
   $("#syncplaces").addEventListener("click", () => { shotMode = "places"; $("#shot").click(); });
-  $("#shot").addEventListener("change", () => { const f = $("#shot").files[0]; if (!f) return; setPhoto(f); $("#askbox").value = SHOT_TEXT[shotMode]; $("#shot").value = ""; send(); });
+  $("#shot").addEventListener("change", () => { const f = $("#shot").files[0]; if (!f) return; setPhoto(f); $("#shot").value = ""; talkNow(SHOT_TEXT[shotMode], true); });
   $("#draftform").addEventListener("submit", (e) => { e.preventDefault(); const text = $("#drafttext").value.trim(); if (!text || !db) return;
     run(async () => { await parkDraft({ text }); $("#drafttext").value = ""; }); });
   $("#newrecipe").addEventListener("click", () => fill("Add a recipe that fits my goal: "));
@@ -2384,8 +2494,10 @@ App state (JSON): ${appState()}`;
   $("#photobtn").addEventListener("click", () => $("#photo").click());
   $("#photo").addEventListener("change", () => { const f = $("#photo").files[0]; if (f) setPhoto(f); });
 
+  showTab((location.hash || "").slice(1) === "chat" ? "home" : (location.hash || "").slice(1), true);
+  if (location.hash === "#chat") openChat();
   render();
-  setInterval(() => { renderHeader(); renderNext(); evaluateCommitments(); renderLock(); }, 15000);
+  setInterval(() => { renderHeader(); renderNext(); renderNotices(); evaluateCommitments(); renderLock(); }, 15000);
   setInterval(() => { if (lockShown) tickLock(); }, 1000);
   $("#lockstart").addEventListener("click", () => run(startLock));
   $("#lockdone").addEventListener("click", () => run(finishLock));
