@@ -247,7 +247,7 @@ details.steps .row { background: var(--bg); }
 .session { background: var(--bg); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
 .session-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .session-head b { font-weight: 700; }
-.ex { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 14px; padding: 6px 0; border-top: 1px solid var(--line); }
+.ex { display: grid; grid-template-columns: minmax(45%, 1fr) auto; gap: 8px; font-size: 14px; padding: 6px 0; border-top: 1px solid var(--line); }
 .ex:first-of-type { border-top: 0; }
 .ex .d { color: var(--muted); font: 500 12px var(--font-mono); text-align: right; }
 .days { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -490,10 +490,11 @@ dialog.sheet::backdrop { background: rgba(8, 14, 12, .5); }
 .calc-out .stat { background: var(--bg); padding: 8px 10px; }
 .calc-out .stat b { font-size: 17px; }
 .info p { margin: 4px 0 0; }
-.ing { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.ing { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 9px 0; border-top: 1px solid var(--line); align-items: baseline; }
 .ing:first-of-type { border-top: 0; }
-.ing button { text-align: left; border: 0; background: none; padding: 0; color: var(--jade); font-weight: 600; overflow-wrap: anywhere; }
-.ing .d { font: 500 12px var(--font-mono); color: var(--muted); text-align: right; }
+.ing button { text-align: left; border: 0; background: none; padding: 0; color: var(--jade); font-weight: 600; overflow-wrap: break-word; }
+.ing .g { font: 600 14px var(--font-mono); white-space: nowrap; }
+.ing .d { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
 ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 .stepper { display: inline-flex; align-items: center; gap: 6px; }
 .stepper b { font: 600 16px var(--font-mono); min-width: 34px; text-align: center; }
@@ -2018,7 +2019,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       h("div", { class: "info" }, h("span", { class: "label" }, `Ingredients${s > 1 ? ` (all ${s} servings)` : ""}`),
         h("div", {}, (r.ingredients || []).map((it) => { const f = foodById(it.food);
           return h("div", { class: "ing" }, f ? h("button", { type: "button", onclick: () => openSheet({ type: "food", id: f.id, grams: it.grams }) }, `${f.emoji || ""} ${f.name}`) : h("span", { class: "muted" }, it.food),
-            h("span", { class: "d" }, `${fmtG(it.grams)} g${f ? ` · ${Math.round(f.kcal * it.grams / 100)} kcal · ${fmtG(f.protein_g * it.grams / 100)} g P` : ""}${it.note ? ` · ${it.note}` : ""}`)); })),
+            h("span", { class: "g" }, `${fmtG(it.grams)} g`),
+            h("span", { class: "d" }, [s > 1 ? `${fmtG(it.grams / s)} g per serving` : null, f ? `${Math.round(f.kcal * it.grams / 100)} kcal · ${fmtG(f.protein_g * it.grams / 100)} g protein` : null, it.note].filter(Boolean).join(" · "))); })),
         missing.length ? h("p", { class: "small", style: "color:var(--coral)" }, `Missing from the food meter: ${missing.join(", ")}`) : null,
         h("p", { class: "muted small mono", style: "margin:6px 0 0" }, `Whole recipe: ${macroLine(total)}`)),
       (r.steps || []).length ? h("div", { class: "info" }, h("span", { class: "label" }, "Steps"), h("ol", { class: "steps" }, r.steps.map((x) => h("li", {}, x)))) : null,
