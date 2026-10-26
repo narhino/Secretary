@@ -454,6 +454,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .meal-step .mt { text-align: left; border: 0; background: none; padding: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
 .meal-step .d { font: 500 12px var(--font-mono); color: var(--muted); text-align: right; white-space: nowrap; }
 .meal-step.eaten .mt { color: var(--muted); text-decoration: line-through; }
+.check.armed { border-color: var(--coral) !important; background: var(--coral) !important; color: #FFFFFF; }
 .meal-step .tag.next { background: var(--sec, var(--jade)); color: #FFFFFF; }
 .pickbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 2px dashed var(--sec, var(--jade)); font-weight: 600; font-size: 14px; }
 .rcard { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
@@ -1115,10 +1116,58 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       items: (r.ingredients || []).map((it) => { const f = foodById(it.food), g = it.grams * k / s; return { name: `${fmtG(g)} g ${f ? f.name : it.food}`, kcal: f ? Math.round(f.kcal * g / 100) : null }; }) });
     return res.meal_id;
   }
+  // A tick either logs the meal (mealId) or points at one they already logged themselves (linked: true).
+  const justLogged = new Set();
+  const isEaten = (k) => !!k.eaten && (!k.mealId || justLogged.has(k.mealId) || S.meals.some((m) => m.id === k.mealId));
   async function eatPick(day, pick) {
     const r = recipeById(pick.recipe); if (!r) return;
     const mealId = await logRecipe(r, pick.servings, pick.slot);
-    await savePlan(day, ((planOf(day) || {}).picks || []).map((k) => (k.id === pick.id ? { ...k, eaten: true, mealId } : k)));
+    justLogged.add(mealId);
+    await savePlan(day, ((planOf(day) || {}).picks || []).map((k) => (k.id === pick.id ? { ...k, eaten: true, mealId, linked: false } : k)));
+  }
+  async function linkPick(day, pick, mealId) {
+    await savePlan(day, ((planOf(day) || {}).picks || []).map((k) => (k.id === pick.id ? { ...k, eaten: true, mealId, linked: true } : k)));
+  }
+  // Meals logged today for this pick's slot that no other tick already counts.
+  function sameSlotMeals(day, pick) {
+    const used = new Set(((planOf(day) || {}).picks || []).filter((k) => k.id !== pick.id && k.mealId).map((k) => k.mealId));
+    return mealsOn(day).filter((m) => !used.has(m.id) && (m.meal === pick.slot || (pick.slot === "snack" && m.meal === "drink")));
+  }
+  function tickPick(day, pick) {
+    if (sameSlotMeals(day, pick).length) { openSheet({ type: "tick", day, pickId: pick.id }, false); return; }
+    run(() => eatPick(day, pick));
+  }
+  async function untickPick(day, pick) {
+    const m = pick.mealId && !pick.linked ? S.meals.find((x) => x.id === pick.mealId) : null;
+    if (m) {
+      // Already copied to the long-term sheet: hide it and let the next check-in remove the CSV rows.
+      if (m.processed) await db.doc("meals/" + m.id).update({ deleted: true, edited_after_sync: true, editedAt: nowIso() });
+      else await db.doc("meals/" + m.id).delete();
+    }
+    await savePlan(day, ((planOf(day) || {}).picks || []).map((k) => (k.id === pick.id ? { ...k, eaten: false, mealId: null, linked: false } : k)));
+    toast(m ? `Unticked. Removed the logged ${m.name} (${signed(-(Number(m.xp) || 0))} XP).` : "Unticked.");
+  }
+  let armedPick = null, armedTimer = null;
+  function onPickCheck(day, k) {
+    if (!isEaten(k)) { tickPick(day, k); return; }
+    if (armedPick === k.id) { clearTimeout(armedTimer); armedPick = null; run(() => untickPick(day, k)); return; }
+    armedPick = k.id; toast(k.mealId && !k.linked ? "Tap again to untick it and remove the meal it logged." : "Tap again to untick it.");
+    clearTimeout(armedTimer); armedTimer = setTimeout(() => { armedPick = null; renderRecipes(); }, 3000);
+    renderRecipes();
+  }
+  function tickPage(v) {
+    const k = ((planOf(v.day) || {}).picks || []).find((x) => x.id === v.pickId), r = k && recipeById(k.recipe);
+    if (!k || !r) return null;
+    const cands = sameSlotMeals(v.day, k);
+    return h("div", { class: "page" },
+      h("div", { class: "page-head" }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
+        h("div", {}, h("h2", {}, `Ate ${r.title}?`), h("div", { class: "muted small" }, `You already logged ${k.slot} today. Is it the same meal?`))),
+      h("div", { class: "list" }, cands.map((m) => h("button", { class: "row two", type: "button", style: "text-align:left;width:100%;color:inherit",
+          onclick: () => run(async () => { await linkPick(v.day, k, m.id); closeSheet(); toast(`Ticked. Counted the ${m.name} you already logged.`); }) },
+        h("div", { class: "main" }, h("div", { class: "title" }, `Yes, it's this: ${m.name}`), h("div", { class: "meta" }, `${clock(m.at)} · ${Math.round(m.kcal || 0)} kcal · ${Math.round(m.protein_g || 0)} g protein`)),
+        h("span", { class: "xp" }, "›")))),
+      h("div", { class: "ask-row" }, h("button", { class: "btn", type: "button", onclick: () => run(async () => { await eatPick(v.day, k); closeSheet(); }) }, `No, I ate ${r.title} too: log it`),
+        h("span", { class: "spacer" }), h("button", { class: "btn small", type: "button", onclick: closeSheet }, "Cancel")));
   }
   async function saveFoods(i) {
     const list = Array.isArray(i.foods) ? i.foods.slice(0, 25) : [];
@@ -1549,10 +1598,10 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const today = dayKey(), t = cfg("nutrition"), ms = mealsOn(today), kcal = sumOf(ms, "kcal"), prot = sumOf(ms, "protein_g"), tiles = [];
     tiles.push(tile("food", "Food", t && t.kcal ? `${Math.round(kcal)} / ${t.kcal} kcal` : `${Math.round(kcal)} kcal`,
       `${Math.round(prot)}${t && t.protein_g ? " / " + t.protein_g : ""} g protein · ${ms.length} meal${ms.length === 1 ? "" : "s"}`, t && t.kcal ? 100 * kcal / t.kcal : null));
-    const plan = planOf(today), picks = planPicks(plan), next = picks.find((k) => !k.eaten), nr = next && recipeById(next.recipe);
+    const plan = planOf(today), picks = planPicks(plan), next = picks.find((k) => !isEaten(k)), nr = next && recipeById(next.recipe);
     tiles.push(tile("recipes", "Meal plan", !picks.length ? "No day picked" : nr ? `Next: ${nr.title}` : "Day complete ✓",
-      !picks.length ? "Pick Day 1, 2 or 3 to follow" : `${plan.title || "Today's plan"} · ${picks.filter((k) => k.eaten).length}/${picks.length} eaten`,
-      picks.length ? 100 * picks.filter((k) => k.eaten).length / picks.length : null));
+      !picks.length ? "Pick Day 1, 2 or 3 to follow" : `${plan.title || "Today's plan"} · ${picks.filter(isEaten).length}/${picks.length} eaten`,
+      picks.length ? 100 * picks.filter(isEaten).length / picks.length : null));
     const hd = S.health.find((x) => x.id === today), steps = hd ? Number(hd.steps) || 0 : 0;
     tiles.push(tile("move", "Steps", hd ? steps.toLocaleString("en-US") : "No data yet",
       hd ? `goal ${stepGoal().toLocaleString("en-US")}${hd.distance_km ? ` · ${hd.distance_km} km` : ""}` : "Syncs from your phone", hd ? 100 * steps / stepGoal() : null));
@@ -1741,7 +1790,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function dayTotals(d) { const t = zeroN(); for (const m of d.meals || []) { const r = recipeById(m.recipe); if (r) addN(t, recipeTotals(r).per, Number(m.servings) || 1); } return t; }
   // Following a day copies its meals into plans/<date>; meals already eaten that day stay.
   async function followDay(d, date) {
-    const eaten = ((planOf(date) || {}).picks || []).filter((k) => k.eaten);
+    const eaten = ((planOf(date) || {}).picks || []).filter(isEaten);
     const picks = [...eaten, ...(d.meals || []).filter((m) => !eaten.some((k) => k.recipe === m.recipe && k.slot === m.slot))
       .map((m) => ({ id: sid(), recipe: m.recipe, slot: m.slot, servings: Number(m.servings) || 1, eaten: false }))];
     const doc = { day: date, template: d.id, title: `Day ${d.number || "?"} · ${d.title}`, picks, updatedAt: nowIso() };
@@ -1778,7 +1827,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const per = recipeTotals(r).per, m = Number(servings) || 1;
     return h("div", { class: "meal-step" + (extra && extra.eaten ? " eaten" : "") }, extra && extra.check ? extra.check : h("span", { class: "emoji" }, r.emoji || "🍽️"),
       h("div", { style: "min-width:0" }, h("span", { class: "slotname" }, slot, extra && extra.next ? h("span", { class: "tag next", style: "margin-left:6px" }, "next") : null),
-        h("button", { class: "mt", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot }, false) }, `${extra && extra.check ? (r.emoji || "") + " " : ""}${r.title}${m !== 1 ? ` ×${m}` : ""}`)),
+        h("button", { class: "mt", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot }, false) }, `${extra && extra.check ? (r.emoji || "") + " " : ""}${r.title}${m !== 1 ? ` ×${m}` : ""}`),
+        extra && extra.linked ? h("span", { class: "muted small", style: "display:block" }, "counted your logged meal") : null),
       h("span", { class: "d" }, `${Math.round(per.kcal * m)} kcal`, h("br"), `${Math.round(per.protein_g * m)} g P`));
   }
   function renderRecipes() {
@@ -1790,12 +1840,14 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     if (!picks.length) tp.replaceChildren(h("div", { class: "section-head" }, h("h3", { class: "h3s" }, "Today"), h("span", { class: "muted small" }, "no plan yet")),
       h("p", { class: "muted small", style: "margin:0" }, "Pick a day below and tap “Follow today”. It becomes your guide: tick each meal as you eat it."));
     else {
-      const next = picks.find((k) => !k.eaten), ms = mealsOn(today);
-      tp.replaceChildren(h("div", { class: "section-head" }, h("h3", { class: "h3s" }, plan.title || "Today's plan"), h("span", { class: "muted small" }, `${picks.filter((k) => k.eaten).length}/${picks.length} eaten`)),
+      const next = picks.find((k) => !isEaten(k)), ms = mealsOn(today);
+      tp.replaceChildren(h("div", { class: "section-head" }, h("h3", { class: "h3s" }, plan.title || "Today's plan"), h("span", { class: "muted small" }, `${picks.filter(isEaten).length}/${picks.length} eaten`)),
         macroBar("Calories", sumOf(ms, "kcal"), t && t.kcal, "kcal"), macroBar("Protein", sumOf(ms, "protein_g"), t && t.protein_g, "g"),
         h("div", {}, picks.map((k) => { const r = recipeById(k.recipe); if (!r) return null;
-          return mealStep(k.slot, r, k.servings, { eaten: k.eaten, next: k === next, check: checkBtn(k.eaten, `Ate ${r.title}`, () => { if (!k.eaten) run(() => eatPick(today, k)); }) }); })),
-        h("p", { class: "muted small", style: "margin:0" }, next ? "Tick a meal when you eat it: it's logged with its XP." : "Day complete. Proud of you. 🎉"));
+          const cb = checkBtn(isEaten(k), `Ate ${r.title}`, () => onPickCheck(today, k));
+          if (armedPick === k.id) cb.classList.add("armed");
+          return mealStep(k.slot, r, k.servings, { eaten: isEaten(k), next: k === next, linked: isEaten(k) && k.linked, check: cb }); })),
+        h("p", { class: "muted small", style: "margin:0" }, next ? "Tick a meal when you eat it and it's logged with its XP. Tap a tick twice to undo it." : "Day complete. Proud of you. 🎉"));
     }
     const tomPlan = planOf(tom);
     if (tomPlan && (tomPlan.picks || []).length) tp.append(h("p", { class: "small", style: "margin:0" }, `Tomorrow: ${tomPlan.title || `${tomPlan.picks.length} meals planned`}`));
@@ -1895,7 +1947,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function drawSheet() {
     const v = sheetStack[sheetStack.length - 1]; if (!v) return;
     $("#sheetback").hidden = sheetStack.length < 2;
-    const page = v.type === "food" ? foodPage(v) : v.type === "check" ? checkPage(v) : recipePage(v);
+    const page = v.type === "food" ? foodPage(v) : v.type === "check" ? checkPage(v) : v.type === "tick" ? tickPage(v) : recipePage(v);
     $("#sheetbody").replaceChildren(page || h("div", { class: "empty" }, "This was removed."));
   }
   function renderSheet() {
@@ -2396,7 +2448,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving`).slice(0, 100),
       day_plans_library: dayList().map((d) => `${d.id}: Day ${d.number} · ${d.title} = ${(d.meals || []).map((m) => `${m.slot} ${(recipeById(m.recipe) || {}).title || "?"}${m.servings !== 1 ? " ×" + m.servings : ""}`).join(", ")} → ${macroLine(dayTotals(d))}`).slice(0, 40),
       day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, following: (planOf(d) || {}).title || null, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
-        return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${k.eaten ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
+        return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${isEaten(k) ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
       recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")), carbs_g: Math.round(sumOf(ms, "carbs_g")), fat_g: Math.round(sumOf(ms, "fat_g")) },
       left_today: t && t.kcal ? { kcal: Math.round(t.kcal - sumOf(ms, "kcal")), protein_g: Math.round((t.protein_g || 0) - sumOf(ms, "protein_g")), carbs_g: Math.round((t.carbs_g || 0) - sumOf(ms, "carbs_g")), fat_g: Math.round((t.fat_g || 0) - sumOf(ms, "fat_g")) } : null,
@@ -2473,7 +2525,7 @@ App state (JSON): ${appState()}`;
   function checkPrompt() {
     const t = cfg("nutrition") || {}, e = todayN(), today = dayKey(), r0 = (v) => Math.round(v);
     const left = t.kcal ? `${r0(t.kcal - e.kcal)} kcal, ${r0((t.protein_g || 0) - e.protein_g)} g protein to go, ${r0((t.carbs_g || 0) - e.carbs_g)} g carbs, ${r0((t.fat_g || 0) - e.fat_g)} g fat` : "unknown (no targets set: judge on general healthy eating for their goal)";
-    const planned = ((planOf(today) || {}).picks || []).filter((k) => !k.eaten).map((k) => { const r = recipeById(k.recipe); return r ? `${k.slot}: ${r.title} (${r0(recipeTotals(r).per.kcal * (k.servings || 1))} kcal)` : null; }).filter(Boolean);
+    const planned = ((planOf(today) || {}).picks || []).filter((k) => !isEaten(k)).map((k) => { const r = recipeById(k.recipe); return r ? `${k.slot}: ${r.title} (${r0(recipeTotals(r).per.kcal * (k.servings || 1))} kcal)` : null; }).filter(Boolean);
     return `You are ${persona()}, their nutrition coach. They're about to buy or eat what's in the photo (a 7-Eleven product, a packet's label, a menu or a plate) and want a fast verdict.
 Goal: ${t.goal || "not set"}. Daily targets: ${t.kcal ? `${t.kcal} kcal, ${t.protein_g} g protein, ${t.carbs_g} g carbs, ${t.fat_g} g fat` : "not set"}.
 Eaten today so far (it's ${String(hourNow()).padStart(2, "0")}:00 in Bangkok): ${r0(e.kcal)} kcal, ${r0(e.protein_g)} g protein, ${r0(e.carbs_g)} g carbs, ${r0(e.fat_g)} g fat.
@@ -2538,7 +2590,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
     const table = h("table", { class: "ctable" }, h("thead", {}, h("tr", {}, h("th", {}, ""), h("th", {}, "This"), h("th", {}, "Left now"), h("th", {}, "After"))),
       h("tbody", {}, rows.map(([l, k, target, u]) => h("tr", {}, h("td", {}, l), h("td", {}, r[k] == null ? "?" : `${Math.round(r[k])}${u}`), ...cell(k, target)))));
     const extra = [r.sugar_g != null ? `Sugar ${Math.round(r.sugar_g)} g` : null, r.sodium_mg != null ? `Sodium ${Math.round(r.sodium_mg)} mg` : null].filter(Boolean).join(" · ");
-    const planned = ((planOf(today) || {}).picks || []).filter((k) => !k.eaten).map((k) => ({ k, rec: recipeById(k.recipe) })).filter((x) => x.rec);
+    const planned = ((planOf(today) || {}).picks || []).filter((k) => !isEaten(k)).map((k) => ({ k, rec: recipeById(k.recipe) })).filter((x) => x.rec);
     const plannedKcal = planned.reduce((a, x) => a + recipeTotals(x.rec).per.kcal * (x.k.servings || 1), 0);
     return h("div", { class: "page" }, head,
       h("div", { class: "vbadge " + r.verdict }, h("b", {}, V), r.headline ? h("span", {}, r.headline) : null),
