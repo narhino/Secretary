@@ -405,6 +405,26 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .tile .track > i { background: var(--tone); }
 .more-link { justify-self: start; }
 
+/* "can I eat this?" check */
+.btn.wide { width: 100%; padding: 11px 14px; font-size: 15px; }
+.check-photo { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; background: var(--sunk); }
+.checking { display: grid; justify-items: center; gap: 10px; padding: 26px 0; color: var(--muted); font-size: 14px; }
+.dots3 { display: inline-flex; gap: 7px; }
+.dots3 i { width: 10px; height: 10px; border-radius: 50%; background: var(--jade); animation: av-dots 1.2s ease-in-out infinite; }
+.dots3 i:nth-child(2) { animation-delay: .2s; } .dots3 i:nth-child(3) { animation-delay: .4s; }
+.vbadge { display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; }
+.vbadge b { font: 700 19px/1.2 var(--font-display); }
+.vbadge span { font-size: 15px; }
+.vbadge.yes { background: var(--jade-soft); } .vbadge.yes b { color: var(--jade); }
+.vbadge.yes_but { background: var(--gold-soft); } .vbadge.yes_but b { color: var(--gold); }
+.vbadge.no { background: var(--coral-soft); } .vbadge.no b { color: var(--coral); }
+.ctable { width: 100%; border-collapse: collapse; font: 500 13px var(--font-mono); }
+.ctable th { font: 600 11px var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 0 0 6px 8px; }
+.ctable td { text-align: right; padding: 7px 0 7px 8px; border-top: 1px solid var(--line); white-space: nowrap; }
+.ctable th:first-child, .ctable td:first-child { text-align: left; padding-left: 0; font-family: var(--font-body); }
+.ctable .over { color: var(--coral); font-weight: 600; }
+.ctable .ok { color: var(--jade); font-weight: 600; }
+
 /* recipe book + food meter */
 .h3s { font: 700 14px var(--font-display); }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); }
@@ -520,6 +540,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         <div class="bubble" id="reply" aria-live="polite">Hey! Tell me anything: a goal, a meal, a deadline. I'll handle the rest.</div>
       </div>
     </div>
+    <button type="button" class="btn gold checkbtn wide" hidden>🛒 Can I eat this? Snap it</button>
+    <input type="file" id="checkcam" accept="image/*" capture="environment" hidden>
     <label class="sr-only" for="askbox">Talk to <span class="mname">Mali</span></label>
     <textarea id="askbox" placeholder="A goal, a deadline, what you ate, your workout, how you feel…"></textarea>
     <div class="suggest" id="suggest">
@@ -569,6 +591,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       <div class="snap">
         <input type="file" id="camera" accept="image/*" capture="environment" hidden>
         <button type="button" class="btn gold" id="snap">Snap a meal</button>
+        <button type="button" class="btn checkbtn" hidden>🛒 Can I eat this?</button>
         <button type="button" class="btn small" id="typemeal">Type it instead</button>
         <span class="muted small">Photo meals earn +2 XP. Meals that fight your goal cost XP.</span>
       </div>
@@ -1807,7 +1830,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function drawSheet() {
     const v = sheetStack[sheetStack.length - 1]; if (!v) return;
     $("#sheetback").hidden = sheetStack.length < 2;
-    const page = v.type === "food" ? foodPage(v) : recipePage(v);
+    const page = v.type === "food" ? foodPage(v) : v.type === "check" ? checkPage(v) : recipePage(v);
     $("#sheetbody").replaceChildren(page || h("div", { class: "empty" }, "This was removed."));
   }
   function renderSheet() {
@@ -2302,7 +2325,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
         return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${k.eaten ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
       recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
-      today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")) },
+      today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")), carbs_g: Math.round(sumOf(ms, "carbs_g")), fat_g: Math.round(sumOf(ms, "fat_g")) },
+      left_today: t && t.kcal ? { kcal: Math.round(t.kcal - sumOf(ms, "kcal")), protein_g: Math.round((t.protein_g || 0) - sumOf(ms, "protein_g")), carbs_g: Math.round((t.carbs_g || 0) - sumOf(ms, "carbs_g")), fat_g: Math.round((t.fat_g || 0) - sumOf(ms, "fat_g")) } : null,
       programs: S.programs.filter((p) => p.status !== "done").map((p) => ({ id: p.id, type: p.type, title: p.title, goal: p.goal, status: p.status, version: p.version, rules: p.rules,
         sessions: (p.sessions || []).map((s) => ({ id: s.id, name: s.name, days: s.days, items: (s.items || []).map((x) => `${x.name}${x.detail ? " " + x.detail : ""}`) })) })),
       recent_sessions: [...S.sessions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8).map((l) => ({ name: l.name, day: l.day, sets: (l.sets || []).slice(0, 12), notes: l.notes })),
@@ -2363,6 +2387,103 @@ App state (JSON): ${appState()}`;
     const url = (await shrink(file, 160)).toDataURL("image/jpeg", 0.7);
     return url.startsWith("data:image/jpeg") && url.length < 40000 ? url : null;
   }
+  // A photo's upload starts the first time something reads .upload (logging a meal), so a quick check costs no storage.
+  function makePending(image) {
+    let up;
+    const p = { used: false, thumb: thumbOf(image), get upload() { if (up === undefined) up = assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.id) : null; return up; } };
+    p.thumb.catch(() => {});
+    return p;
+  }
+
+  // ------------------------------------------------------------ "can I eat this?": a fast verdict, nothing logged until they say so
+  const todayN = () => { const ms = mealsOn(dayKey()); return Object.fromEntries(NUTR.map((n) => [n, sumOf(ms, n)])); };
+  function checkPrompt() {
+    const t = cfg("nutrition") || {}, e = todayN(), today = dayKey(), r0 = (v) => Math.round(v);
+    const left = t.kcal ? `${r0(t.kcal - e.kcal)} kcal, ${r0((t.protein_g || 0) - e.protein_g)} g protein to go, ${r0((t.carbs_g || 0) - e.carbs_g)} g carbs, ${r0((t.fat_g || 0) - e.fat_g)} g fat` : "unknown (no targets set: judge on general healthy eating for their goal)";
+    const planned = ((planOf(today) || {}).picks || []).filter((k) => !k.eaten).map((k) => { const r = recipeById(k.recipe); return r ? `${k.slot}: ${r.title} (${r0(recipeTotals(r).per.kcal * (k.servings || 1))} kcal)` : null; }).filter(Boolean);
+    return `You are ${persona()}, their nutrition coach. They're about to buy or eat what's in the photo (a 7-Eleven product, a packet's label, a menu or a plate) and want a fast verdict.
+Goal: ${t.goal || "not set"}. Daily targets: ${t.kcal ? `${t.kcal} kcal, ${t.protein_g} g protein, ${t.carbs_g} g carbs, ${t.fat_g} g fat` : "not set"}.
+Eaten today so far (it's ${String(hourNow()).padStart(2, "0")}:00 in Bangkok): ${r0(e.kcal)} kcal, ${r0(e.protein_g)} g protein, ${r0(e.carbs_g)} g carbs, ${r0(e.fat_g)} g fat.
+Left today: ${left}.
+Still planned today: ${planned.length ? planned.join("; ") : "nothing"}.
+Read the photo. If a nutrition label is visible, use it (Thai labels: พลังงาน = kcal, โปรตีน = protein, คาร์โบไฮเดรต = carbs, ไขมัน = fat, น้ำตาล = sugar, โซเดียม = sodium; values are often per serving (หนึ่งหน่วยบริโภค) with several servings per pack (จำนวนหน่วยบริโภคต่อ...)). Give numbers for what they'd realistically eat, usually the whole pack, and say so in portion. Otherwise estimate honestly for a typical portion.
+Verdict: "yes" = fits what's left and helps the goal; "yes_but" = fits, but uses up most of a macro (carbs or fat), is low in protein, or is sugary or salty, so the rest of today must adjust; "no" = clearly over what's left, or fights the goal when an easy better choice exists.
+Reply with only this JSON: {"name":"short product name","portion":"e.g. whole pack, 2 servings","source":"label or estimate","kcal":0,"protein_g":0,"carbs_g":0,"fat_g":0,"sugar_g":0,"sodium_mg":0,"verdict":"yes|yes_but|no","headline":"max 10 words, warm and direct","advice":"1-2 short sentences on what this means for the rest of today, e.g. 'Your carbs are done after this, so dinner should be protein and veg.'","swap":"a better pick in the same shop, or empty","xp":0,"meal":"breakfast|lunch|dinner|snack|drink"}
+xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 sugary drink or fried; -15..-20 blows the day.`;
+  }
+  function cleanCheck(r) {
+    r = r && typeof r === "object" ? r : {};
+    const out = { name: clip(r.name, 80) || "This item", portion: clip(r.portion, 60), source: r.source === "label" ? "label" : "estimate",
+      verdict: ["yes", "yes_but", "no"].includes(r.verdict) ? r.verdict : "yes_but", headline: clip(r.headline, 120), advice: clip(r.advice, 320), swap: clip(r.swap, 160),
+      xp: Math.max(-20, Math.min(20, Math.round(num(r.xp) || 0))), meal: MEAL_KINDS.includes(r.meal) ? r.meal : "snack" };
+    for (const n of NUTR) { const v = num(r[n]); out[n] = v == null ? null : Math.max(0, v); }
+    return out;
+  }
+  let checkSeq = 0;
+  async function checkFood(file, again) {
+    if (!sample) { toast(`${persona()} can't check photos in this view.`); return; }
+    const v = again || { type: "check" };
+    if (!again) { v.image = await downscale(file); try { v.url = URL.createObjectURL(v.image); } catch { v.url = null; } }
+    v.state = "loading"; v.err = null; v.seq = ++checkSeq;
+    openSheet(v, false); setMood("thinking");
+    try {
+      const res = await sample.json([{ role: "user", content: checkPrompt() }], { images: [v.image], modelTier: "quick", cache: false });
+      if (v.seq !== checkSeq) return;
+      v.result = cleanCheck(res); v.state = "done";
+      appendChat("user", "📷 Can I eat this?", { image: true });
+      const hl = v.result.headline && !/[.!?…]$/.test(v.result.headline) ? v.result.headline + "." : v.result.headline;
+      appendChat("assistant", [hl, v.result.advice].filter(Boolean).join(" "));
+      lastShot = { image: v.image, pending: makePending(v.image), at: Date.now() };
+      setMood(v.result.verdict === "no" ? "stern" : "happy", 2500);
+    } catch (e) {
+      if (v.seq !== checkSeq) return;
+      v.state = "error"; v.err = (e && e.code) || "page_error"; setMood("idle");
+    }
+    if (sheetStack.includes(v)) drawSheet();
+  }
+  function checkPage(v) {
+    const r = v.result;
+    const head = h("div", { class: "page-head" }, v.url ? h("img", { class: "check-photo", src: v.url, alt: "" }) : h("span", { class: "emoji" }, "🛒"),
+      h("div", {}, h("h2", {}, v.state === "done" ? r.name : "Can I eat this?"),
+        h("div", { class: "muted small" }, v.state === "done" ? [r.portion, r.source === "label" ? "read from the label" : "estimated"].filter(Boolean).join(" · ") : "")));
+    if (v.state === "loading") return h("div", { class: "page" }, head, h("div", { class: "checking" }, h("span", { class: "dots3", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+      `${persona()} is checking it against your day…`));
+    if (v.state === "error") return h("div", { class: "page" }, head, h("div", { class: "reply err" }, ERR[v.err] || `Couldn't check it (${v.err}).`),
+      h("div", { class: "ask-row" }, h("button", { class: "btn primary", type: "button", onclick: () => run(() => checkFood(null, v)) }, "Try again"),
+        h("button", { class: "btn", type: "button", onclick: () => { closeSheet(); openChat(); } }, "Ask in chat")));
+    const t = cfg("nutrition") || {}, e = todayN(), today = dayKey();
+    const V = { yes: "✅ Yes, go for it", yes_but: "🟡 Yes, but…", no: "⛔ Better skip it" }[r.verdict];
+    const cell = (k, target) => {
+      const it = Number(r[k]) || 0;
+      if (!target) return [h("td", {}, "–"), h("td", {}, "–")];
+      const now = target - e[k], after = now - it;
+      if (k === "protein_g") return [h("td", {}, now > 0 ? `${Math.round(now)} g to go` : "done ✓"), h("td", { class: after <= 0 ? "ok" : "" }, after > 0 ? `${Math.round(after)} g to go` : "done ✓")];
+      const u = k === "kcal" ? "" : " g";
+      return [h("td", {}, now >= 0 ? `${Math.round(now)}${u}` : `over ${Math.round(-now)}${u}`), h("td", { class: after < 0 ? "over" : "" }, after >= 0 ? `${Math.round(after)}${u}` : `over ${Math.round(-after)}${u}`)];
+    };
+    const rows = [["Calories", "kcal", t.kcal, ""], ["Protein", "protein_g", t.protein_g, " g"], ["Carbs", "carbs_g", t.carbs_g, " g"], ["Fat", "fat_g", t.fat_g, " g"]];
+    const table = h("table", { class: "ctable" }, h("thead", {}, h("tr", {}, h("th", {}, ""), h("th", {}, "This"), h("th", {}, "Left now"), h("th", {}, "After"))),
+      h("tbody", {}, rows.map(([l, k, target, u]) => h("tr", {}, h("td", {}, l), h("td", {}, r[k] == null ? "?" : `${Math.round(r[k])}${u}`), ...cell(k, target)))));
+    const extra = [r.sugar_g != null ? `Sugar ${Math.round(r.sugar_g)} g` : null, r.sodium_mg != null ? `Sodium ${Math.round(r.sodium_mg)} mg` : null].filter(Boolean).join(" · ");
+    const planned = ((planOf(today) || {}).picks || []).filter((k) => !k.eaten).map((k) => ({ k, rec: recipeById(k.recipe) })).filter((x) => x.rec);
+    const plannedKcal = planned.reduce((a, x) => a + recipeTotals(x.rec).per.kcal * (x.k.servings || 1), 0);
+    return h("div", { class: "page" }, head,
+      h("div", { class: "vbadge " + r.verdict }, h("b", {}, V), r.headline ? h("span", {}, r.headline) : null),
+      table, extra ? h("p", { class: "muted small mono", style: "margin:0" }, extra) : null,
+      planned.length && t.kcal ? h("p", { class: "small", style: "margin:0" }, `Still planned today: ${planned.map((x) => x.rec.title).join(", ")}. With this too, you'd end the day at ${Math.round(e.kcal + (r.kcal || 0) + plannedKcal)} / ${t.kcal} kcal.`) : null,
+      r.advice ? h("div", { class: "info" }, h("span", { class: "label" }, "What it means for today"), h("p", {}, r.advice)) : null,
+      r.swap ? h("div", { class: "info" }, h("span", { class: "label" }, "Better pick"), h("p", {}, r.swap)) : null,
+      h("div", { class: "ask-row" },
+        h("button", { class: "btn primary", type: "button", onclick: () => run(async () => {
+          pending = lastShot && lastShot.image === v.image ? lastShot.pending : makePending(v.image);
+          await addMeal({ name: r.name, meal: r.meal, kcal: r.kcal || 0, protein_g: r.protein_g || 0, carbs_g: r.carbs_g, fat_g: r.fat_g, sugar_g: r.sugar_g,
+            xp: r.xp, verdict: r.headline || V, from_photo: true });
+          closeSheet(); }) }, "I'm eating it"),
+        h("button", { class: "btn", type: "button", onclick: () => { closeSheet(); toast(r.verdict === "no" ? "Good call. 💪" : "Okay, not logged."); } }, "Skip it"),
+        h("span", { class: "spacer" }), h("span", { class: "muted small" }, `${signed(r.xp + 2)} XP if you eat it`)),
+      h("p", { class: "muted small", style: "margin:0" }, r.source === "label" ? "Numbers read from the label." : "Numbers are estimates; a label photo makes them exact."));
+  }
+
   async function send(box = $("#askbox")) {
     const text = box.value.trim();
     if (!text && !photo) return;
@@ -2374,14 +2495,13 @@ App state (JSON): ${appState()}`;
     try {
       if (photo) {
         image = await downscale(photo);
-        pending = { used: false, upload: assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.id) : null, thumb: thumbOf(image) };
+        pending = makePending(image);
         if (pending.upload) pending.upload.catch(() => {});
-        pending.thumb.catch(() => {});
         lastShot = { image, pending, at: Date.now() };
       } else if (lastShot && Date.now() - lastShot.at < 10 * 60e3) { image = lastShot.image; pending = lastShot.pending; again = true; }
       else pending = null;
       const userText = (text || "Log this meal.") + (again ? "\n[Their previous photo is attached again for reference. Don't log it again; use it with update_meal attach_photo if they ask.]"
-        : image ? "\n[Image attached. Food → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
+        : image ? "\n[Image attached. If they ask whether they can or should eat it, DON'T log it: give a verdict against left_today and what the next meal should look like. Food they ate → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
       appendChat("user", text || "📷", image && !again ? { image: true } : {}); pushed = true;
       const history = chatHistory().slice(-14).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text || "…" }));
       if (history.length && history[history.length - 1].role === "user") history[history.length - 1] = { role: "user", content: userText };
@@ -2460,6 +2580,8 @@ App state (JSON): ${appState()}`;
   $("#newprogram").addEventListener("click", () => fill("Build me a program for "));
   $("#typemeal").addEventListener("click", () => fill("I just ate "));
   $("#snap").addEventListener("click", () => $("#camera").click());
+  document.querySelectorAll(".checkbtn").forEach((b) => b.addEventListener("click", () => $("#checkcam").click()));
+  $("#checkcam").addEventListener("change", () => { const f = $("#checkcam").files[0]; $("#checkcam").value = ""; if (f) run(() => checkFood(f)); });
   $("#camera").addEventListener("change", () => { const f = $("#camera").files[0]; if (!f) return; setPhoto(f); talkNow("Log this meal."); });
   $("#addtaskbtn").addEventListener("click", () => { const f = $("#taskform"); f.hidden = !f.hidden; if (!f.hidden) $("#tasktitle").focus(); });
   $("#taskform").addEventListener("submit", (e) => { e.preventDefault(); const title = $("#tasktitle").value.trim(); if (!title || !db) return;
@@ -2533,7 +2655,7 @@ App state (JSON): ${appState()}`;
     sample = s;
     if (!sample) { status("Your secretary can't run in this view. Buttons still work."); $("#send").disabled = true; setAi(true); return; }
     const lim = await sample.limits().catch(() => null);
-    if (lim && lim.images) { $("#photobtn").hidden = false; $("#photo").accept = lim.images.mediaTypes.join(","); }
+    if (lim && lim.images) { $("#photobtn").hidden = false; $("#photo").accept = lim.images.mediaTypes.join(","); document.querySelectorAll(".checkbtn").forEach((b) => { b.hidden = false; }); }
     else { setAi(true); $("#snap").title = "Photos can't be sent from this view"; }
     if (lim && !lim.tools) canTools = false;
     if (lim && lim.tools && lim.tools.maxCount) maxTools = lim.tools.maxCount;

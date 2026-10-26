@@ -43,6 +43,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v12: "Can I eat this?" button (Home and Food): snap a product or plate before buying, get a fast verdict (yes / yes but / skip) against what's left today and the day's plan, plus what the next meal should be. Logged only if they tap "I'm eating it".
 - 2026-10-26: HQ v11: the long feed is now tabs. Home shows only notices (appointments, overdue, locks, ideas), Mali, the next 4 things and today-at-a-glance tiles; each section has its own tab. They asked for a compact home.
 - 2026-10-26: HQ v10: Recipe book (build a day from recipes, "Ate it" logs it) and Food meter (58 foods, each with a page, gram calculator and plate calculator). Mali adds recipes and foods herself. Targets synced to the repo: 2150 kcal / 165 g protein.
 - 2026-10-26: HQ v9: Mali can edit, delete or add a photo to any logged meal; text meals get an emoji. Her last photo stays with her for 10 minutes of follow-up questions. HQ v8: meal photos keep a small preview so they show on the iPhone.
