@@ -44,6 +44,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v16: every meal shows a short "how to cook it" under it in the day pages and today's guide; editable by them (Edit on the meal page) or by Mali (save_recipe how).
 - 2026-10-26: HQ v14: meal-plan ticks can be undone (tap twice; removes the meal the tick logged). Ticking a slot they already logged asks "same meal?" and counts it instead of logging twice. Fixed today's double-counted egg toast.
 - 2026-10-26: HQ v13: "recipes" means FULL DAYS to them. Meal plan tab = Day 1…6 pages (each a whole day on target), Follow today/tomorrow, tick meals as eaten. Days 1–3 are the ones Mali built with them; 4–6 starter days. Single meals moved to a Meal library.
 - 2026-10-26: HQ v12: "Can I eat this?" button (Home and Food): snap a product or plate before buying, get a fast verdict (yes / yes but / skip) against what's left today and the day's plan, plus what the next meal should be. Logged only if they tap "I'm eating it".

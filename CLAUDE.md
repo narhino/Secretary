@@ -19,7 +19,8 @@ for later; the app resurfaces them at 3/7/14/30/60/90 days), `inbox` (mood, slee
 (`<commitmentId>_<YYYY-MM-DD>`: done / missed / excused, with XP) and `chat/<YYYY-MM-DD>` (the full
 conversation with Mali, her name and animated face in the app; `config/persona` holds the name),
 `foods` (the Food meter: per-100 g values + an info page per food), `recipes` (single meals, the
-Meal library: ingredients = food ids + grams, macros computed from the meter), `days` (the Meal plan:
+Meal library: ingredients = food ids + grams, macros computed from the meter, `how` = the short
+how-to shown under the meal, `steps` = full method), `days` (the Meal plan:
 full days "Day N" = meals in eating order that land on the daily targets; they pick one and follow it)
 and `plans/<YYYY-MM-DD>` (the day they follow: `template` + picks; ticking a meal logs it with
 `recipeId`). Every recipe ingredient must exist in `foods`; every day's meal in `recipes`.

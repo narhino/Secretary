@@ -454,6 +454,10 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .meal-step .mt { text-align: left; border: 0; background: none; padding: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
 .meal-step .d { font: 500 12px var(--font-mono); color: var(--muted); text-align: right; white-space: nowrap; }
 .meal-step.eaten .mt { color: var(--muted); text-decoration: line-through; }
+.meal-step .how { grid-column: 2 / -1; margin-top: -4px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.meal-step { align-items: start; }
+.meal-step .d { padding-top: 16px; }
+.howbox textarea { width: 100%; min-height: 84px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 16px; resize: vertical; }
 .check.armed { border-color: var(--coral) !important; background: var(--coral) !important; color: #FFFFFF; }
 .meal-step .tag.next { background: var(--sec, var(--jade)); color: #FFFFFF; }
 .pickbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 2px dashed var(--sec, var(--jade)); font-weight: 600; font-size: 14px; }
@@ -1204,6 +1208,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     if (i.emoji != null) doc.emoji = clip(i.emoji, 8) || null;
     if (num(i.servings) != null) doc.servings = Math.max(1, Math.min(12, Math.round(num(i.servings))));
     if (num(i.minutes) != null) doc.minutes = Math.max(0, Math.round(num(i.minutes)));
+    if (i.how != null) doc.how = clip(i.how, 300);
     if (i.tags != null) doc.tags = listOf(i.tags, 5, 24);
     if (ings) doc.ingredients = ings;
     if (Array.isArray(i.steps)) doc.steps = i.steps.slice(0, 12).map((s) => clip(s, 300)).filter(Boolean);
@@ -1824,13 +1829,15 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     toast(prev ? `Day ${d.number} updated` : `New: Day ${d.number} · ${d.title}`);
     return { day_id: id, number: d.number, totals: { kcal: Math.round(t.kcal), protein_g: Math.round(t.protein_g), carbs_g: Math.round(t.carbs_g), fat_g: Math.round(t.fat_g) }, followed };
   }
+  const howOf = (r) => clip(r.how || (r.steps || []).slice(0, 2).join(" "), 220);
   function mealStep(slot, r, servings, extra) {
     const per = recipeTotals(r).per, m = Number(servings) || 1;
     return h("div", { class: "meal-step" + (extra && extra.eaten ? " eaten" : "") }, extra && extra.check ? extra.check : h("span", { class: "emoji" }, r.emoji || "🍽️"),
       h("div", { style: "min-width:0" }, h("span", { class: "slotname" }, slot, extra && extra.next ? h("span", { class: "tag next", style: "margin-left:6px" }, "next") : null),
         h("button", { class: "mt", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot }, false) }, `${extra && extra.check ? (r.emoji || "") + " " : ""}${r.title}${m !== 1 ? ` ×${m}` : ""}`),
         extra && extra.linked ? h("span", { class: "muted small", style: "display:block" }, "counted your logged meal") : null),
-      h("span", { class: "d" }, `${Math.round(per.kcal * m)} kcal`, h("br"), `${Math.round(per.protein_g * m)} g P`));
+      h("span", { class: "d" }, `${Math.round(per.kcal * m)} kcal`, h("br"), `${Math.round(per.protein_g * m)} g P`),
+      howOf(r) && !(extra && extra.eaten) ? h("span", { class: "how" }, howOf(r)) : null);
   }
   function renderRecipes() {
     if (!["recipes", "foods", "plans", "config", "days", "meals"].every((c) => S.loaded.has(c))) return;
@@ -1953,7 +1960,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
   function renderSheet() {
     const d = sheetEl(), a = document.activeElement;
-    if (d.open && sheetStack.length && !(a && d.contains(a) && /INPUT|SELECT/.test(a.tagName))) drawSheet();
+    if (d.open && sheetStack.length && !(a && d.contains(a) && /INPUT|SELECT|TEXTAREA/.test(a.tagName))) drawSheet();
   }
   function foodPage(v) {
     const f = foodById(v.id); if (!f) return null;
@@ -1985,6 +1992,22 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       h("div", { class: "ask-row" }, h("button", { class: "btn small", type: "button", onclick: () => { closeSheet(); fill(`Update “${f.name}” in my food meter: `); } }, `Ask ${persona()} to change it`),
         h("span", { class: "spacer" }), used.length ? null : delBtn("Delete food", async () => { await db.doc("foods/" + f.id).delete(); closeSheet(); })));
   }
+  function howBox(r, v) {
+    if (v.editing) {
+      const ta = h("textarea", { "aria-label": "How to cook it" }); ta.value = v.draft ?? (r.how || howOf(r));
+      ta.addEventListener("input", () => { v.draft = ta.value; });
+      setTimeout(() => ta.focus(), 0);
+      return h("div", { class: "info howbox" }, h("span", { class: "label" }, "How to cook it"), ta,
+        h("div", { class: "ask-row" }, h("button", { class: "btn primary small", type: "button", onclick: () => run(async () => {
+          const how = clip(ta.value, 300); await db.doc("recipes/" + r.id).update({ how, updatedAt: nowIso() });
+          localRecipes.set(r.id, { ...r, how }); v.editing = false; v.draft = null; drawSheet(); toast("Saved."); }) }, "Save"),
+          h("button", { class: "btn small", type: "button", onclick: () => { v.editing = false; v.draft = null; drawSheet(); } }, "Cancel")));
+    }
+    return h("div", { class: "info" }, h("div", { class: "slot-head" }, h("span", { class: "label" }, "How to cook it"),
+        h("span", {}, h("button", { class: "link-btn", type: "button", onclick: () => { v.editing = true; drawSheet(); } }, "Edit"), " · ",
+          h("button", { class: "link-btn", type: "button", onclick: () => { closeSheet(); fill(`Rewrite how to cook “${r.title}”: `); } }, `Ask ${persona()}`))),
+      h("p", {}, howOf(r) || "No how-to yet."));
+  }
   function recipePage(v) {
     const r = recipeById(v.id); if (!r) return null;
     if (v.servings == null) v.servings = 1;
@@ -2007,6 +2030,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       h("div", { class: "page-head" }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
         h("div", {}, h("h2", {}, r.title), h("div", { class: "muted small" }, [r.meal, r.minutes ? r.minutes + " min" : null, s > 1 ? `makes ${s} servings` : null, ...(r.tags || [])].filter(Boolean).join(" · ")))),
       r.verdict ? h("div", { class: "reply" }, `${r.verdict}  ${signed(r.xp || 0)} XP`) : null,
+      howBox(r, v),
       h("div", { class: "calc" }, h("div", { class: "slot-head" }, h("span", { class: "label" }, "Servings you'll eat"),
           h("span", { class: "stepper" }, h("button", { class: "btn small", type: "button", "aria-label": "Less", onclick: () => step(-0.5) }, "−"), amt,
             h("button", { class: "btn small", type: "button", "aria-label": "More", onclick: () => step(0.5) }, "+"))), out,
@@ -2393,7 +2417,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         recipe_id: { type: "string" }, title: { type: "string" }, meal: { type: "string", enum: SLOTS }, emoji: { type: "string" },
         servings: { type: "integer", description: "Servings the ingredients make" }, minutes: { type: "integer" }, tags: { type: "string", description: "Comma-separated, e.g. 'high protein, meal prep'" },
         ingredients: { type: "array", items: { type: "object", required: ["food_id", "grams"], properties: { food_id: { type: "string" }, grams: { type: "number" }, note: { type: "string", description: "e.g. 'sliced'" } } } },
-        steps: { type: "array", items: { type: "string" } }, xp: { type: "integer", description: "-20..20 per serving, judged like a meal" }, verdict: { type: "string", description: "Max 10 words" },
+        how: { type: "string", description: "1-2 sentences: how to cook it, shown under the meal" }, steps: { type: "array", items: { type: "string" } }, xp: { type: "integer", description: "-20..20 per serving, judged like a meal" }, verdict: { type: "string", description: "Max 10 words" },
         plan_day: { type: "string", description: "YYYY-MM-DD" }, plan_slot: { type: "string", enum: SLOTS }, plan_servings: { type: "number" }, delete: { type: "boolean" } } },
       execute: async (i) => { status("Writing the recipe…"); return saveRecipe(i); } },
     { name: "save_foods", description: "Add or update foods in their Food meter. Values per 100 g (typical USDA values or the pack label) with state raw/cooked/dry, plus a short honest info page: how easy it is to cook, lean or greasy, what to watch, where to buy in Thailand, storage. Use it for every recipe ingredient missing from food_meter and whenever they ask to add a food.",
@@ -2447,7 +2471,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
       meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
       food_meter: S.foods.map((f) => `${f.id}: ${f.name} (${Math.round(f.kcal || 0)} kcal, ${fmtG(f.protein_g)} g P per 100 g)`).slice(0, 250),
-      recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving`).slice(0, 100),
+      recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving. How: ${howOf(r) || "-"}`).slice(0, 100),
       day_plans_library: dayList().map((d) => `${d.id}: Day ${d.number} · ${d.title} = ${(d.meals || []).map((m) => `${m.slot} ${(recipeById(m.recipe) || {}).title || "?"}${m.servings !== 1 ? " ×" + m.servings : ""}`).join(", ")} → ${macroLine(dayTotals(d))}`).slice(0, 40),
       day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, following: (planOf(d) || {}).title || null, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
         return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${isEaten(k) ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
@@ -2472,7 +2496,7 @@ Voice: brief and straight to the point, warm, like a friend texting. 1-3 short s
 Act with the tools first, then reply. Don't narrate tool calls.
 MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
 You can edit any logged meal with update_meal: fix numbers, rename, delete duplicates, or put the attached photo on an existing meal (attach_photo) instead of logging it twice. Give text-only meals a food emoji icon.
-KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = single meals (the library); day_plans_library = full days of eating ("Day 1", "Day 2"…) they follow as a guide; day_plans = what they follow today/tomorrow. A "recipe" or "day" request from them usually means a FULL DAY: save_foods for every missing ingredient (reuse ids; honest typical values; say raw/cooked/dry; short practical info) → save_recipe for each new meal → save_day with the meals in eating order. A day must land within ±5% of their kcal target with protein at or above target; fit Thai markets and a simple studio kitchen; judge meal xp honestly. "Add X to my meter" → save_foods.
+KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = single meals (the library); day_plans_library = full days of eating ("Day 1", "Day 2"…) they follow as a guide; day_plans = what they follow today/tomorrow. A "recipe" or "day" request from them usually means a FULL DAY: save_foods for every missing ingredient (reuse ids; honest typical values; say raw/cooked/dry; short practical info) → save_recipe for each new meal (always with how: 1-2 sentences on cooking it, plus steps) → save_day with the meals in eating order. To change how a meal is cooked, save_recipe with recipe_id + how (+ steps). A day must land within ±5% of their kcal target with protein at or above target; fit Thai markets and a simple studio kitchen; judge meal xp honestly. "Add X to my meter" → save_foods.
 Meal XP rubric, judged against nutrition_targets.goal and what's left today: +15..+20 high protein, whole food, fits the remaining budget; +5..+10 decent; 0 neutral; -5..-10 sugary drink, deep-fried or oversized; -15..-20 blows the day or directly fights the goal. If no targets yet, score on general quality and suggest setting targets. Verdict: max 10 words, specific ("Protein bomb, light on oil. Perfect cut meal."). Reply with one line: what today looks like now and one tip.
 TRAINING: when they give fitness goals, build a gym program with save_program: sessions on fixed days, each exercise with sets×reps @ load and rest, progression rules. When they report a workout, log_session with sets. Every few sessions, optimise: update loads/volume from the logged sets (save_program with program_id and a change_note). Other areas (work, habits) can get programs too.
 GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, the first tiny (<10 min), each with a when/where cue, xp 10-60. Complete steps/tasks by id when they say they did something, then praise specifically.
