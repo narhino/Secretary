@@ -15,18 +15,49 @@
   --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --r: 14px;
+  /* one colour per section: fill, soft band, readable ink */
+  --t-today: #E39B17; --t-today-soft: #FDF1D8; --t-today-ink: #8A5300;
+  --t-commit: #7B4FD6; --t-commit-soft: #EFE8FC; --t-commit-ink: #5B34B0;
+  --t-food: #E0603A; --t-food-soft: #FCE7DF; --t-food-ink: #A8391A;
+  --t-training: #2F6FDB; --t-training-soft: #E4EDFC; --t-training-ink: #1F55B8;
+  --t-move: #0E9384; --t-move-soft: #DCF3EF; --t-move-ink: #0B6E63;
+  --t-goals: #0B7A5E; --t-goals-soft: #D9EFE6; --t-goals-ink: #0B6B53;
+  --t-remember: #C2407A; --t-remember-soft: #FBE4EF; --t-remember-ink: #9C2D60;
+  --t-drafts: #4F5BD5; --t-drafts-soft: #E7E9FB; --t-drafts-ink: #3B45B0;
+  --t-ideas: #7A9A00; --t-ideas-soft: #EEF5D6; --t-ideas-ink: #4F6400;
+  --t-wins: #C98A00; --t-wins-soft: #FBF0D3; --t-wins-ink: #8A5D00;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0C1311; --surface: #141E1B; --sunk: #1A2723; --ink: #E5EEE9; --muted: #92A39C; --line: #243530;
     --jade: #38C49A; --jade-soft: #123A2F; --gold: #F0BD48; --gold-bright: #F6C95E; --gold-soft: #3A2E10;
     --coral: #F08470; --coral-soft: #3E1E18; --on-accent: #08130F; color-scheme: dark;
+    --t-today: #F2B24A; --t-today-soft: #3A2A0E; --t-today-ink: #F2B24A;
+    --t-commit: #B79BFF; --t-commit-soft: #291E46; --t-commit-ink: #B79BFF;
+    --t-food: #FF8A65; --t-food-soft: #3D1C12; --t-food-ink: #FF8A65;
+    --t-training: #7FA8FF; --t-training-soft: #16264A; --t-training-ink: #7FA8FF;
+    --t-move: #4FD1C0; --t-move-soft: #0F3330; --t-move-ink: #4FD1C0;
+    --t-goals: #38C49A; --t-goals-soft: #123A2F; --t-goals-ink: #38C49A;
+    --t-remember: #F78FBF; --t-remember-soft: #3D1528; --t-remember-ink: #F78FBF;
+    --t-drafts: #9AA3FF; --t-drafts-soft: #1E2148; --t-drafts-ink: #9AA3FF;
+    --t-ideas: #C3E05A; --t-ideas-soft: #2A3110; --t-ideas-ink: #C3E05A;
+    --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0C1311; --surface: #141E1B; --sunk: #1A2723; --ink: #E5EEE9; --muted: #92A39C; --line: #243530;
   --jade: #38C49A; --jade-soft: #123A2F; --gold: #F0BD48; --gold-bright: #F6C95E; --gold-soft: #3A2E10;
   --coral: #F08470; --coral-soft: #3E1E18; --on-accent: #08130F; color-scheme: dark;
+  --t-today: #F2B24A; --t-today-soft: #3A2A0E; --t-today-ink: #F2B24A;
+  --t-commit: #B79BFF; --t-commit-soft: #291E46; --t-commit-ink: #B79BFF;
+  --t-food: #FF8A65; --t-food-soft: #3D1C12; --t-food-ink: #FF8A65;
+  --t-training: #7FA8FF; --t-training-soft: #16264A; --t-training-ink: #7FA8FF;
+  --t-move: #4FD1C0; --t-move-soft: #0F3330; --t-move-ink: #4FD1C0;
+  --t-goals: #38C49A; --t-goals-soft: #123A2F; --t-goals-ink: #38C49A;
+  --t-remember: #F78FBF; --t-remember-soft: #3D1528; --t-remember-ink: #F78FBF;
+  --t-drafts: #9AA3FF; --t-drafts-soft: #1E2148; --t-drafts-ink: #9AA3FF;
+  --t-ideas: #C3E05A; --t-ideas-soft: #2A3110; --t-ideas-ink: #C3E05A;
+  --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
@@ -52,6 +83,43 @@ button { cursor: pointer; }
 .section-head h2 { font: 700 15px/1.2 var(--font-display); letter-spacing: .01em; }
 .link-btn { background: none; border: 0; padding: 4px 0; color: var(--jade); font-weight: 600; }
 .empty { padding: 14px 16px; border: 1px dashed var(--line); border-radius: var(--r); color: var(--muted); display: grid; gap: 10px; justify-items: start; }
+
+/* coloured sections */
+#today { --sec: var(--t-today); --sec-soft: var(--t-today-soft); --sec-ink: var(--t-today-ink); }
+#commit { --sec: var(--t-commit); --sec-soft: var(--t-commit-soft); --sec-ink: var(--t-commit-ink); }
+#food { --sec: var(--t-food); --sec-soft: var(--t-food-soft); --sec-ink: var(--t-food-ink); }
+#training { --sec: var(--t-training); --sec-soft: var(--t-training-soft); --sec-ink: var(--t-training-ink); }
+#move { --sec: var(--t-move); --sec-soft: var(--t-move-soft); --sec-ink: var(--t-move-ink); }
+#goals-sec { --sec: var(--t-goals); --sec-soft: var(--t-goals-soft); --sec-ink: var(--t-goals-ink); }
+#remember { --sec: var(--t-remember); --sec-soft: var(--t-remember-soft); --sec-ink: var(--t-remember-ink); }
+#drafts { --sec: var(--t-drafts); --sec-soft: var(--t-drafts-soft); --sec-ink: var(--t-drafts-ink); }
+#ideas { --sec: var(--t-ideas); --sec-soft: var(--t-ideas-soft); --sec-ink: var(--t-ideas-ink); }
+#wins-sec { --sec: var(--t-wins); --sec-soft: var(--t-wins-soft); --sec-ink: var(--t-wins-ink); }
+main > .section { background: var(--sec-soft); border-radius: 22px; padding: 14px; }
+main > .section > .section-head h2 { display: flex; align-items: center; gap: 8px; color: var(--sec-ink); }
+main > .section > .section-head h2::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: var(--sec); flex: none; }
+main > .section .link-btn { color: var(--sec-ink); }
+main > .section .empty { border-color: var(--sec); color: var(--ink); opacity: .85; }
+main > .section .tag.goal { background: var(--surface); color: var(--sec-ink); }
+main > .section .track.jade > i, main > .section .segbar > i.on { background: var(--sec); }
+main > .section .segbar > i.next { background: var(--surface); box-shadow: inset 0 0 0 2px var(--sec); }
+main > .section .check { border-color: var(--sec); }
+main > .section .check[aria-checked="true"] { background: var(--sec); }
+main > .section .next-step { background: var(--surface); }
+main > .section .pct { color: var(--sec-ink); }
+main > .section .btn.primary { background: var(--sec); border-color: var(--sec); color: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) main > .section .btn.primary { color: #0C1311; } }
+:root[data-theme="dark"] main > .section .btn.primary { color: #0C1311; }
+.nav a[href="#today"] { background: var(--t-today-soft); color: var(--t-today-ink); border-color: transparent; }
+.nav a[href="#commit"] { background: var(--t-commit-soft); color: var(--t-commit-ink); border-color: transparent; }
+.nav a[href="#food"] { background: var(--t-food-soft); color: var(--t-food-ink); border-color: transparent; }
+.nav a[href="#training"] { background: var(--t-training-soft); color: var(--t-training-ink); border-color: transparent; }
+.nav a[href="#move"] { background: var(--t-move-soft); color: var(--t-move-ink); border-color: transparent; }
+.nav a[href="#goals-sec"] { background: var(--t-goals-soft); color: var(--t-goals-ink); border-color: transparent; }
+.nav a[href="#remember"] { background: var(--t-remember-soft); color: var(--t-remember-ink); border-color: transparent; }
+.nav a[href="#drafts"] { background: var(--t-drafts-soft); color: var(--t-drafts-ink); border-color: transparent; }
+.nav a[href="#ideas"] { background: var(--t-ideas-soft); color: var(--t-ideas-ink); border-color: transparent; }
+.nav a[href="#wins-sec"] { background: var(--t-wins-soft); color: var(--t-wins-ink); border-color: transparent; }
 
 /* sticky section bar */
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin: 0 -4px; padding: 8px 4px;
@@ -269,6 +337,18 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .dots i.missed { background: var(--coral); }
 .dots i.excused { background: var(--line); }
 
+/* punishment lock */
+.lock { position: fixed; inset: 0; z-index: 60; background: var(--coral-soft); display: grid; place-items: center; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.lock-inner { max-width: 440px; width: 100%; display: grid; gap: 14px; justify-items: center; text-align: center; }
+.lock-inner .avatar { width: 112px; height: 112px; }
+.lock h2 { font: 700 clamp(22px, 6vw, 28px)/1.2 var(--font-display); text-wrap: balance; }
+.lock p { margin: 0; color: var(--muted); }
+.lock-timer { font: 600 56px/1 var(--font-mono); color: var(--coral); }
+.lock .btn.big { width: 100%; padding: 14px; font-size: 17px; border-radius: 14px; }
+.lock .skip { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; padding: 6px; }
+.lock .skip.confirm { color: var(--coral); font-weight: 700; }
+
 /* ideas */
 .idea { display: grid; gap: 8px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; border-left: 3px solid var(--jade); }
 .idea .t { font-weight: 700; }
@@ -469,6 +549,19 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   </div>
 </div>
 <button type="button" class="fab" id="fab" aria-label="Open chat"><span class="avslot" data-size="60"></span></button>
+<div class="lock" id="lock" role="alertdialog" aria-modal="true" aria-labelledby="locktitle" hidden>
+  <div class="lock-inner">
+    <div class="avslot" data-size="112"></div>
+    <div class="label">Locked by <span class="mname">Mali</span></div>
+    <h2 id="locktitle">Punishment</h2>
+    <p id="lockwhy"></p>
+    <div class="lock-timer" id="locktimer" aria-live="polite">5:00</div>
+    <button type="button" class="btn gold big" id="lockstart">I'll do it now</button>
+    <button type="button" class="btn primary big" id="lockdone" hidden>Done ✓</button>
+    <p class="small" id="lockhint">The app unlocks when the timer ends and you tap Done.</p>
+    <button type="button" class="skip" id="lockskip">Skip it and lose XP instead</button>
+  </div>
+</div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <div class="toast" id="toast" role="status"></div>
 
@@ -905,7 +998,8 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
             taskId = `pun-${id}`;
             await db.doc("tasks/" + taskId).set({ title: clip(c.punishment, 200), due: shiftDay(day, 1), priority: "high", area: "commitment", goalId: null,
               notes: `Missed "${c.title}" on ${nice(day)} (−${pen} XP). Do this to win back ${Math.ceil(pen / 2)} XP.`,
-              status: "todo", createdAt: nowIso(), doneAt: null, winId: null, redeemXp: Math.ceil(pen / 2), penaltyFor: id });
+              status: "todo", createdAt: nowIso(), doneAt: null, winId: null, redeemXp: Math.ceil(pen / 2), penaltyFor: id,
+              lock: true, lockAt: lockTime(c.punishment_time, shiftDay(day, 1)), lockMinutes: lockMins(c.punishment_minutes), lockStartedAt: null, skipXp: pen * 2 });
           }
           await db.doc("checks/" + id).set({ commitmentId: c.id, title: c.title, day, status: "missed", xp: -pen, at: nowIso(), punishmentTaskId: taskId });
           setMood("stern", 5000);
@@ -913,6 +1007,78 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
         });
       }
     }
+  }
+  // ------------------------------------------------------------ punishment lock
+  // A lock task blocks the whole app from its lockAt time until they start the timer, wait it out and tap Done.
+  const lockMins = (m) => Math.max(1, Math.min(60, Math.round(Number(m) || 5)));
+  function lockTime(when, day) {
+    if (!when || when === "now") return nowIso();
+    if (!HHMM.test(String(when))) return new Date(`${day}T07:00:00+07:00`).toISOString();
+    return new Date(`${day}T${when}:00+07:00`).toISOString();
+  }
+  function nextAt(hhmm) {
+    // The next time the clock reads hh:mm in Bangkok: today if still ahead, otherwise tomorrow.
+    if (!hhmm || hhmm === "now" || !HHMM.test(String(hhmm))) return nowIso();
+    const today = new Date(`${dayKey()}T${hhmm}:00+07:00`);
+    return (today > new Date() ? today : new Date(today.getTime() + 864e5)).toISOString();
+  }
+  const activeLock = () => S.tasks.filter((t) => t.lock && t.status !== "done" && t.lockAt && new Date(t.lockAt) <= new Date())
+    .sort((a, b) => String(a.lockAt).localeCompare(String(b.lockAt)))[0] || null;
+  let lockShown = null;
+  function renderLock() {
+    const el = $("#lock"), t = S.loaded.has("tasks") ? activeLock() : null;
+    if (!t) {
+      if (!el.hidden) { el.hidden = true; $("main").inert = false; $("#fab").inert = false; lockShown = null; }
+      return;
+    }
+    if (el.hidden) { el.hidden = false; $("main").inert = true; $("#fab").inert = true; closeChat(); setMood("stern"); }
+    lockShown = t.id;
+    $("#locktitle").textContent = t.title;
+    $("#lockwhy").textContent = t.notes || "";
+    tickLock();
+  }
+  function tickLock() {
+    const t = lockShown && S.tasks.find((x) => x.id === lockShown);
+    if (!t) return;
+    const total = lockMins(t.lockMinutes) * 60000;
+    const left = t.lockStartedAt ? Math.max(0, new Date(t.lockStartedAt).getTime() + total - Date.now()) : total;
+    const mm = Math.floor(left / 60000), ss = Math.floor(left / 1000) % 60;
+    $("#locktimer").textContent = `${mm}:${String(ss).padStart(2, "0")}`;
+    $("#lockstart").hidden = !!t.lockStartedAt;
+    $("#lockdone").hidden = !t.lockStartedAt || left > 0;
+    $("#lockdone").textContent = `Done ✓ +${t.redeemXp ?? 0} XP`;
+    $("#lockhint").textContent = !t.lockStartedAt ? "Tap when you're starting. The timer has to run out before you can unlock."
+      : left > 0 ? "Go. The app unlocks when the timer ends." : "Time's up. Tap Done if you did it.";
+    const skip = $("#lockskip");
+    if (!skip.classList.contains("confirm")) skip.textContent = `Skip it and lose ${t.skipXp ?? 30} XP instead`;
+  }
+  async function startLock() {
+    const t = lockShown && S.tasks.find((x) => x.id === lockShown); if (!t || t.lockStartedAt) return;
+    t.lockStartedAt = nowIso(); tickLock(); setMood("thinking");
+    await db.doc("tasks/" + t.id).update({ lockStartedAt: t.lockStartedAt });
+  }
+  async function finishLock() {
+    const t = lockShown && S.tasks.find((x) => x.id === lockShown); if (!t) return;
+    await toggleTask(t);
+    burst(120); setMood("happy", 4000); toast("Unlocked. That's how you keep your word.");
+  }
+  let skipArmed = false, skipTimer;
+  async function skipLock() {
+    const t = lockShown && S.tasks.find((x) => x.id === lockShown); if (!t) return;
+    const b = $("#lockskip"), cost = Math.abs(Number(t.skipXp) || 30);
+    if (!skipArmed) { skipArmed = true; b.classList.add("confirm"); b.textContent = `Tap again to lose ${cost} XP`; skipTimer = setTimeout(() => { skipArmed = false; b.classList.remove("confirm"); tickLock(); }, 4000); return; }
+    clearTimeout(skipTimer); skipArmed = false; b.classList.remove("confirm");
+    await db.collection("wins").doc().set({ kind: "penalty", text: `Skipped: ${t.title}`, xp: -cost, ref: t.id, praise: "Skipped the punishment. Double penalty.", at: nowIso() });
+    await db.doc("tasks/" + t.id).update({ status: "done", skipped: true, doneAt: nowIso() });
+    toast(`Skipped · −${cost} XP`); setMood("stern", 4000);
+  }
+  async function assignPunishment(i) {
+    const ref = db.collection("tasks").doc(), back = Math.max(0, Math.min(25, Math.round(Number(i.redeem_xp) || 5)));
+    await ref.set({ title: clip(i.punishment, 200), due: dayKey(new Date(nextAt(i.lock_at))), priority: "high", area: "commitment", goalId: null,
+      notes: clip(i.reason, 200) || "Punishment set by your secretary.", status: "todo", createdAt: nowIso(), doneAt: null, winId: null,
+      redeemXp: back, penaltyFor: null, lock: true, lockAt: nextAt(i.lock_at), lockMinutes: lockMins(i.punishment_minutes), lockStartedAt: null,
+      skipXp: Math.max(10, Math.abs(Math.round(Number(i.amount) || 15)) * 2) });
+    return ref.id;
   }
   async function checkDone(c, day) {
     const xp = Math.abs(Number(c.reward_xp) || 10);
@@ -928,7 +1094,8 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       const ref = db.collection("commitments").doc();
       await ref.set({ title: clip(i.title, 80), detail: i.detail ? clip(i.detail, 200) : null, window_start: i.window_start, window_end: i.window_end, days,
         reward_xp: Math.max(1, Math.min(50, Math.round(Number(i.reward_xp) || 10))), penalty_xp: Math.max(1, Math.min(50, Math.round(Number(i.penalty_xp) || 15))),
-        punishment: i.punishment ? clip(i.punishment, 160) : null, status: "active", createdAt: nowIso(), updatedAt: nowIso() });
+        punishment: i.punishment ? clip(i.punishment, 160) : null, punishment_time: i.punishment_time || "07:00", punishment_minutes: lockMins(i.punishment_minutes),
+        status: "active", createdAt: nowIso(), updatedAt: nowIso() });
       toast(`New commitment: ${clip(i.title, 40)}`); burst(30);
       return { commitment_id: ref.id };
     }
@@ -954,6 +1121,8 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       if (i.reward_xp != null) patch.reward_xp = Math.max(1, Math.min(50, Math.round(Number(i.reward_xp))));
       if (i.penalty_xp != null) patch.penalty_xp = Math.max(1, Math.min(50, Math.round(Number(i.penalty_xp))));
       if (i.punishment) patch.punishment = clip(i.punishment, 160);
+      if (i.punishment_time) patch.punishment_time = i.punishment_time;
+      if (i.punishment_minutes) patch.punishment_minutes = lockMins(i.punishment_minutes);
     }
     await db.doc("commitments/" + c.id).update(patch);
     return { ok: true, status: patch.status || c.status };
@@ -967,7 +1136,9 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     await doc.set({ kind: amount < 0 ? "penalty" : "bonus", text: reason, xp: amount, ref: null, praise, at: nowIso() });
     toast(`${signed(amount)} XP · ${clip(reason, 60)}`);
     if (amount < 0) setMood("stern", 4000); else { setMood("happy", 3000); burst(30); }
-    return { applied: amount, total_xp: totalXp() + amount };
+    const out = { applied: amount, total_xp: totalXp() + amount };
+    if (i.punishment) out.punishment_task_id = await assignPunishment({ ...i, reason });
+    return out;
   }
 
   // ------------------------------------------------------------ conversation (stored per day in chat/<YYYY-MM-DD>)
@@ -1007,7 +1178,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   }
 
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderNext(); renderFood(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); }
+  function render() { renderHeader(); renderNext(); renderFood(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
   function renderPersona() {
     document.querySelectorAll(".mname").forEach((el) => { el.textContent = persona(); });
     if (!live && S.loaded.has("chat")) {
@@ -1027,7 +1198,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       return h("div", { class: "commit" },
         h("div", { class: "goal-top" }, h("div", { class: "t" }, c.title), h("span", { class: "tag" + (c.status === "paused" ? "" : " goal") }, c.status)),
         h("div", { class: "rule" }, `${c.window_start}–${c.window_end} · ${(c.days && c.days.length) ? c.days.join(" ") : "every day"} · +${c.reward_xp} on time / −${c.penalty_xp} if missed`),
-        c.punishment ? h("div", { class: "rule" }, `If missed: ${c.punishment}`) : null,
+        c.punishment ? h("div", { class: "rule" }, `If missed: ${c.punishment} · locks the app ${c.punishment_time === "now" ? "right away" : "at " + (c.punishment_time || "07:00") + " next day"} for ${lockMins(c.punishment_minutes)} min`) : null,
         h("div", { class: "ask-row" },
           h("div", { class: "dots", "aria-label": "Last 7 days" }, last7.map((d) => { const k = checkOf(c.id, d); return h("i", { class: k ? k.status : "", title: `${nice(d)}: ${k ? k.status : scheduledOn(c, d) ? "—" : "off"}` }); })),
           h("span", { class: "muted small" }, `${done} on time · ${missed} missed`), h("span", { class: "spacer" }),
@@ -1493,11 +1664,15 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       inputSchema: { type: "object", properties: { action: { type: "string", enum: ["create", "update", "pause", "resume", "delete", "excuse"] }, commitment_id: { type: "string" },
         title: { type: "string" }, detail: { type: "string", description: "What counts as done" }, window_start: { type: "string", description: "HH:MM 24h" }, window_end: { type: "string", description: "HH:MM 24h" },
         days: { type: "array", description: "Weekdays (mon..sun); empty = every day", items: { type: "string" } }, reward_xp: { type: "integer" }, penalty_xp: { type: "integer" },
-        punishment: { type: "string", description: "Constructive consequence task, e.g. '20 push-ups before breakfast'" }, day: { type: "string", description: "YYYY-MM-DD for excuse" } } },
+        punishment: { type: "string", description: "Constructive consequence task, e.g. '20 push-ups before breakfast'" },
+        punishment_time: { type: "string", description: "When the punishment locks the app: HH:MM on the next day (e.g. 07:00 = before breakfast) or 'now'" },
+        punishment_minutes: { type: "integer", description: "Realistic minutes to do it (timer), e.g. 5 for 20 push-ups" }, day: { type: "string", description: "YYYY-MM-DD for excuse" } } },
       execute: async (i) => { status("Setting up your commitment…"); return saveCommitment(i); } },
-    { name: "adjust_xp", description: "Directly add or deduct XP (-50..50) with a clear reason: a slip they admit, a broken promise, or an exceptional effort.",
-      kw: /xp|penal|punish|deduct|bonus|reward|miss|skip|slip|fail/i,
-      inputSchema: { type: "object", required: ["amount", "reason"], properties: { amount: { type: "integer" }, reason: { type: "string" } } },
+    { name: "adjust_xp", description: "Directly add or deduct XP (-50..50) with a clear reason. With a punishment, it also LOCKS the whole app at lock_at until they do it (timer of punishment_minutes); doing it wins back redeem_xp, skipping costs double.",
+      kw: /xp|penal|punish|deduct|bonus|reward|miss|skip|slip|fail|lock|block/i,
+      inputSchema: { type: "object", required: ["amount", "reason"], properties: { amount: { type: "integer" }, reason: { type: "string" },
+        punishment: { type: "string" }, punishment_minutes: { type: "integer" }, lock_at: { type: "string", description: "'now' or HH:MM (next time that clock time comes)" },
+        redeem_xp: { type: "integer", description: "XP won back for doing it, usually half the penalty" } } },
       execute: async (i) => adjustXp(i) },
     { name: "suggest", description: "Add an idea to their Ideas board: a new feature, program, habit or optimisation that would genuinely help, based on what you've learned. Max one per conversation; never repeat existing ones.",
       inputSchema: { type: "object", required: ["title", "detail", "kind"], properties: { title: { type: "string" }, detail: { type: "string" }, kind: { type: "string", enum: ["feature", "program", "habit", "optimization"] } } },
@@ -1522,6 +1697,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       commitments: S.commitments.map((c) => ({ id: c.id, title: c.title, window: `${c.window_start}-${c.window_end}`, days: c.days, reward_xp: c.reward_xp, penalty_xp: c.penalty_xp,
         punishment: c.punishment, status: c.status, last_7_days: Array.from({ length: 7 }, (_, k) => { const d = shiftDay(today, k - 6), x = checkOf(c.id, d); return x ? x.status : "-"; }).join(" ") })),
       open_windows_now: openWindows().map((w) => w.c.title),
+      pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes })),
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
       meals_today: ms.map((m) => ({ name: m.name, meal: m.meal, kcal: m.kcal, protein_g: m.protein_g, xp: m.xp })),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")) },
@@ -1548,8 +1724,8 @@ GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, th
 MOVE: a screenshot of a Health/Fitness app → log_health (one call per day visible). A Google Maps Timeline screenshot or "I went to…" → log_places with names, times, minutes and coordinates only when you can place them confidently. Then one line: progress vs the step goal, and a nudge if they're short (a 15-minute walk ≈ 1,500-2,000 steps).
 DRAFTS: if they share an idea "for later" or say they don't want it handled now, park_draft it and do NOT turn it into tasks. Never act on parked_drafts unless they ask.
 POWERS: you run this app. You can award or deduct XP (adjust_xp), edit/complete/delete tasks (update_task), edit/delete goals (update_goal), change settings (update_settings) and set up commitments (save_commitment).
-COMMITMENTS: when they set a rule with a deadline ("phone away by 23:10", "gym by 19:00 Mon/Wed/Fri", "wake at 7"), create a commitment: a tight check-in window, reward_xp (5-15), penalty_xp (10-25) and a punishment. The app shows the check-in ONLY inside the window; on time = reward; missed = penalty deducted automatically + the punishment becomes a task for the next day that wins back half the XP. Tell them the deal in one line.
-PUNISHMENTS must be constructive and safe: short exercise (20 push-ups, a 15-minute walk), a chore (10-minute studio reset, dishes), or giving up a small comfort (no social media until noon, no dessert tomorrow). Never harmful, humiliating, about money, skipping meals or losing sleep. Use adjust_xp for slips they admit or exceptional effort, always with the reason.
+COMMITMENTS: when they set a rule with a deadline ("phone away by 23:10", "gym by 19:00 Mon/Wed/Fri", "wake at 7"), create a commitment: a tight check-in window, reward_xp (5-15), penalty_xp (10-25) and a punishment. The app shows the check-in ONLY inside the window; on time = reward; missed = penalty deducted automatically + the punishment, which LOCKS the whole app at punishment_time (e.g. 07:00 "before breakfast", or "now") until they tap "I'll do it now", wait out a timer of punishment_minutes (be realistic: 20 push-ups ≈ 5, a 15-minute walk = 15) and tap Done to win back half the XP. Skipping costs double. Tell them the deal in one line.
+PUNISHMENTS must be constructive and safe: short exercise (20 push-ups, a 15-minute walk), a chore (10-minute studio reset, dishes), or giving up a small comfort (no social media until noon, no dessert tomorrow). Never harmful, humiliating, about money, skipping meals or losing sleep. Use adjust_xp for slips they admit or exceptional effort, always with the reason; add a punishment (with lock_at and minutes) only for real slips, never for small things or when they're low.
 LEARN: when you learn a durable fact about them (routine, preference, constraint, what motivates them), save it with remember kind "fact". Use facts_about_user to personalise everything.
 IDEAS: when you spot something that would genuinely help (a new program, a smarter feature, a habit), add ONE suggestion; check ideas_board first so you never repeat.
 If they seem low, be kind first, tasks second. If anything is unclear, ask one short question. Never invent appointments or dates.
@@ -1686,7 +1862,11 @@ App state (JSON): ${appState()}`;
   $("#photo").addEventListener("change", () => { const f = $("#photo").files[0]; if (f) setPhoto(f); });
 
   render();
-  setInterval(() => { renderHeader(); renderNext(); evaluateCommitments(); }, 15000);
+  setInterval(() => { renderHeader(); renderNext(); evaluateCommitments(); renderLock(); }, 15000);
+  setInterval(() => { if (lockShown) tickLock(); }, 1000);
+  $("#lockstart").addEventListener("click", () => run(startLock));
+  $("#lockdone").addEventListener("click", () => run(finishLock));
+  $("#lockskip").addEventListener("click", () => run(skipLock));
 
   const C = window.claude;
   const offline = (msg) => document.querySelectorAll("#next,#meals,#programs,#goals,#notes,#draftlist,#idealist,#wins").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, msg)));

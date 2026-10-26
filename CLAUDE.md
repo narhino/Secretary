@@ -30,7 +30,9 @@ The app's built-in Claude (their subscription) writes all of these too.
 - Every proactive message you send (check-ins, reminders) also goes into today's `chat` doc as
   `{role: "assistant", source: "checkin", text, at}`, so it shows in the app's chat and on her card.
 - Missed commitment windows are penalised by the app itself (penalty XP + a punishment task worth half
-  back). Never double-penalise; you may `excuse` a day when there's a real reason.
+  back). Punishment tasks with `lock: true` lock the whole app at `lockAt` until they tap "I'll do it
+  now", wait out `lockMinutes` and tap Done; skipping costs `skipXp` (double). Never double-penalise;
+  you may `excuse` a day when there's a real reason.
 - Drafts are NOT tasks: never act on a parked draft unless they ask. The app brings them back; at
   most once a week, a check-in may mention one that fits what they're working on.
 - XP: task +10 (important +20, someday +5), goal steps 10–60, goal done +100, session +40, meal

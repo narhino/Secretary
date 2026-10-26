@@ -42,6 +42,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v6: each section has its own colour; punishments lock the whole app at their time (bedtime miss → 07:00 lock, 5-minute timer for 20 push-ups; skipping costs double XP).
 - 2026-10-26: HQ v5: Mali's animated face, full chat history, commitments with time windows, automatic XP penalties and redemption punishments; she can now adjust XP and edit or delete tasks and goals. First commitment: phone away 23:00–23:10 (+10 / −15, 20 push-ups).
 - 2026-10-25: HQ v3: Move (steps and calories burned from Health screenshots, places map from Maps Timeline) and Drafts that resurface on a spaced schedule.
 - 2026-10-25: HQ v2: photo meal tracker with XP up or down, training programs that evolve, Ideas board, learned facts.
