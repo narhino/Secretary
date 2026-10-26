@@ -26,6 +26,8 @@ description: Proactive or on-demand check-in (morning, midday, evening, or ad ho
      a one-shot message for that minute if you can (send_later / one-shot task); the safety net
      covers critical ones if you can't.
 4. Deliver it: in a scheduled run your reply IS the message (the user gets a push notification).
+   Also append it to today's HQ `chat` doc (role assistant, source "checkin") so it appears in the
+   app. Mention any open or missed commitment windows from `checks`.
    If the Discord webhook is configured and allowed, also post it there.
 5. As they answer: log everything (meals, `day set`, workouts, tasks, reminders), update profile
    and playbook facts, reply like a person.

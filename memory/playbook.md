@@ -26,6 +26,7 @@ The weekly review always ends with a change-log entry._
 - Fresh starts: Mondays and the 1st of the month are reset points; the weekly review sets 2–3 bets.
 
 ## Rules I follow for you
+- Punishments stay constructive: exercise, chores or small comforts given up. Never harmful, humiliating, money, food or sleep.
 - Don't send a check-in if we already talked in the last 2 hours; fold it into the conversation.
 - Appointments (orthodontist, immigration, DLT): reminder 1 day before plus a few hours before, and
   a prep task if documents are needed.
@@ -41,6 +42,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v5: Mali's animated face, full chat history, commitments with time windows, automatic XP penalties and redemption punishments; she can now adjust XP and edit or delete tasks and goals. First commitment: phone away 23:00–23:10 (+10 / −15, 20 push-ups).
 - 2026-10-25: HQ v3: Move (steps and calories burned from Health screenshots, places map from Maps Timeline) and Drafts that resurface on a spaced schedule.
 - 2026-10-25: HQ v2: photo meal tracker with XP up or down, training programs that evolve, Ideas board, learned facts.
 - 2026-10-25: Built the HQ app (pinned home page). Goals, tasks, notes and wins now live there; tasks.yaml retired.

@@ -14,7 +14,10 @@ meals with macros, verdict and XP), `programs` (gym, and later work/habit progra
 days and items, versioned with a changelog), `sessions` (logged workouts with sets), `suggestions`
 (the Ideas board), `config/nutrition` (targets), `health/<YYYY-MM-DD>` (steps, active kcal, km from
 Health-app screenshots), `places` (from Google Maps Timeline screenshots), `drafts` (ideas parked
-for later; the app resurfaces them at 3/7/14/30/60/90 days) and `inbox` (mood, sleep, body, water).
+for later; the app resurfaces them at 3/7/14/30/60/90 days), `inbox` (mood, sleep, body, water),
+`commitments` (daily deadlines with a check-in window, reward/penalty XP and a punishment), `checks`
+(`<commitmentId>_<YYYY-MM-DD>`: done / missed / excused, with XP) and `chat/<YYYY-MM-DD>` (the full
+conversation with Mali, her name and animated face in the app; `config/persona` holds the name).
 The app's built-in Claude (their subscription) writes all of these too.
 - Start of every session: `list` the collections you need. Pin every write with `if_version`.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.
@@ -24,6 +27,10 @@ The app's built-in Claude (their subscription) writes all of these too.
 - Phone sync (docs/phone-sync.md) pushes steps and locations into the repo automatically. At every
   check-in run `python -m secretary app-sync --days 3` and send its output as one ArtifactData
   `batch` (ids are stable, so re-sending is harmless).
+- Every proactive message you send (check-ins, reminders) also goes into today's `chat` doc as
+  `{role: "assistant", source: "checkin", text, at}`, so it shows in the app's chat and on her card.
+- Missed commitment windows are penalised by the app itself (penalty XP + a punishment task worth half
+  back). Never double-penalise; you may `excuse` a day when there's a real reason.
 - Drafts are NOT tasks: never act on a parked draft unless they ask. The app brings them back; at
   most once a week, a check-in may mention one that fits what they're working on.
 - XP: task +10 (important +20, someday +5), goal steps 10–60, goal done +100, session +40, meal
