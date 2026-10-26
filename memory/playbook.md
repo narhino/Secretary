@@ -45,6 +45,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: First test of the work check-in overwrote today's chat; restored all 60 messages. Outside messages now go to a separate `checkins` collection, and the app ignores malformed chat docs.
 - 2026-10-26: HQ v17: Work tab (top priority). Files with proof photo earn coins (streak multipliers), a Rewards shop (dinner out 35, night out 60, phone 300 + a $4k month), income tracker toward $4k. Mali steers every chat to a work schedule until it's set. Scheduled "Mali work check-ins" at 12:47 / 17:47 / 20:47. Assumed the currency is dollars; to confirm.
 - 2026-10-26: HQ v16: every meal shows a short "how to cook it" under it in the day pages and today's guide; editable by them (Edit on the meal page) or by Mali (save_recipe how).
 - 2026-10-26: HQ v14: meal-plan ticks can be undone (tap twice; removes the meal the tick logged). Ticking a slot they already logged asks "same meal?" and counts it instead of logging twice. Fixed today's double-counted egg toast.

@@ -44,8 +44,10 @@ The app's built-in Claude (their subscription) writes all of these too.
 - Phone sync (docs/phone-sync.md) pushes steps and locations into the repo automatically. At every
   check-in run `python -m secretary app-sync --days 3` and send its output as one ArtifactData
   `batch` (ids are stable, so re-sending is harmless).
-- Every proactive message you send (check-ins, reminders) also goes into today's `chat` doc as
-  `{role: "assistant", source: "checkin", text, at}`, so it shows in the app's chat and on her card.
+- Every proactive message you send (check-ins, reminders) also goes into the app as a NEW doc
+  `checkins/<YYYY-MM-DD>-<HHMM>` = `{day, text, at, source}`; the app merges it into Mali's chat and her
+  card. Never write `chat/<day>` docs from outside the app: the app owns them, and a bad rewrite once
+  wiped a day's conversation (restored from a transcript, 2026-10-26).
 - Missed commitment windows are penalised by the app itself (penalty XP + a punishment task worth half
   back). Punishment tasks with `lock: true` lock the whole app at `lockAt` until they tap "I'll do it
   now", wait out `lockMinutes` and tap Done; skipping costs `skipXp` (double). Never double-penalise;

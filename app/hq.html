@@ -790,7 +790,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const $ = (s) => document.querySelector(s);
   const COLLS = ["goals", "tasks", "notes", "wins", "inbox", "meals", "programs", "sessions", "suggestions", "config", "health", "places", "drafts",
-    "commitments", "checks", "chat", "foods", "recipes", "plans", "days", "worklog", "rewards", "income", "workplans"];
+    "commitments", "checks", "chat", "foods", "recipes", "plans", "days", "worklog", "rewards", "income", "workplans", "checkins"];
   const RESURFACE_DAYS = [3, 7, 14, 30, 60, 90];
   const S = Object.fromEntries(COLLS.map((c) => [c, []]));
   S.loaded = new Set();
@@ -1682,11 +1682,17 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 
   // ------------------------------------------------------------ conversation (stored per day in chat/<YYYY-MM-DD>)
   let chatWrite = Promise.resolve();
-  const chatHistory = () => [...S.chat].sort((a, b) => a.id.localeCompare(b.id)).flatMap((d) => (d.messages || []).map((m) => ({ ...m, day: d.id })));
+  // Chat = the app's own conversation (chat/<day>) + messages sent from outside (checkins: scheduled nudges and check-ins).
+  // Outside writers only ever add a checkins doc, so they can never damage the conversation.
+  const msgsOf = (d) => (Array.isArray(d && d.messages) ? d.messages.filter((m) => m && typeof m === "object" && m.text) : []);
+  const chatHistory = () => [
+    ...S.chat.flatMap((d) => msgsOf(d).map((m) => ({ ...m, day: d.id }))),
+    ...S.checkins.filter((c) => c && c.text && c.at).map((c) => ({ role: "assistant", source: "checkin", text: String(c.text), at: c.at, day: c.day || dayKey(c.at) })),
+  ].sort((a, b) => String(a.at).localeCompare(String(b.at)));
   function appendChat(role, text, extra = {}) {
     if (!db || !text) return;
     const day = dayKey(), i = S.chat.findIndex((d) => d.id === day);
-    const messages = [...((i >= 0 && S.chat[i].messages) || []), { role, text: clip(text, 4000), at: nowIso(), ...extra }].slice(-300);
+    const messages = [...(i >= 0 ? msgsOf(S.chat[i]) : []), { role, text: clip(text, 4000), at: nowIso(), ...extra }].slice(-300);
     const docData = { day, messages };
     if (i >= 0) S.chat[i] = { id: day, ...docData }; else S.chat.push({ id: day, ...docData });
     chatWrite = chatWrite.then(() => db.doc("chat/" + day).set(docData)).catch((e) => console.error("chat save", e));
@@ -3120,6 +3126,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
     for (const c of ["goals", "tasks", "notes", "wins", "programs", "suggestions", "config", "drafts", "commitments"]) sub(c, db.collection(c));
     sub("checks", db.collection("checks").orderBy("day", "desc").limit(400));
     sub("chat", db.collection("chat").orderBy("day", "desc").limit(60));
+    sub("checkins", db.collection("checkins").orderBy("at", "desc").limit(200));
     sub("health", db.collection("health").orderBy("day", "desc").limit(120));
     sub("places", db.collection("places").orderBy("at", "desc").limit(500));
     sub("inbox", db.collection("inbox").orderBy("at", "desc").limit(300));
