@@ -1724,11 +1724,25 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 
 
   // ------------------------------------------------------------ work screens
-  let memTimer;  // kept here too: some views block storage
-  const timerStart = () => { const v = memTimer !== undefined ? memTimer : store("hq.workStart"); return v && !isNaN(Date.parse(v)) ? v : null; };
-  const setTimer = (v) => { memTimer = v; store("hq.workStart", v); };
+  // The work timer lives in config/timer so it survives switching apps, reloads and other devices.
+  let memTimer, memAt = "";  // this view's latest change, until the snapshot catches up
+  const timerStart = () => {
+    const c = cfg("timer");
+    const v = memTimer !== undefined && !(c && String(c.updatedAt) >= memAt) ? memTimer : c ? c.start : store("hq.workStart");
+    return v && !isNaN(Date.parse(v)) ? v : null;
+  };
+  const setTimer = (v) => {
+    memTimer = v; memAt = nowIso(); store("hq.workStart", v);
+    if (db) db.doc("config/timer").set({ start: v, updatedAt: memAt }).catch(() => {});
+    tickTimers();
+  };
+  const fmtClock = (sec) => { const hh = Math.floor(sec / 3600), mm = Math.floor(sec / 60) % 60, ss = sec % 60;
+    return (hh ? `${hh}:${String(mm).padStart(2, "0")}` : String(mm)) + ":" + String(ss).padStart(2, "0"); };
+  function tickTimers() {
+    const t = timerStart(), sec = t ? Math.max(0, Math.floor((Date.now() - Date.parse(t)) / 1000)) : 0;
+    document.querySelectorAll(".timer-btn").forEach((b) => { if (t) b.textContent = `⏱ ${fmtClock(sec)} · Stop`; });
+  }
   const timerMins = () => { const t = timerStart(); return t ? Math.max(0, Math.round((Date.now() - Date.parse(t)) / 60000)) : null; };
-  const fmtMins = (m) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
   const hhmmNow = () => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
   function nextReward() {
     const bal = coinBalance();
@@ -1757,7 +1771,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       planLine(compact),
       h("div", { class: "wk-actions" },
         h("button", { class: "btn work", type: "button", onclick: () => openSheet({ type: "workdone", files: 1, minutes: timerMins() }, false) }, "+ File done"),
-        tm != null ? h("button", { class: "btn small", type: "button", onclick: () => { setTimer(null); render(); } }, `⏱ ${fmtMins(tm)} · Stop`)
+        tm != null ? h("button", { class: "btn small timer-btn", type: "button", onclick: () => { setTimer(null); render(); } }, `⏱ ${fmtClock(Math.max(0, Math.floor((Date.now() - Date.parse(timerStart())) / 1000)))} · Stop`)
           : h("button", { class: "btn small", type: "button", onclick: () => { setTimer(nowIso()); render(); } }, "▶ Start timer"),
         compact ? h("button", { class: "link-btn", type: "button", onclick: () => showTab("work") }, "Rewards ›") : null),
       nr ? h("div", { class: "small" }, `Next reward: ${nr.r.emoji || "🎁"} ${nr.r.title} · ${nr.left} coins to go (~${Math.max(1, Math.ceil(nr.left / (COIN_PER_FILE * mult)))} file${Math.ceil(nr.left / (COIN_PER_FILE * mult)) > 1 ? "s" : ""})`)
@@ -3105,7 +3119,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   if (location.hash === "#chat") openChat();
   render();
   setInterval(() => { renderHeader(); renderWork(); renderNext(); renderNotices(); evaluateCommitments(); renderLock(); }, 15000);
-  setInterval(() => { if (lockShown) tickLock(); }, 1000);
+  setInterval(() => { if (lockShown) tickLock(); tickTimers(); }, 1000);
   $("#lockstart").addEventListener("click", () => run(startLock));
   $("#lockdone").addEventListener("click", () => run(finishLock));
   $("#lockskip").addEventListener("click", () => run(skipLock));
