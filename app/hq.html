@@ -26,6 +26,8 @@
   --t-drafts: #4F5BD5; --t-drafts-soft: #E7E9FB; --t-drafts-ink: #3B45B0;
   --t-ideas: #7A9A00; --t-ideas-soft: #EEF5D6; --t-ideas-ink: #4F6400;
   --t-wins: #C98A00; --t-wins-soft: #FBF0D3; --t-wins-ink: #8A5D00;
+  --t-recipes: #8D5A2B; --t-recipes-soft: #F3E8DC; --t-recipes-ink: #6E4419;
+  --t-meter: #4A6782; --t-meter-soft: #E3EAF1; --t-meter-ink: #33506B;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -42,6 +44,8 @@
     --t-drafts: #9AA3FF; --t-drafts-soft: #1E2148; --t-drafts-ink: #9AA3FF;
     --t-ideas: #C3E05A; --t-ideas-soft: #2A3110; --t-ideas-ink: #C3E05A;
     --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
+    --t-recipes: #D9A06A; --t-recipes-soft: #33240F; --t-recipes-ink: #D9A06A;
+    --t-meter: #9DB6CF; --t-meter-soft: #1B2633; --t-meter-ink: #9DB6CF;
   }
 }
 :root[data-theme="dark"] {
@@ -58,6 +62,8 @@
   --t-drafts: #9AA3FF; --t-drafts-soft: #1E2148; --t-drafts-ink: #9AA3FF;
   --t-ideas: #C3E05A; --t-ideas-soft: #2A3110; --t-ideas-ink: #C3E05A;
   --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
+  --t-recipes: #D9A06A; --t-recipes-soft: #33240F; --t-recipes-ink: #D9A06A;
+  --t-meter: #9DB6CF; --t-meter-soft: #1B2633; --t-meter-ink: #9DB6CF;
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
@@ -95,6 +101,8 @@ button { cursor: pointer; }
 #drafts { --sec: var(--t-drafts); --sec-soft: var(--t-drafts-soft); --sec-ink: var(--t-drafts-ink); }
 #ideas { --sec: var(--t-ideas); --sec-soft: var(--t-ideas-soft); --sec-ink: var(--t-ideas-ink); }
 #wins-sec { --sec: var(--t-wins); --sec-soft: var(--t-wins-soft); --sec-ink: var(--t-wins-ink); }
+#recipes { --sec: var(--t-recipes); --sec-soft: var(--t-recipes-soft); --sec-ink: var(--t-recipes-ink); }
+#meter { --sec: var(--t-meter); --sec-soft: var(--t-meter-soft); --sec-ink: var(--t-meter-ink); }
 main > .section { background: var(--sec-soft); border-radius: 22px; padding: 14px; }
 main > .section > .section-head h2 { display: flex; align-items: center; gap: 8px; color: var(--sec-ink); }
 main > .section > .section-head h2::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: var(--sec); flex: none; }
@@ -120,6 +128,8 @@ main > .section .btn.primary { background: var(--sec); border-color: var(--sec);
 .nav a[href="#drafts"] { background: var(--t-drafts-soft); color: var(--t-drafts-ink); border-color: transparent; }
 .nav a[href="#ideas"] { background: var(--t-ideas-soft); color: var(--t-ideas-ink); border-color: transparent; }
 .nav a[href="#wins-sec"] { background: var(--t-wins-soft); color: var(--t-wins-ink); border-color: transparent; }
+.nav a[href="#recipes"] { background: var(--t-recipes-soft); color: var(--t-recipes-ink); border-color: transparent; }
+.nav a[href="#meter"] { background: var(--t-meter-soft); color: var(--t-meter-ink); border-color: transparent; }
 
 /* sticky section bar */
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin: 0 -4px; padding: 8px 4px;
@@ -367,6 +377,69 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .win .what { font-size: 13px; color: var(--muted); grid-column: 1 / 2; overflow-wrap: anywhere; }
 .win .when { font-size: 12px; color: var(--muted); text-align: right; }
 
+/* recipe book + food meter */
+.h3s { font: 700 14px var(--font-display); }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); }
+.seg button, .fchip { border: 0; background: none; border-radius: 99px; padding: 4px 12px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"], .fchip[aria-pressed="true"] { background: var(--sec, var(--jade)); color: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"], :root:not([data-theme="light"]) .fchip[aria-pressed="true"] { color: #0C1311; } }
+:root[data-theme="dark"] .seg button[aria-pressed="true"], :root[data-theme="dark"] .fchip[aria-pressed="true"] { color: #0C1311; }
+.fchips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.fchips::-webkit-scrollbar { display: none; }
+.fchip { flex: none; background: var(--surface); border: 1px solid var(--line); }
+.fchip[aria-pressed="true"] { border-color: transparent; }
+.slots { display: grid; gap: 8px; }
+.slot { background: var(--bg); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+.slot-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pick { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: "t act x" "n act x"; gap: 0 8px; align-items: center; padding-top: 6px; border-top: 1px solid var(--line); }
+.pick:first-of-type { border-top: 0; padding-top: 0; }
+.pick-t { grid-area: t; text-align: left; border: 0; background: none; padding: 0; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.pick .n { grid-area: n; font: 500 12px var(--font-mono); color: var(--muted); }
+.pick .act { grid-area: act; } .pick .x { grid-area: x; }
+.pick.eaten .pick-t { color: var(--muted); text-decoration: line-through; }
+.pickbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 2px dashed var(--sec, var(--jade)); font-weight: 600; font-size: 14px; }
+.rcard { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.rcard-main, .food { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 0; color: inherit; min-width: 0; }
+.emoji { width: 42px; height: 42px; display: grid; place-items: center; font-size: 24px; line-height: 1; border-radius: 12px; background: var(--sec-soft, var(--sunk)); flex: none; }
+.rc-text, .food-t { display: grid; gap: 2px; min-width: 0; }
+.rc-text b, .food-t b { font-weight: 600; overflow-wrap: anywhere; }
+.rc-side { display: grid; justify-items: end; gap: 6px; }
+.foods { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.food { grid-template-columns: auto 1fr auto; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.food .emoji { width: 36px; height: 36px; font-size: 20px; }
+.food-t b { font-size: 14px; }
+.search { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px 12px; font-size: 16px; }
+.num-in { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 8px; width: 100%; font: 500 16px var(--font-mono); }
+.plate-row { display: grid; grid-template-columns: 1fr 76px auto; gap: 8px; align-items: center; }
+.plate-row .nm { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.plate-row .nm small { display: block; font: 500 12px var(--font-mono); color: var(--muted); }
+.plate-tot { font: 600 13px var(--font-mono); padding-top: 6px; border-top: 1px solid var(--line); }
+dialog.sheet { border: 0; padding: 0; width: min(100%, 640px); max-width: 100%; max-height: 92vh; max-height: 92dvh; overflow: auto; margin: auto auto 0;
+  background: var(--bg); color: var(--ink); border-radius: 22px 22px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.25); }
+@media (min-width: 700px) { dialog.sheet { margin: auto; border-radius: 22px; } }
+dialog.sheet::backdrop { background: rgba(8, 14, 12, .5); }
+.sheet-bar { position: sticky; top: 0; z-index: 1; display: flex; gap: 8px; align-items: center; padding: 10px max(14px, env(safe-area-inset-right, 0px)) 10px max(14px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
+.sheet-bar .spacer { flex: 1; }
+.sheet-body { padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 14px; }
+.page-head { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.page-head h2 { font: 700 19px/1.2 var(--font-display); overflow-wrap: anywhere; }
+.page-head .emoji { width: 54px; height: 54px; font-size: 32px; background: var(--surface); border: 1px solid var(--line); }
+.calc { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: grid; gap: 10px; }
+.grams-row { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.grams-row .num-in { max-width: 130px; font-size: 22px; }
+.calc-out { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; }
+.calc-out .stat { background: var(--bg); padding: 8px 10px; }
+.calc-out .stat b { font-size: 17px; }
+.info p { margin: 4px 0 0; }
+.ing { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.ing:first-of-type { border-top: 0; }
+.ing button { text-align: left; border: 0; background: none; padding: 0; color: var(--jade); font-weight: 600; overflow-wrap: anywhere; }
+.ing .d { font: 500 12px var(--font-mono); color: var(--muted); text-align: right; }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper b { font: 600 16px var(--font-mono); min-width: 34px; text-align: center; }
+.sheet select { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 10px; }
+
 /* forms */
 .quick { display: flex; gap: 8px; flex-wrap: wrap; }
 .quick input[type="text"] { flex: 1 1 200px; min-width: 0; }
@@ -406,7 +479,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   </header>
 
   <nav class="nav" aria-label="Sections">
-    <a href="#chat" id="navchat">Chat</a><a href="#today">Today</a><a href="#commit">Commit</a><a href="#food">Food</a><a href="#training">Training</a><a href="#move">Move</a><a href="#goals-sec">Goals</a>
+    <a href="#chat" id="navchat">Chat</a><a href="#today">Today</a><a href="#commit">Commit</a><a href="#food">Food</a><a href="#recipes">Recipes</a><a href="#meter">Meter</a><a href="#training">Training</a><a href="#move">Move</a><a href="#goals-sec">Goals</a>
     <a href="#remember">Remember</a><a href="#drafts">Drafts</a><a href="#ideas">Ideas<span class="n" id="ideacount"></span></a><a href="#wins-sec">Wins</a>
   </nav>
 
@@ -470,6 +543,35 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     <div class="list" id="meals"><div class="empty">Loading…</div></div>
     <div class="bonus" id="bonus" hidden></div>
     <div class="list" id="logs"></div>
+  </section>
+
+  <section class="section" id="recipes" aria-labelledby="h-recipes">
+    <div class="section-head"><h2 id="h-recipes">Recipe book</h2><button class="link-btn" type="button" id="newrecipe">+ Recipe</button></div>
+    <div class="card">
+      <div class="section-head"><h3 class="h3s">Build a day</h3>
+        <div class="seg" role="group" aria-label="Day to plan"><button type="button" data-day="today" aria-pressed="true">Today</button><button type="button" data-day="tomorrow" aria-pressed="false">Tomorrow</button></div></div>
+      <div class="macros" id="planbars"></div>
+      <div class="slots" id="planslots"></div>
+      <div class="ask-row"><button class="btn small" type="button" id="planask">Ask <span class="mname">Mali</span> to fill it</button></div>
+    </div>
+    <div class="pickbar" id="pickbar" hidden></div>
+    <div class="fchips" id="recipechips" role="group" aria-label="Filter recipes"></div>
+    <div class="list" id="recipelist"><div class="empty">Loading…</div></div>
+  </section>
+
+  <section class="section" id="meter" aria-labelledby="h-meter">
+    <div class="section-head"><h2 id="h-meter">Food meter</h2><button class="link-btn" type="button" id="newfood">+ Food</button></div>
+    <input class="search" type="search" id="foodq" placeholder="Search: chicken, rice, egg, lean…" aria-label="Search foods">
+    <div class="fchips" id="meterchips" role="group" aria-label="Food groups"></div>
+    <div class="muted small">Numbers are per 100 g. Tap a food for its page and gram calculator.</div>
+    <div class="foods" id="foodlist"><div class="empty">Loading…</div></div>
+    <button class="link-btn" type="button" id="foodmore" hidden></button>
+    <div class="card">
+      <div class="section-head"><h3 class="h3s">Plate calculator</h3><span class="muted small" id="plateleft"></span></div>
+      <div class="list" id="plate"></div>
+      <div class="ask-row" id="platebtns" hidden><button class="btn small" type="button" id="plateclear">Clear</button><span class="spacer"></span>
+        <button class="btn primary small" type="button" id="platelog">Log it with <span class="mname">Mali</span></button></div>
+    </div>
   </section>
 
   <section class="section" id="training" aria-labelledby="h-train">
@@ -549,6 +651,10 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     <button type="button" class="btn primary" id="chatsend">Send</button>
   </div>
 </div>
+<dialog class="sheet" id="sheet" aria-label="Details">
+  <div class="sheet-bar"><button type="button" class="btn small" id="sheetback" hidden>‹ Back</button><span class="spacer"></span><button type="button" class="btn small" id="sheetclose">Close</button></div>
+  <div class="sheet-body" id="sheetbody"></div>
+</dialog>
 <button type="button" class="fab" id="fab" aria-label="Open chat"><span class="avslot" data-size="60"></span></button>
 <div class="lock" id="lock" role="alertdialog" aria-modal="true" aria-labelledby="locktitle" hidden>
   <div class="lock-inner">
@@ -573,7 +679,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const $ = (s) => document.querySelector(s);
   const COLLS = ["goals", "tasks", "notes", "wins", "inbox", "meals", "programs", "sessions", "suggestions", "config", "health", "places", "drafts",
-    "commitments", "checks", "chat"];
+    "commitments", "checks", "chat", "foods", "recipes", "plans"];
   const RESURFACE_DAYS = [3, 7, 14, 30, 60, 90];
   const S = Object.fromEntries(COLLS.map((c) => [c, []]));
   S.loaded = new Set();
@@ -886,6 +992,118 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     const day = mealsOn(m.day).map((x) => (x.id === m.id ? { ...x, ...patch } : x));
     return { meal_id: m.id, changed, xp: patch.xp ?? m.xp, day_kcal: Math.round(sumOf(day, "kcal")), day_protein_g: Math.round(sumOf(day, "protein_g")) };
   }
+  // ------------------------------------------------------------ food meter + recipe book
+  // foods/<id>: values per 100 g plus a short info page. recipes/<id>: ingredients are food ids + grams
+  // for the whole recipe, so macros always follow the meter. plans/<YYYY-MM-DD>: the recipes picked for a day.
+  const NUTR = ["kcal", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g", "sodium_mg"];
+  const FOOD_CATS = { protein: "Protein", carb: "Carbs", veg: "Veg", fruit: "Fruit", dairy: "Dairy", fat: "Fats & nuts", sauce: "Sauces", drink: "Drinks", snack: "Snacks", other: "Other" };
+  const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
+  const INFO = [["about", "About"], ["cooking", "How to cook"], ["good", "Why it's good"], ["watch", "Watch out"], ["buy", "Where to buy"], ["storage", "Storage"]];
+  // Writes made during one reply, visible before the snapshot catches up (a recipe right after its foods).
+  const localFoods = new Map(), localRecipes = new Map(), localPlans = new Map();
+  const foodById = (id) => S.foods.find((f) => f.id === id) || localFoods.get(id) || null;
+  const recipeById = (id) => S.recipes.find((r) => r.id === id) || localRecipes.get(id) || null;
+  const planOf = (day) => localPlans.get(day) || S.plans.find((p) => p.id === day) || null;
+  function reconcileLocal() {
+    for (const id of localFoods.keys()) if (S.foods.some((f) => f.id === id)) localFoods.delete(id);
+    for (const id of localRecipes.keys()) if (S.recipes.some((r) => r.id === id)) localRecipes.delete(id);
+    for (const [d, lp] of localPlans) { const sp = S.plans.find((p) => p.id === d); if (sp && String(sp.updatedAt) >= String(lp.updatedAt)) localPlans.delete(d); }
+  }
+  const slug = (s) => String(s || "").toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").slice(0, 60);
+  const zeroN = () => Object.fromEntries(NUTR.map((n) => [n, 0]));
+  const forGrams = (f, g) => Object.fromEntries(NUTR.map((n) => [n, (Number(f[n]) || 0) * (Number(g) || 0) / 100]));
+  function addN(a, b, k = 1) { for (const n of NUTR) a[n] += (Number(b[n]) || 0) * k; return a; }
+  const fmtG = (v) => { v = Number(v) || 0; return v >= 10 ? Math.round(v) : Math.round(v * 10) / 10; };
+  const listOf = (v, n, len) => String(v || "").split(/[,;]/).map((t) => clip(t, len)).filter(Boolean).slice(0, n);
+  function recipeTotals(r) {
+    const total = zeroN(), missing = [];
+    for (const it of r.ingredients || []) { const f = foodById(it.food); if (f) addN(total, forGrams(f, it.grams)); else missing.push(it.food); }
+    return { total, per: addN(zeroN(), total, 1 / Math.max(1, Number(r.servings) || 1)), missing };
+  }
+  function planTotals(day) {
+    const t = zeroN();
+    for (const k of (planOf(day) || {}).picks || []) { const r = recipeById(k.recipe); if (r) addN(t, recipeTotals(r).per, Number(k.servings) || 1); }
+    return t;
+  }
+  async function savePlan(day, picks) {
+    const doc = { day, picks, updatedAt: nowIso() };
+    localPlans.set(day, { id: day, ...doc });
+    await db.doc("plans/" + day).set(doc);
+  }
+  async function addToPlan(day, recipeId, slot, servings = 1) {
+    const picks = [...((planOf(day) || {}).picks || [])];
+    picks.push({ id: sid(), recipe: recipeId, slot: SLOTS.includes(slot) ? slot : "snack", servings: Math.max(0.5, Math.min(4, Number(servings) || 1)), eaten: false });
+    await savePlan(day, picks);
+  }
+  async function logRecipe(r, servings = 1, slot = null) {
+    const { per } = recipeTotals(r), k = Number(servings) || 1, s = Math.max(1, Number(r.servings) || 1);
+    const amt = (n) => Math.round(per[n] * k * 10) / 10;
+    const res = await addMeal({ name: r.title + (k !== 1 ? ` ×${k}` : ""), meal: slot || r.meal, kcal: amt("kcal"), protein_g: amt("protein_g"), carbs_g: amt("carbs_g"),
+      fat_g: amt("fat_g"), fiber_g: amt("fiber_g"), sugar_g: amt("sugar_g"), xp: r.xp || 0, verdict: r.verdict || "Straight from your recipe book.", icon: r.emoji || "🍽️", recipe_id: r.id,
+      items: (r.ingredients || []).map((it) => { const f = foodById(it.food), g = it.grams * k / s; return { name: `${fmtG(g)} g ${f ? f.name : it.food}`, kcal: f ? Math.round(f.kcal * g / 100) : null }; }) });
+    return res.meal_id;
+  }
+  async function eatPick(day, pick) {
+    const r = recipeById(pick.recipe); if (!r) return;
+    const mealId = await logRecipe(r, pick.servings, pick.slot);
+    await savePlan(day, ((planOf(day) || {}).picks || []).map((k) => (k.id === pick.id ? { ...k, eaten: true, mealId } : k)));
+  }
+  async function saveFoods(i) {
+    const list = Array.isArray(i.foods) ? i.foods.slice(0, 25) : [];
+    const saved = [], skipped = [];
+    for (const x of list) {
+      const name = clip(x && x.name, 80);
+      if (!name || num(x.kcal) == null) { skipped.push(name || "(no name)"); continue; }
+      const id = slug(x.id || name) || sid(), prev = foodById(id);
+      const keep = (k, v) => (v != null && v !== "" ? v : prev && prev[k] != null ? prev[k] : null);
+      const doc = { name, emoji: keep("emoji", clip(x.emoji, 8)), category: FOOD_CATS[x.category] ? x.category : keep("category", null) || "other", state: keep("state", clip(x.state, 20)),
+        ...Object.fromEntries(NUTR.map((n) => [n, keep(n, num(x[n]))])), unit_name: keep("unit_name", clip(x.unit_name, 50)), unit_g: keep("unit_g", num(x.unit_g)),
+        traits: x.traits != null ? listOf(x.traits, 6, 30) : (prev && prev.traits) || [], ...Object.fromEntries(INFO.map(([k]) => [k, keep(k, clip(x[k], 400))])),
+        source: keep("source", clip(x.source, 80)) || "typical values", createdAt: (prev && prev.createdAt) || nowIso(), updatedAt: nowIso() };
+      await db.doc("foods/" + id).set(doc);
+      localFoods.set(id, { id, ...doc }); saved.push(id);
+    }
+    if (!saved.length) throw new Error("No food saved: each needs a name and kcal per 100 g.");
+    toast(`Food meter: ${saved.length} food${saved.length > 1 ? "s" : ""} saved.`);
+    return { saved, skipped };
+  }
+  async function saveRecipe(i) {
+    const prev = i.recipe_id ? recipeById(i.recipe_id) : null;
+    if (i.recipe_id && !prev) throw new Error("No recipe with that id. Use an id from recipes.");
+    if (i.delete) { if (!prev) throw new Error("recipe_id required to delete"); await db.doc("recipes/" + prev.id).delete(); toast(`Removed: ${prev.title}`); return { deleted: prev.id }; }
+    const ings = Array.isArray(i.ingredients) ? i.ingredients.slice(0, 20).map((x) => ({ food: clip(x && x.food_id, 60), grams: Math.max(0, num(x && x.grams) || 0), note: clip(x && x.note, 60) || null }))
+      .filter((x) => x.food && x.grams) : null;
+    if (!prev && (!clip(i.title, 80) || !ings || !ings.length)) throw new Error("A new recipe needs a title and ingredients (food_id + grams).");
+    const missing = (ings || []).filter((x) => !foodById(x.food)).map((x) => x.food);
+    if (missing.length) throw new Error(`Not in the food meter yet: ${missing.join(", ")}. Add them with save_foods (full details), then call save_recipe again.`);
+    const doc = prev ? {} : { createdAt: nowIso(), meal: "lunch", servings: 1, xp: 0 };
+    if (i.title != null) doc.title = clip(i.title, 80);
+    if (SLOTS.includes(i.meal)) doc.meal = i.meal;
+    if (i.emoji != null) doc.emoji = clip(i.emoji, 8) || null;
+    if (num(i.servings) != null) doc.servings = Math.max(1, Math.min(12, Math.round(num(i.servings))));
+    if (num(i.minutes) != null) doc.minutes = Math.max(0, Math.round(num(i.minutes)));
+    if (i.tags != null) doc.tags = listOf(i.tags, 5, 24);
+    if (ings) doc.ingredients = ings;
+    if (Array.isArray(i.steps)) doc.steps = i.steps.slice(0, 12).map((s) => clip(s, 300)).filter(Boolean);
+    if (num(i.xp) != null) doc.xp = Math.max(-20, Math.min(20, Math.round(num(i.xp))));
+    if (i.verdict != null) doc.verdict = clip(i.verdict, 100);
+    doc.updatedAt = nowIso();
+    let id = prev && prev.id;
+    if (prev) await db.doc("recipes/" + id).update(doc);
+    else { const ref = db.collection("recipes").doc(); id = ref.id; await ref.set(doc); }
+    const r = { ...(prev || {}), ...doc, id };
+    localRecipes.set(id, r);
+    let planned = null;
+    if (i.plan_day || i.plan_slot) {
+      const day = normDate(i.plan_day) || dayKey(), slot = SLOTS.includes(i.plan_slot) ? i.plan_slot : r.meal;
+      await addToPlan(day, id, slot, num(i.plan_servings) || 1);
+      const t = planTotals(day); planned = { day, slot, day_kcal: Math.round(t.kcal), day_protein_g: Math.round(t.protein_g) };
+    }
+    toast(prev ? `Recipe updated: ${r.title}` : `New recipe: ${r.title}`);
+    const p = recipeTotals(r).per;
+    return { recipe_id: id, per_serving: { kcal: Math.round(p.kcal), protein_g: Math.round(p.protein_g), carbs_g: Math.round(p.carbs_g), fat_g: Math.round(p.fat_g) }, planned };
+  }
+
   async function addMeal(i) {
     const ref = db.collection("meals").doc();
     const fromPhoto = !!i.from_photo && !!pending;
@@ -897,7 +1115,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     await ref.set({ day: dayKey(), at: nowIso(), meal: MEAL_KINDS.includes(i.meal) ? i.meal : "snack",
       name: clip(i.name, 120), items, kcal: num(i.kcal) ?? 0, protein_g: num(i.protein_g) ?? 0, carbs_g: num(i.carbs_g), fat_g: num(i.fat_g),
       fiber_g: num(i.fiber_g), sugar_g: num(i.sugar_g), verdict: clip(i.verdict, 140), xp, photo: fromPhoto,
-      photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb, icon: clip(i.icon, 8) || null, processed: false });
+      photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb, icon: clip(i.icon, 8) || null, recipeId: clip(i.recipe_id, 60) || null, processed: false });
     if (fromPhoto) pending.used = true;
     toast(`${clip(i.verdict, 80) || "Logged."}  ${signed(xp)} XP`);
     if (xp >= 10) burst(24);
@@ -1227,7 +1445,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   }
 
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderNext(); renderFood(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
+  function render() { renderHeader(); renderNext(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
   function renderPersona() {
     document.querySelectorAll(".mname").forEach((el) => { el.textContent = persona(); });
     if (!live && S.loaded.has("chat")) {
@@ -1366,6 +1584,198 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
         e.mood != null ? h("span", {}, `mood ${e.mood}/10`) : null, e.energy != null ? h("span", {}, `energy ${e.energy}/10`) : null,
         e.sleep_h != null ? h("span", {}, `${e.sleep_h} h sleep`) : null, e.weight_kg != null ? h("span", {}, `${e.weight_kg} kg`) : null, h("span", {}, clock(e.at)))),
       e.processed ? h("span", { class: "tag goal" }, "synced") : delBtn("Delete entry", () => db.doc("inbox/" + e.id).delete()))));
+  }
+
+  let planDay = "today", recipeFilter = "all", pickSlot = null, meterQ = "", meterCat = "all", meterAll = false;
+  let plate = (store("hq.plate") || []).filter((p) => p && p.food);
+  const curPlanDay = () => (planDay === "tomorrow" ? shiftDay(dayKey(), 1) : dayKey());
+  const macroLine = (n, k = 1) => `${Math.round(n.kcal * k)} kcal · P ${Math.round(n.protein_g * k)} · C ${Math.round(n.carbs_g * k)} · F ${Math.round(n.fat_g * k)}`;
+  function leftLine(tot, base) {
+    const t = cfg("nutrition"); if (!t || !t.kcal) return "";
+    const k = Math.round(t.kcal - base.kcal - tot.kcal), p = Math.round((t.protein_g || 0) - base.protein_g - tot.protein_g);
+    return `${k >= 0 ? `${k} kcal left` : `${-k} kcal over`} · ${p > 0 ? `${p} g protein to go` : "protein covered ✓"}`;
+  }
+  function renderRecipes() {
+    if (!["recipes", "foods", "plans", "config"].every((c) => S.loaded.has(c))) return;
+    reconcileLocal();
+    const t = cfg("nutrition"), today = dayKey(), day = curPlanDay(), picks = (planOf(day) || {}).picks || [], tot = planTotals(day);
+    document.querySelectorAll("#recipes .seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === planDay)));
+    $("#planbars").replaceChildren(macroBar("Calories", tot.kcal, t && t.kcal, "kcal"), macroBar("Protein", tot.protein_g, t && t.protein_g, "g"),
+      h("div", { class: "muted small mono" }, `Carbs ${Math.round(tot.carbs_g)}${t && t.carbs_g ? "/" + t.carbs_g : ""} g · Fat ${Math.round(tot.fat_g)}${t && t.fat_g ? "/" + t.fat_g : ""} g`
+        + (t && t.kcal && picks.length ? ` · ${leftLine(tot, zeroN())}` : "")));
+    $("#planslots").replaceChildren(...SLOTS.map((slot) => {
+      const ps = picks.filter((k) => k.slot === slot);
+      return h("div", { class: "slot" },
+        h("div", { class: "slot-head" }, h("span", { class: "label" }, slot),
+          h("button", { class: "link-btn", type: "button", onclick: () => { pickSlot = slot; recipeFilter = slot; renderRecipes(); $("#pickbar").scrollIntoView({ behavior: "smooth", block: "start" }); } }, ps.length ? "+ Add" : "Choose")),
+        ...ps.map((k) => {
+          const r = recipeById(k.recipe), m = Number(k.servings) || 1;
+          const x = h("button", { class: "icon-btn x", type: "button", "aria-label": "Remove from plan", onclick: () => run(() => savePlan(day, picks.filter((p) => p.id !== k.id))) }, "✕");
+          if (!r) return h("div", { class: "pick" }, h("span", { class: "pick-t muted" }, "Recipe removed"), x);
+          const per = recipeTotals(r).per;
+          return h("div", { class: "pick" + (k.eaten ? " eaten" : "") },
+            h("button", { class: "pick-t", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id, servings: m, slot, day: planDay }, false) }, `${r.emoji || "🍽️"} ${r.title}${m !== 1 ? ` ×${m}` : ""}`),
+            h("span", { class: "n" }, `${Math.round(per.kcal * m)} kcal · ${Math.round(per.protein_g * m)} g protein`),
+            day === today ? (k.eaten ? h("span", { class: "tag goal act" }, "eaten ✓") : h("button", { class: "btn small act", type: "button", onclick: () => run(() => eatPick(day, k)) }, "Ate it")) : h("span", { class: "act" }),
+            x);
+        }));
+    }));
+    const bar = $("#pickbar");
+    bar.hidden = !pickSlot;
+    if (pickSlot) bar.replaceChildren(h("span", {}, `Pick a recipe for ${pickSlot}, ${planDay}`), h("button", { class: "btn small", type: "button", onclick: () => { pickSlot = null; recipeFilter = "all"; renderRecipes(); } }, "Cancel"));
+    $("#recipechips").replaceChildren(...["all", ...SLOTS].map((m) => h("button", { class: "fchip", type: "button", "aria-pressed": String(recipeFilter === m),
+      onclick: () => { recipeFilter = m; renderRecipes(); } }, m === "all" ? `All ${S.recipes.length}` : m)));
+    const list = S.recipes.filter((r) => recipeFilter === "all" || r.meal === recipeFilter)
+      .sort((a, b) => SLOTS.indexOf(a.meal) - SLOTS.indexOf(b.meal) || String(a.title).localeCompare(String(b.title)));
+    $("#recipelist").replaceChildren(...list.map((r) => {
+      const per = recipeTotals(r).per;
+      return h("div", { class: "rcard" },
+        h("button", { class: "rcard-main", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id }, false) }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
+          h("span", { class: "rc-text" }, h("b", {}, r.title), h("span", { class: "mono small muted" }, `${Math.round(per.kcal)} kcal · ${Math.round(per.protein_g)} g protein`),
+            h("span", { class: "small muted" }, [r.meal, r.minutes ? r.minutes + " min" : null, ...(r.tags || []).slice(0, 2)].filter(Boolean).join(" · ")))),
+        h("div", { class: "rc-side" }, h("span", { class: "xp" + ((r.xp || 0) < 0 ? " neg" : "") }, `${signed(r.xp || 0)} XP`),
+          h("button", { class: "btn small" + (pickSlot ? " primary" : ""), type: "button", onclick: () => run(async () => {
+            const slot = pickSlot || r.meal; await addToPlan(curPlanDay(), r.id, slot, 1); if (pickSlot) recipeFilter = "all"; pickSlot = null; toast(`Added to ${slot}, ${planDay}.`); renderRecipes();
+            $("#planslots").scrollIntoView({ behavior: "smooth", block: "center" }); }) }, pickSlot ? `Add to ${pickSlot}` : "+ Plan")));
+    }));
+    if (!list.length) $("#recipelist").append(h("div", { class: "empty" }, S.recipes.length ? "No recipes for this meal yet." : `No recipes yet. Ask ${persona()} for one that fits your goal.`,
+      h("button", { class: "btn small", type: "button", onclick: () => fill(`Add a ${recipeFilter === "all" ? "" : recipeFilter + " "}recipe that fits my goal: `) }, `Ask ${persona()}`)));
+  }
+  function renderMeter() {
+    if (!S.loaded.has("foods")) return;
+    reconcileLocal();
+    const q = meterQ.trim().toLowerCase();
+    const cats = Object.keys(FOOD_CATS).filter((c) => S.foods.some((f) => (f.category || "other") === c));
+    $("#meterchips").replaceChildren(...["all", ...cats].map((c) => h("button", { class: "fchip", type: "button", "aria-pressed": String(meterCat === c),
+      onclick: () => { meterCat = c; meterAll = false; renderMeter(); } }, c === "all" ? `All ${S.foods.length}` : FOOD_CATS[c])));
+    const list = S.foods.filter((f) => (meterCat === "all" || (f.category || "other") === meterCat)
+      && (!q || [f.name, f.id, f.state, ...(f.traits || [])].join(" ").toLowerCase().includes(q))).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    const cap = meterAll || q || meterCat !== "all" ? 200 : 12;
+    $("#foodlist").replaceChildren(...list.slice(0, cap).map((f) => h("button", { class: "food", type: "button", onclick: () => openSheet({ type: "food", id: f.id }, false) },
+      h("span", { class: "emoji" }, f.emoji || "🍽️"),
+      h("span", { class: "food-t" }, h("b", {}, f.name), h("span", { class: "mono small muted" }, `${Math.round(f.kcal || 0)} kcal · ${fmtG(f.protein_g)} g protein`)),
+      f.traits && f.traits[0] ? h("span", { class: "tag" }, f.traits[0]) : h("span"))));
+    if (!list.length) $("#foodlist").append(h("div", { class: "empty" }, S.foods.length ? `Nothing matches “${meterQ.trim()}”.` : "Your food meter is empty.",
+      h("button", { class: "btn small", type: "button", onclick: () => fill(`Add ${q || "these foods"} to my food meter`) }, `Ask ${persona()} to add it`)));
+    const more = $("#foodmore");
+    more.hidden = list.length <= cap;
+    more.textContent = `Show all ${list.length} foods`;
+    renderPlate();
+  }
+  function plateTotals() { const t = zeroN(); for (const p of plate) { const f = foodById(p.food); if (f) addN(t, forGrams(f, p.grams)); } return t; }
+  function renderPlate() {
+    plate = plate.filter((p) => foodById(p.food));
+    const box = $("#plate"), tot = h("div", { class: "plate-tot" });
+    const drawTot = () => { const t = plateTotals(); tot.textContent = `Total: ${macroLine(t)}`; $("#plateleft").textContent = leftLine(t, (() => { const ms = mealsOn(dayKey()); return Object.fromEntries(NUTR.map((n) => [n, sumOf(ms, n)])); })()); };
+    $("#platebtns").hidden = !plate.length;
+    if (!plate.length) { box.replaceChildren(h("div", { class: "muted small" }, "Open any food, set the grams and tap “Add to plate” to total a whole meal.")); $("#plateleft").textContent = ""; return; }
+    box.replaceChildren(...plate.map((p, idx) => {
+      const f = foodById(p.food), sub = h("small", {}, macroLine(forGrams(f, p.grams)));
+      const inp = h("input", { class: "num-in", type: "number", inputmode: "decimal", min: "0", step: "5", value: String(p.grams), "aria-label": `Grams of ${f.name}` });
+      inp.addEventListener("input", () => { p.grams = Math.max(0, Number(inp.value) || 0); store("hq.plate", plate); sub.textContent = macroLine(forGrams(f, p.grams)); drawTot(); });
+      return h("div", { class: "plate-row" }, h("div", { class: "nm" }, `${f.emoji || ""} ${f.name}`, sub), inp,
+        h("button", { class: "icon-btn", type: "button", "aria-label": "Remove " + f.name, onclick: () => { plate.splice(idx, 1); store("hq.plate", plate); renderPlate(); } }, "✕"));
+    }), tot);
+    drawTot();
+  }
+  function addToPlate(id, grams) {
+    const g = Math.max(0, Number(grams) || 0); if (!g) return;
+    const same = plate.find((p) => p.food === id);
+    if (same) same.grams += g; else plate.push({ food: id, grams: g });
+    store("hq.plate", plate); renderPlate();
+  }
+
+  // detail pages (a food or a recipe) open in a sheet; a recipe's ingredient opens its food page on top
+  let sheetStack = [];
+  const sheetEl = () => $("#sheet");
+  function openSheet(view, push = true) {
+    if (push) sheetStack.push(view); else sheetStack = [view];
+    drawSheet();
+    const d = sheetEl();
+    if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute("open", ""); }
+    d.scrollTop = 0;
+  }
+  function closeSheet() { sheetStack = []; const d = sheetEl(); if (d.open) { if (d.close) d.close(); else d.removeAttribute("open"); } }
+  function drawSheet() {
+    const v = sheetStack[sheetStack.length - 1]; if (!v) return;
+    $("#sheetback").hidden = sheetStack.length < 2;
+    const page = v.type === "food" ? foodPage(v) : recipePage(v);
+    $("#sheetbody").replaceChildren(page || h("div", { class: "empty" }, "This was removed."));
+  }
+  function renderSheet() {
+    const d = sheetEl(), a = document.activeElement;
+    if (d.open && sheetStack.length && !(a && d.contains(a) && /INPUT|SELECT/.test(a.tagName))) drawSheet();
+  }
+  function foodPage(v) {
+    const f = foodById(v.id); if (!f) return null;
+    if (v.grams == null) v.grams = Number(f.unit_g) || 100;
+    const out = h("div", { class: "calc-out" });
+    const rows = [["kcal", "kcal", ""], ["Protein", "protein_g", "g"], ["Carbs", "carbs_g", "g"], ["Fat", "fat_g", "g"], ["Fibre", "fiber_g", "g"], ["Sugar", "sugar_g", "g"], ["Sodium", "sodium_mg", "mg"]]
+      .filter(([, k]) => k === "kcal" || f[k] != null);
+    const draw = () => { const n = forGrams(f, v.grams); out.replaceChildren(...rows.map(([l, k, u]) => h("div", { class: "stat" }, h("b", {}, `${fmtG(n[k])}${u ? " " + u : ""}`), h("span", {}, l)))); };
+    const inp = h("input", { class: "num-in", type: "number", inputmode: "decimal", min: "0", step: "5", value: String(v.grams), "aria-label": "Grams" });
+    inp.addEventListener("input", () => { v.grams = Math.max(0, Number(inp.value) || 0); draw(); });
+    const setG = (g) => { v.grams = g; inp.value = String(g); draw(); };
+    const quick = [50, 100, 150, 200].map((g) => h("button", { class: "fchip", type: "button", onclick: () => setG(g) }, `${g} g`));
+    if (f.unit_name && f.unit_g) quick.unshift(h("button", { class: "fchip", type: "button", onclick: () => setG(Number(f.unit_g)) }, `${f.unit_name} · ${fmtG(f.unit_g)} g`));
+    draw();
+    const dens = f.kcal ? (Number(f.protein_g) || 0) / f.kcal * 100 : 0;
+    const used = S.recipes.filter((r) => (r.ingredients || []).some((it) => it.food === f.id));
+    return h("div", { class: "page" },
+      h("div", { class: "page-head" }, h("span", { class: "emoji" }, f.emoji || "🍽️"),
+        h("div", {}, h("h2", {}, f.name), h("div", { class: "muted small" }, [FOOD_CATS[f.category] || "Food", f.state].filter(Boolean).join(" · ")))),
+      (f.traits || []).length || dens >= 8 ? h("div", { class: "chips" }, dens >= 15 ? h("span", { class: "chip jade" }, `${fmtG(dens)} g protein per 100 kcal`) : dens >= 8 ? h("span", { class: "chip" }, `${fmtG(dens)} g protein per 100 kcal`) : null,
+        (f.traits || []).map((t) => h("span", { class: "chip" }, t))) : null,
+      h("div", { class: "calc" }, h("span", { class: "label" }, "How much are you having?"), h("label", { class: "grams-row" }, inp, "grams"), h("div", { class: "fchips" }, quick), out,
+        h("div", { class: "ask-row" }, h("button", { class: "btn primary", type: "button", onclick: () => { addToPlate(f.id, v.grams); toast(`${fmtG(v.grams)} g ${f.name} added to your plate.`); } }, "Add to plate"),
+          h("span", { class: "muted small mono" }, `per 100 g: ${Math.round(f.kcal)} kcal · P ${fmtG(f.protein_g)} · C ${fmtG(f.carbs_g)} · F ${fmtG(f.fat_g)}`))),
+      ...INFO.filter(([k]) => f[k]).map(([k, label]) => h("div", { class: "info" }, h("span", { class: "label" }, label), h("p", {}, f[k]))),
+      used.length ? h("div", { class: "info" }, h("span", { class: "label" }, "In your recipes"),
+        h("div", { class: "chips" }, used.map((r) => h("button", { class: "chip", type: "button", onclick: () => openSheet({ type: "recipe", id: r.id }) }, `${r.emoji || "🍽️"} ${r.title}`)))) : null,
+      h("p", { class: "muted small", style: "margin:0" }, `Source: ${f.source || "typical values"}. Brands and cooking shift these a little; a pack label always wins.`),
+      h("div", { class: "ask-row" }, h("button", { class: "btn small", type: "button", onclick: () => { closeSheet(); fill(`Update “${f.name}” in my food meter: `); } }, `Ask ${persona()} to change it`),
+        h("span", { class: "spacer" }), used.length ? null : delBtn("Delete food", async () => { await db.doc("foods/" + f.id).delete(); closeSheet(); })));
+  }
+  function recipePage(v) {
+    const r = recipeById(v.id); if (!r) return null;
+    if (v.servings == null) v.servings = 1;
+    if (!v.slot) v.slot = r.meal;
+    if (!v.day) v.day = planDay;
+    const { total, per, missing } = recipeTotals(r), s = Math.max(1, Number(r.servings) || 1);
+    const out = h("div", { class: "calc-out" }), amt = h("b");
+    const draw = () => {
+      amt.textContent = String(v.servings);
+      out.replaceChildren(...[["kcal", "kcal", ""], ["Protein", "protein_g", "g"], ["Carbs", "carbs_g", "g"], ["Fat", "fat_g", "g"], ["Fibre", "fiber_g", "g"], ["Sodium", "sodium_mg", "mg"]]
+        .map(([l, k, u]) => h("div", { class: "stat" }, h("b", {}, `${fmtG(per[k] * v.servings)}${u ? " " + u : ""}`), h("span", {}, l))));
+    };
+    const step = (d) => { v.servings = Math.max(0.5, Math.min(4, Math.round((v.servings + d) * 2) / 2)); draw(); };
+    draw();
+    const slotSel = h("select", { "aria-label": "Meal" }, SLOTS.map((m) => h("option", { value: m, selected: m === v.slot }, m)));
+    slotSel.addEventListener("change", () => { v.slot = slotSel.value; });
+    const daySel = h("select", { "aria-label": "Day" }, h("option", { value: "today", selected: v.day === "today" }, "today"), h("option", { value: "tomorrow", selected: v.day === "tomorrow" }, "tomorrow"));
+    daySel.addEventListener("change", () => { v.day = daySel.value; });
+    return h("div", { class: "page" },
+      h("div", { class: "page-head" }, h("span", { class: "emoji" }, r.emoji || "🍽️"),
+        h("div", {}, h("h2", {}, r.title), h("div", { class: "muted small" }, [r.meal, r.minutes ? r.minutes + " min" : null, s > 1 ? `makes ${s} servings` : null, ...(r.tags || [])].filter(Boolean).join(" · ")))),
+      r.verdict ? h("div", { class: "reply" }, `${r.verdict}  ${signed(r.xp || 0)} XP`) : null,
+      h("div", { class: "calc" }, h("div", { class: "slot-head" }, h("span", { class: "label" }, "Servings you'll eat"),
+          h("span", { class: "stepper" }, h("button", { class: "btn small", type: "button", "aria-label": "Less", onclick: () => step(-0.5) }, "−"), amt,
+            h("button", { class: "btn small", type: "button", "aria-label": "More", onclick: () => step(0.5) }, "+"))), out,
+        h("div", { class: "ask-row" }, h("button", { class: "btn primary", type: "button", onclick: () => run(async () => { await logRecipe(r, v.servings); closeSheet(); }) }, "I ate this"),
+          h("span", { class: "muted small" }, `logs it now, ${signed(r.xp || 0)} XP`)),
+        h("div", { class: "ask-row" }, h("span", { class: "small" }, "Plan it for"), slotSel, daySel,
+          h("button", { class: "btn", type: "button", onclick: () => run(async () => {
+            const day = v.day === "tomorrow" ? shiftDay(dayKey(), 1) : dayKey(); await addToPlan(day, r.id, v.slot, v.servings);
+            toast(`Planned for ${v.slot}, ${v.day}.`); closeSheet(); }) }, "Add to plan"))),
+      h("div", { class: "info" }, h("span", { class: "label" }, `Ingredients${s > 1 ? ` (all ${s} servings)` : ""}`),
+        h("div", {}, (r.ingredients || []).map((it) => { const f = foodById(it.food);
+          return h("div", { class: "ing" }, f ? h("button", { type: "button", onclick: () => openSheet({ type: "food", id: f.id, grams: it.grams }) }, `${f.emoji || ""} ${f.name}`) : h("span", { class: "muted" }, it.food),
+            h("span", { class: "d" }, `${fmtG(it.grams)} g${f ? ` · ${Math.round(f.kcal * it.grams / 100)} kcal · ${fmtG(f.protein_g * it.grams / 100)} g P` : ""}${it.note ? ` · ${it.note}` : ""}`)); })),
+        missing.length ? h("p", { class: "small", style: "color:var(--coral)" }, `Missing from the food meter: ${missing.join(", ")}`) : null,
+        h("p", { class: "muted small mono", style: "margin:6px 0 0" }, `Whole recipe: ${macroLine(total)}`)),
+      (r.steps || []).length ? h("div", { class: "info" }, h("span", { class: "label" }, "Steps"), h("ol", { class: "steps" }, r.steps.map((x) => h("li", {}, x)))) : null,
+      h("div", { class: "ask-row" }, h("button", { class: "btn small", type: "button", onclick: () => { closeSheet(); fill(`Tweak my recipe “${r.title}”: `); } }, `Ask ${persona()} to tweak it`),
+        h("span", { class: "spacer" }), delBtn("Delete recipe", async () => { await db.doc("recipes/" + r.id).delete(); closeSheet(); })));
   }
 
   function renderTraining() {
@@ -1726,6 +2136,24 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     { name: "suggest", description: "Add an idea to their Ideas board: a new feature, program, habit or optimisation that would genuinely help, based on what you've learned. Max one per conversation; never repeat existing ones.",
       inputSchema: { type: "object", required: ["title", "detail", "kind"], properties: { title: { type: "string" }, detail: { type: "string" }, kind: { type: "string", enum: ["feature", "program", "habit", "optimization"] } } },
       execute: async (i) => addSuggestion(i) },
+    { name: "save_recipe", description: "Create (omit recipe_id) or update a recipe in their Recipe book. Ingredients are food_meter ids with grams for the WHOLE recipe; macros are computed from the meter, so add missing foods with save_foods first. plan_day + plan_slot also put it in their day plan. delete removes it.",
+      kw: /recipe|cook|prep|plan|menu|dish|ingredient|breakfast|lunch|dinner|snack|tomorrow|full day|book/i,
+      inputSchema: { type: "object", properties: {
+        recipe_id: { type: "string" }, title: { type: "string" }, meal: { type: "string", enum: SLOTS }, emoji: { type: "string" },
+        servings: { type: "integer", description: "Servings the ingredients make" }, minutes: { type: "integer" }, tags: { type: "string", description: "Comma-separated, e.g. 'high protein, meal prep'" },
+        ingredients: { type: "array", items: { type: "object", required: ["food_id", "grams"], properties: { food_id: { type: "string" }, grams: { type: "number" }, note: { type: "string", description: "e.g. 'sliced'" } } } },
+        steps: { type: "array", items: { type: "string" } }, xp: { type: "integer", description: "-20..20 per serving, judged like a meal" }, verdict: { type: "string", description: "Max 10 words" },
+        plan_day: { type: "string", description: "YYYY-MM-DD" }, plan_slot: { type: "string", enum: SLOTS }, plan_servings: { type: "number" }, delete: { type: "boolean" } } },
+      execute: async (i) => { status("Writing the recipe…"); return saveRecipe(i); } },
+    { name: "save_foods", description: "Add or update foods in their Food meter. Values per 100 g (typical USDA values or the pack label) with state raw/cooked/dry, plus a short honest info page: how easy it is to cook, lean or greasy, what to watch, where to buy in Thailand, storage. Use it for every recipe ingredient missing from food_meter and whenever they ask to add a food.",
+      kw: /food|meter|ingredient|recipe|gram|macro|nutri|calor|kcal|protein|cook|add .* to/i,
+      inputSchema: { type: "object", required: ["foods"], properties: { foods: { type: "array", items: { type: "object", required: ["name", "kcal", "protein_g"], properties: {
+        id: { type: "string", description: "Existing id to update; omit for new" }, name: { type: "string", description: "e.g. 'Chicken breast, skinless (raw)'" }, emoji: { type: "string" },
+        category: { type: "string", enum: Object.keys(FOOD_CATS) }, state: { type: "string", description: "raw | cooked | dry | as sold" },
+        kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, fiber_g: { type: "number" }, sugar_g: { type: "number" }, sodium_mg: { type: "number" },
+        unit_name: { type: "string", description: "e.g. '1 large egg'" }, unit_g: { type: "number" }, traits: { type: "string", description: "Comma-separated, e.g. 'lean, easy to cook'" },
+        about: { type: "string" }, cooking: { type: "string" }, good: { type: "string" }, watch: { type: "string" }, buy: { type: "string" }, storage: { type: "string" }, source: { type: "string" } } } } } },
+      execute: async (i) => { status("Updating your food meter…"); return saveFoods(i); } },
     // Last on purpose: when the platform caps tools and a message isn't about meals, this is the one left out.
     { name: "update_meal", description: "Edit a meal already logged (any field, XP, verdict), delete it (duplicates, mistakes), or put the photo attached to this message on it as its thumbnail (attach_photo). Meal ids are in meals_today and recent_meals.",
       kw: /meal|ate|eat|food|breakfast|lunch|dinner|snack|drink|photo|pic|thumb|image|edit|fix|wrong|change|correct|actually|delete|remove|portion|kcal|calor|protein/i,
@@ -1760,6 +2188,10 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes })),
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
       meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
+      food_meter: S.foods.map((f) => `${f.id}: ${f.name} (${Math.round(f.kcal || 0)} kcal, ${fmtG(f.protein_g)} g P per 100 g)`).slice(0, 250),
+      recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving`).slice(0, 100),
+      day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
+        return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${k.eaten ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
       recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")) },
       programs: S.programs.filter((p) => p.status !== "done").map((p) => ({ id: p.id, type: p.type, title: p.title, goal: p.goal, status: p.status, version: p.version, rules: p.rules,
@@ -1780,6 +2212,7 @@ Voice: brief and straight to the point, warm, like a friend texting. 1-3 short s
 Act with the tools first, then reply. Don't narrate tool calls.
 MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
 You can edit any logged meal with update_meal: fix numbers, rename, delete duplicates, or put the attached photo on an existing meal (attach_photo) instead of logging it twice. Give text-only meals a food emoji icon.
+KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = their Recipe book (macros computed from the meter); day_plans = recipes they picked for today/tomorrow. New recipe: first save_foods every ingredient missing from food_meter (reuse existing ids; honest typical values; say raw/cooked/dry; short practical info), then save_recipe with grams for the whole recipe. Fit recipes to their goal, Thai markets and a simple studio kitchen; judge xp like a meal. To plan a day, add recipes with plan_day/plan_slot so the day lands near their targets. "Add X to my meter" → save_foods.
 Meal XP rubric, judged against nutrition_targets.goal and what's left today: +15..+20 high protein, whole food, fits the remaining budget; +5..+10 decent; 0 neutral; -5..-10 sugary drink, deep-fried or oversized; -15..-20 blows the day or directly fights the goal. If no targets yet, score on general quality and suggest setting targets. Verdict: max 10 words, specific ("Protein bomb, light on oil. Perfect cut meal."). Reply with one line: what today looks like now and one tip.
 TRAINING: when they give fitness goals, build a gym program with save_program: sessions on fixed days, each exercise with sets×reps @ load and rest, progression rules. When they report a workout, log_session with sets. Every few sessions, optimise: update loads/volume from the logged sets (save_program with program_id and a change_note). Other areas (work, habits) can get programs too.
 GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, the first tiny (<10 min), each with a when/where cue, xp 10-60. Complete steps/tasks by id when they say they did something, then praise specifically.
@@ -1933,6 +2366,21 @@ App state (JSON): ${appState()}`;
   $("#shot").addEventListener("change", () => { const f = $("#shot").files[0]; if (!f) return; setPhoto(f); $("#askbox").value = SHOT_TEXT[shotMode]; $("#shot").value = ""; send(); });
   $("#draftform").addEventListener("submit", (e) => { e.preventDefault(); const text = $("#drafttext").value.trim(); if (!text || !db) return;
     run(async () => { await parkDraft({ text }); $("#drafttext").value = ""; }); });
+  $("#newrecipe").addEventListener("click", () => fill("Add a recipe that fits my goal: "));
+  $("#newfood").addEventListener("click", () => fill("Add to my food meter: "));
+  document.querySelectorAll("#recipes .seg button").forEach((b) => b.addEventListener("click", () => { planDay = b.dataset.day; renderRecipes(); }));
+  $("#planask").addEventListener("click", () => fill(`Fill my ${planDay === "tomorrow" ? "tomorrow" : "day today"} with recipes that land on my targets (new ones if needed): `));
+  $("#foodq").addEventListener("input", () => { meterQ = $("#foodq").value; renderMeter(); });
+  $("#foodmore").addEventListener("click", () => { meterAll = true; renderMeter(); });
+  $("#plateclear").addEventListener("click", () => { plate = []; store("hq.plate", plate); renderPlate(); });
+  $("#platelog").addEventListener("click", () => {
+    const parts = plate.map((p) => { const f = foodById(p.food); return f ? `${fmtG(p.grams)} g ${f.name}` : null; }).filter(Boolean);
+    if (parts.length) fill(`Log this meal: ${parts.join(", ")}. Food meter totals: ${macroLine(plateTotals())}.`);
+  });
+  $("#sheetclose").addEventListener("click", closeSheet);
+  $("#sheetback").addEventListener("click", () => { sheetStack.pop(); drawSheet(); });
+  $("#sheet").addEventListener("close", () => { sheetStack = []; });
+  $("#sheet").addEventListener("click", (e) => { if (e.target === $("#sheet")) closeSheet(); });
   $("#photobtn").addEventListener("click", () => $("#photo").click());
   $("#photo").addEventListener("change", () => { const f = $("#photo").files[0]; if (f) setPhoto(f); });
 
@@ -1944,7 +2392,7 @@ App state (JSON): ${appState()}`;
   $("#lockskip").addEventListener("click", () => run(skipLock));
 
   const C = window.claude;
-  const offline = (msg) => document.querySelectorAll("#next,#meals,#programs,#goals,#notes,#draftlist,#idealist,#wins").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, msg)));
+  const offline = (msg) => document.querySelectorAll("#next,#meals,#recipelist,#foodlist,#programs,#goals,#notes,#draftlist,#idealist,#wins").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, msg)));
   if (!C || typeof C.use !== "function") {
     offline("Your HQ data lives in Claude. Open this page on claude.ai to see it.");
     status("Your secretary is available when this page is open in Claude.");
@@ -1964,6 +2412,9 @@ App state (JSON): ${appState()}`;
     sub("inbox", db.collection("inbox").orderBy("at", "desc").limit(300));
     sub("meals", db.collection("meals").orderBy("at", "desc").limit(600));
     sub("sessions", db.collection("sessions").orderBy("at", "desc").limit(300));
+    sub("foods", db.collection("foods"));
+    sub("recipes", db.collection("recipes"));
+    sub("plans", db.collection("plans").orderBy("day", "desc").limit(60));
   });
   C.use("assets").then((a) => { assets = a; });
   C.use("sample").then(async (s) => {

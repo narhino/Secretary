@@ -4,7 +4,7 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 
 ## Basics
 - Name / what to call me: TODO
-- Age: TODO
+- Age: 27
 - Nationality / passport country: TODO
 - Languages (Thai level?): TODO
 - City / area in Thailand: TODO
@@ -22,9 +22,9 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Work permit (if any) expiry: TODO
 
 ## Orthodontic treatment
-- Status: planning stage (as of 2026-10-25). The next visit decides the treatment.
+- Status: fillings first (2026-10-25: 3 teeth filled). The next two visits fill the remaining 7 teeth and do a cleaning.
 - Clinic + orthodontist, how to book (LINE / phone): TODO
-- Next appointment: TODO
+- Next appointment: Sunday 2026-11-01 (time TODO)
 - Routine (aligner change every N days, elastics hours, wear time, foods to avoid): TODO
 
 ## Home (living alone)
@@ -47,12 +47,12 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Gym (name/location) and training days: TODO
 - Current lifts / starting point: TODO
 - Injuries or limits: TODO
-- Goal (cut / bulk / recomp / strength / sport): TODO
+- Goal: lose the belly fat and get lean while building muscle (recomp), set 2026-10-26
 
 ## Nutrition
-- Height / weight: TODO
+- Height / weight: 180 cm / ~89 kg (2026-10-26)
 - Diet style, foods I avoid, allergies: TODO
-- Kitchen setup (full kitchen? rice cooker? air fryer? condo microwave only?): TODO
+- Kitchen setup: cooks eggs in a pan at home; rest TODO (rice cooker? air fryer?)
 - Meal-prep day and budget: TODO
 
 ## Getting around
@@ -73,3 +73,4 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 ## Notes
 - 2026-10-21: Secretary system created.
 - 2026-10-25: Visa is DTV. Ortho treatment being planned. No always-on computer → Plan A (Claude app + cloud check-ins).
+- 2026-10-26: 27 y, 180 cm, ~89 kg; goal fat loss + muscle. Targets 2150 kcal / 165 g protein. Ortho: fillings, next visit Sun 1 Nov.

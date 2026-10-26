@@ -4,11 +4,11 @@
 #   protein  = 1.8-2.2 g per kg body weight; fat ~0.8 g/kg; carbs = the rest
 #   water    = ~35 ml/kg + 0.5-1 L per training hour (Thai heat)
 # A day counts as "on target" when calories are within +/-10% and protein is >= 90% of target.
-kcal: null
-protein_g: null
-carbs_g: null
-fat_g: null
+kcal: 2150
+protein_g: 165
+carbs_g: 215
+fat_g: 70
 fiber_g: 30
 water_l: null
-updated: null
-basis: TODO - needs height, weight, age, sex, activity level and goal
+updated: 2026-10-26
+basis: 89 kg, 180 cm, 27 y male; maintenance ~2600 kcal, ~450 kcal deficit for fat loss while building muscle (recomp); protein ~1.85 g/kg. Set by Mali in HQ, review weekly.

@@ -17,7 +17,10 @@ Health-app screenshots), `places` (from Google Maps Timeline screenshots), `draf
 for later; the app resurfaces them at 3/7/14/30/60/90 days), `inbox` (mood, sleep, body, water),
 `commitments` (daily deadlines with a check-in window, reward/penalty XP and a punishment), `checks`
 (`<commitmentId>_<YYYY-MM-DD>`: done / missed / excused, with XP) and `chat/<YYYY-MM-DD>` (the full
-conversation with Mali, her name and animated face in the app; `config/persona` holds the name).
+conversation with Mali, her name and animated face in the app; `config/persona` holds the name),
+`foods` (the Food meter: per-100 g values + an info page per food), `recipes` (the Recipe book:
+ingredients = food ids + grams, macros computed from the meter) and `plans/<YYYY-MM-DD>` (recipes
+picked for a day; "Ate it" logs a meal with `recipeId`). Every recipe ingredient must exist in `foods`.
 The app's built-in Claude (their subscription) writes all of these too.
 - Start of every session: `list` the collections you need. Pin every write with `if_version`.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.

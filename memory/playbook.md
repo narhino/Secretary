@@ -42,6 +42,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v10: Recipe book (build a day from recipes, "Ate it" logs it) and Food meter (58 foods, each with a page, gram calculator and plate calculator). Mali adds recipes and foods herself. Targets synced to the repo: 2150 kcal / 165 g protein.
 - 2026-10-26: HQ v9: Mali can edit, delete or add a photo to any logged meal; text meals get an emoji. Her last photo stays with her for 10 minutes of follow-up questions. HQ v8: meal photos keep a small preview so they show on the iPhone.
 - 2026-10-26: HQ v6: each section has its own colour; punishments lock the whole app at their time (bedtime miss → 07:00 lock, 5-minute timer for 20 push-ups; skipping costs double XP).
 - 2026-10-26: HQ v5: Mali's animated face, full chat history, commitments with time windows, automatic XP penalties and redemption punishments; she can now adjust XP and edit or delete tasks and goals. First commitment: phone away 23:00–23:10 (+10 / −15, 20 push-ups).
