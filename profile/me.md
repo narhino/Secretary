@@ -56,6 +56,7 @@ _The secretary keeps this file up to date. `TODO` = not known yet._
 - Meal-prep day and budget: TODO
 
 ## Getting around
+- Phone: iPhone (iOS 18), uses the Claude app → phone sync via Shortcuts + Apple Health
 - Transport (Grab/Bolt, BTS/MRT, own motorbike/car?): TODO
 - Licences held (home country car/motorbike, IDP, Thai licence): TODO
 

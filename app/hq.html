@@ -615,12 +615,18 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     const today = mealsOn(dayKey());
     return { meal_id: ref.id, xp, today_kcal: Math.round(sumOf(today, "kcal") + (num(i.kcal) || 0)), today_protein_g: Math.round(sumOf(today, "protein_g") + (num(i.protein_g) || 0)) };
   }
+  function splitItem(x) {
+    // Items arrive as "Bench press | 4×6-8 @ 80 kg" (or the older {name, detail} objects).
+    if (x && typeof x === "object") return x.name ? { name: clip(x.name, 60), detail: x.detail ? clip(x.detail, 80) : null } : null;
+    const [name, ...rest] = String(x || "").split(/\s*[|—–]\s*/);
+    return name && name.trim() ? { name: clip(name, 60), detail: rest.length ? clip(rest.join(" · "), 80) : null } : null;
+  }
   function cleanSessions(list, old) {
     return (Array.isArray(list) ? list : []).slice(0, 10).filter((s) => s && s.name).map((s) => {
       const prev = (old || []).find((o) => o.name.toLowerCase() === String(s.name).toLowerCase());
       const days = (Array.isArray(s.days) ? s.days : []).map((d) => String(d).toLowerCase().slice(0, 3)).filter((d) => DAYS.includes(d));
       return { id: prev ? prev.id : sid(), name: clip(s.name, 60), days, focus: s.focus ? clip(s.focus, 80) : null,
-        items: (Array.isArray(s.items) ? s.items : []).slice(0, 14).filter((x) => x && x.name).map((x) => ({ name: clip(x.name, 60), detail: x.detail ? clip(x.detail, 80) : null })) };
+        items: (Array.isArray(s.items) ? s.items : []).slice(0, 14).map(splitItem).filter(Boolean) };
     });
   }
   async function saveProgram(i) {
@@ -1063,7 +1069,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   }
 
   // ------------------------------------------------------------ the secretary (Claude, on the viewer's plan)
-  const sched = { type: "array", items: { type: "string", enum: DAYS } };
+  const sched = { type: "array", description: "Weekdays: mon tue wed thu fri sat sun", items: { type: "string" } };
   const TOOLS = [
     { name: "log_meal", description: "Log ONE meal (all items on the plate together) with honest estimates, a verdict and an XP score judged against their nutrition goal. Returns today's running totals.",
       inputSchema: { type: "object", required: ["name", "meal", "kcal", "protein_g", "xp", "verdict"], properties: {
@@ -1095,7 +1101,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
         title: { type: "string" }, goal: { type: "string" }, rules: { type: "string", description: "Progression/optimisation rules in 1-3 sentences" },
         status: { type: "string", enum: ["active", "paused", "done"] }, change_note: { type: "string" },
         sessions: { type: "array", items: { type: "object", required: ["name", "items"], properties: { name: { type: "string" }, days: sched, focus: { type: "string" },
-          items: { type: "array", items: { type: "object", required: ["name"], properties: { name: { type: "string" }, detail: { type: "string", description: "e.g. '4×6-8 @ 80 kg · rest 2 min'" } } } } } } } } },
+          items: { type: "array", description: "One string per exercise or block: 'Name | detail'", items: { type: "string", description: "e.g. 'Bench press | 4×6-8 @ 80 kg · rest 2 min'" } } } } } } },
       execute: async (i) => { status("Saving your program…"); return saveProgram(i); } },
     { name: "log_session", description: "Log a completed program session (e.g. today's workout) with optional sets. +40 XP.",
       inputSchema: { type: "object", required: ["program_id"], properties: { program_id: { type: "string" }, session_id: { type: "string" }, notes: { type: "string" },
