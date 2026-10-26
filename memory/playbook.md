@@ -6,6 +6,7 @@ The weekly review always ends with a change-log entry._
 ## What I know works for you
 - Brief and straight to the point: short messages, lead with the next action, no long explanations (said 2026-10-25).
 - Likes a compact, uncluttered app: summaries at home, details one tap away (said 2026-10-26).
+- Work is the top priority: daily audio files (boring: re-listening) for income now ~$2k/month, goal $4k. Wants Mali firm: get a schedule, ask for proof photos, insist late in the day with a fresh reason each time (rewards, income milestone, streak). Rewards are permission to buy and go out, priced by realistic effort; big buys need the income milestone (said 2026-10-26).
 - Eats by following a whole-day plan ("Day 2") as a guide, not by picking single recipes (said 2026-10-26).
 - (learning… e.g. "replies faster to short questions than to lists", "prefers a nudge at 18:30 on
   gym days", "mornings are rushed: keep the morning message to 2 lines")
@@ -44,6 +45,7 @@ The weekly review always ends with a change-log entry._
 - Sunday: meal prep + weekly review + laundry
 
 ## Change log
+- 2026-10-26: HQ v17: Work tab (top priority). Files with proof photo earn coins (streak multipliers), a Rewards shop (dinner out 35, night out 60, phone 300 + a $4k month), income tracker toward $4k. Mali steers every chat to a work schedule until it's set. Scheduled "Mali work check-ins" at 12:47 / 17:47 / 20:47. Assumed the currency is dollars; to confirm.
 - 2026-10-26: HQ v16: every meal shows a short "how to cook it" under it in the day pages and today's guide; editable by them (Edit on the meal page) or by Mali (save_recipe how).
 - 2026-10-26: HQ v14: meal-plan ticks can be undone (tap twice; removes the meal the tick logged). Ticking a slot they already logged asks "same meal?" and counts it instead of logging twice. Fixed today's double-counted egg toast.
 - 2026-10-26: HQ v13: "recipes" means FULL DAYS to them. Meal plan tab = Day 1…6 pages (each a whole day on target), Follow today/tomorrow, tick meals as eaten. Days 1–3 are the ones Mali built with them; 4–6 starter days. Single meals moved to a Meal library.

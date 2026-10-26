@@ -28,6 +28,7 @@
   --t-wins: #C98A00; --t-wins-soft: #FBF0D3; --t-wins-ink: #8A5D00;
   --t-recipes: #8D5A2B; --t-recipes-soft: #F3E8DC; --t-recipes-ink: #6E4419;
   --t-meter: #4A6782; --t-meter-soft: #E3EAF1; --t-meter-ink: #33506B;
+  --t-work: #16A34A; --t-work-soft: #DCFCE7; --t-work-ink: #15803D;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -46,6 +47,7 @@
     --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
     --t-recipes: #D9A06A; --t-recipes-soft: #33240F; --t-recipes-ink: #D9A06A;
     --t-meter: #9DB6CF; --t-meter-soft: #1B2633; --t-meter-ink: #9DB6CF;
+    --t-work: #4ADE80; --t-work-soft: #0F2E1C; --t-work-ink: #4ADE80;
   }
 }
 :root[data-theme="dark"] {
@@ -64,6 +66,7 @@
   --t-wins: #F0BD48; --t-wins-soft: #3A2E10; --t-wins-ink: #F0BD48;
   --t-recipes: #D9A06A; --t-recipes-soft: #33240F; --t-recipes-ink: #D9A06A;
   --t-meter: #9DB6CF; --t-meter-soft: #1B2633; --t-meter-ink: #9DB6CF;
+  --t-work: #4ADE80; --t-work-soft: #0F2E1C; --t-work-ink: #4ADE80;
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
@@ -103,6 +106,7 @@ button { cursor: pointer; }
 #wins-sec { --sec: var(--t-wins); --sec-soft: var(--t-wins-soft); --sec-ink: var(--t-wins-ink); }
 #recipes { --sec: var(--t-recipes); --sec-soft: var(--t-recipes-soft); --sec-ink: var(--t-recipes-ink); }
 #meter { --sec: var(--t-meter); --sec-soft: var(--t-meter-soft); --sec-ink: var(--t-meter-ink); }
+#work, #workhome { --sec: var(--t-work); --sec-soft: var(--t-work-soft); --sec-ink: var(--t-work-ink); }
 main > .section { background: var(--sec-soft); border-radius: 22px; padding: 14px; }
 main > .section > .section-head h2 { display: flex; align-items: center; gap: 8px; color: var(--sec-ink); }
 main > .section > .section-head h2::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: var(--sec); flex: none; }
@@ -132,6 +136,7 @@ main > .section .btn.primary { background: var(--sec); border-color: var(--sec);
 [data-tone="drafts"] { --tone: var(--t-drafts); --tone-soft: var(--t-drafts-soft); --tone-ink: var(--t-drafts-ink); }
 [data-tone="ideas"] { --tone: var(--t-ideas); --tone-soft: var(--t-ideas-soft); --tone-ink: var(--t-ideas-ink); }
 [data-tone="wins"] { --tone: var(--t-wins); --tone-soft: var(--t-wins-soft); --tone-ink: var(--t-wins-ink); }
+[data-tone="work"] { --tone: var(--t-work); --tone-soft: var(--t-work-soft); --tone-ink: var(--t-work-ink); }
 [data-tone="alert"] { --tone: var(--coral); --tone-soft: var(--coral-soft); --tone-ink: var(--coral); }
 
 /* sticky section bar */
@@ -405,6 +410,35 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .tile .track > i { background: var(--tone); }
 .more-link { justify-self: start; }
 
+/* work */
+.workhome { background: var(--sec-soft); border: 0; border-radius: 20px; padding: 14px; display: grid; gap: 10px; }
+.wk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.wk-top .label { color: var(--sec-ink); }
+.wk-big { font: 700 28px/1 var(--font-display); color: var(--ink); }
+.wk-big small { font: 600 14px var(--font-body); color: var(--muted); }
+.wk-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.wk-chips .chip { background: var(--surface); border-color: transparent; }
+.workhome .track, #work .track { height: 12px; background: var(--surface); }
+.workhome .track > i, #work .track > i { background: var(--sec); }
+.wk-plan { font-size: 14px; }
+.wk-plan.late { color: var(--coral); font-weight: 600; }
+.wk-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn.work { background: var(--sec); border-color: var(--sec); color: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.work { color: #0C1311; } }
+:root[data-theme="dark"] .btn.work { color: #0C1311; }
+.timer { font: 600 15px var(--font-mono); color: var(--sec-ink); }
+.reward { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.reward .t { font-weight: 600; overflow-wrap: anywhere; }
+.reward .s { font-size: 12px; color: var(--muted); }
+.reward .track { height: 6px; margin-top: 6px; }
+.reward.ready { border-color: var(--sec); box-shadow: 0 0 0 2px var(--sec-soft); }
+.reward .why { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.wlog { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.wlog img, .wlog .noproof { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--sunk); display: grid; place-items: center; font-size: 10px; color: var(--muted); text-align: center; }
+.proof-prev { width: 100%; max-height: 220px; object-fit: contain; border-radius: 12px; background: var(--sunk); }
+.inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.inline-form input { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 10px; font-size: 16px; min-width: 0; }
+
 /* "can I eat this?" check */
 .btn.wide { width: 100%; padding: 11px 14px; font-size: 15px; }
 .check-photo { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; background: var(--sunk); }
@@ -543,10 +577,12 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   </header>
 
   <nav class="nav" aria-label="Tabs">
-    <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Meal plan</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
+    <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="work" data-tone="work">Work</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Meal plan</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
   </nav>
 
   <div class="notices" id="notices" data-tab="home" hidden></div>
+
+  <section class="workhome" id="workhome" data-tab="home" aria-label="Work today"></section>
 
   <section class="ask" id="ask" data-tab="home" aria-label="Talk to your secretary">
     <div class="mali">
@@ -593,6 +629,15 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 
   <section class="glance-wrap" id="glance" data-tab="home" aria-label="Today at a glance">
     <div class="glance" id="glancegrid"></div>
+  </section>
+
+  <section class="section" id="work" data-tab="work" aria-labelledby="h-work">
+    <div class="section-head"><h2 id="h-work">Work</h2><span class="muted small" id="workcoins"></span></div>
+    <div class="card" id="worktoday"></div>
+    <div class="card" id="workshop"></div>
+    <div class="card" id="workincome"></div>
+    <details id="worklogwrap"><summary id="worklogsum">Work log</summary><div class="list" id="worklog"></div></details>
+    <input type="file" id="proofcam" accept="image/*" hidden>
   </section>
 
   <section class="section" id="commit" data-tab="commit" aria-labelledby="h-commit">
@@ -745,7 +790,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const $ = (s) => document.querySelector(s);
   const COLLS = ["goals", "tasks", "notes", "wins", "inbox", "meals", "programs", "sessions", "suggestions", "config", "health", "places", "drafts",
-    "commitments", "checks", "chat", "foods", "recipes", "plans", "days"];
+    "commitments", "checks", "chat", "foods", "recipes", "plans", "days", "worklog", "rewards", "income", "workplans"];
   const RESURFACE_DAYS = [3, 7, 14, 30, 60, 90];
   const S = Object.fromEntries(COLLS.map((c) => [c, []]));
   S.loaded = new Set();
@@ -894,7 +939,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const bonus = closedMealDays().filter((d) => d >= since).reduce((a, d) => a + ((dayBonus(d) || {}).xp || 0), 0);
     const steps = S.health.filter((x) => x.id >= since).reduce((a, x) => a + stepXp(x), 0);
     const checks = S.checks.filter((k) => k.day >= since).reduce((a, k) => a + (Number(k.xp) || 0), 0);
-    return wins + meals + bonus + steps + checks + logXp(since);
+    const work = S.worklog.filter((w) => w.day >= since).reduce((a, w) => a + (Number(w.xp) || 0), 0);
+    return wins + meals + bonus + steps + checks + work + logXp(since);
   }
   const totalXp = () => Math.max(0, xpSince(""));
   function levelFor(xp) { let lvl = 1, need = 100, acc = 0; while (xp >= acc + need) { acc += need; lvl++; need = Math.round(need * 1.25 / 10) * 10; } return { lvl, into: xp - acc, need }; }
@@ -905,6 +951,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     for (const m of S.meals) s.add(m.day);
     for (const x of S.health) if ((Number(x.steps) || 0) >= stepGoal() / 2) s.add(x.id);
     for (const k of S.checks) if (k.status === "done") s.add(k.day);
+    for (const w of S.worklog) s.add(w.day);
     return s;
   }
   function streak() {
@@ -1068,6 +1115,104 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const day = mealsOn(m.day).map((x) => (x.id === m.id ? { ...x, ...patch } : x));
     return { meal_id: m.id, changed, xp: patch.xp ?? m.xp, day_kcal: Math.round(sumOf(day, "kcal")), day_protein_g: Math.round(sumOf(day, "protein_g")) };
   }
+  // ------------------------------------------------------------ work: files, coins, rewards, income
+  // worklog: one doc per logged file (or creative block) with its coins and XP. rewards: the wishlist shop,
+  // priced in coins (1 file ≈ 10); big buys also need an income milestone. income/<YYYY-MM>: money earned.
+  // workplans/<day>: the schedule they committed to. Coins = earned − redeemed.
+  const WORK_DEF = { quota: 2, currency: "$", income_now: 2000, income_goal: 4000 };
+  const COIN_PER_FILE = 10, QUOTA_BONUS = 5, FILE_XP = 15;
+  const workCfg = () => ({ ...WORK_DEF, ...(cfg("work") || {}) });
+  const money = (v) => `${workCfg().currency}${Math.round(Number(v) || 0).toLocaleString("en-US")}`;
+  const filesOn = (day) => S.worklog.filter((w) => w.day === day && w.kind === "file").reduce((a, w) => a + (Number(w.files) || 1), 0);
+  function workStreak() {
+    // Days with at least one file; a single day off doesn't break it (two in a row does), like the main streak.
+    const days = new Set(S.worklog.filter((w) => w.kind === "file").map((w) => w.day));
+    let d = dayKey(); if (!days.has(d)) d = shiftDay(d, -1);
+    let n = 0;
+    while (true) {
+      if (days.has(d)) { n++; d = shiftDay(d, -1); }
+      else if (n > 0 && days.has(shiftDay(d, -1))) d = shiftDay(d, -1);
+      else break;
+    }
+    return { n, today: days.has(dayKey()) };
+  }
+  const streakMult = (n) => (n >= 14 ? 2 : n >= 7 ? 1.5 : n >= 3 ? 1.2 : 1);
+  const coinBalance = () => S.worklog.reduce((a, w) => a + (Number(w.coins) || 0), 0)
+    - S.rewards.filter((r) => r.status === "redeemed").reduce((a, r) => a + (Number(r.price) || 0), 0);
+  const monthOf = (day = dayKey()) => day.slice(0, 7);
+  const incomeOf = (month) => Number((S.income.find((x) => x.id === month) || {}).amount) || 0;
+  const bestMonth = () => Math.max(Number(workCfg().income_now) || 0, ...S.income.map((x) => Number(x.amount) || 0));
+  const planToday = () => S.workplans.find((x) => x.id === dayKey()) || null;
+  const rewardReady = (r) => coinBalance() >= (Number(r.price) || 0) && (!r.requires_income || bestMonth() >= r.requires_income);
+  const lockedRewards = () => S.rewards.filter((r) => r.status !== "redeemed").sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+  const TIERS = { treat: "Small treat", fun: "Fun / going out", gear: "Gear", big: "Big buy" };
+  async function logWork(i) {
+    const kind = ["file", "creative"].includes(i.kind) ? i.kind : "file";
+    const files = kind === "file" ? Math.max(1, Math.min(10, Math.round(num(i.files) || 1))) : 0;
+    let thumb = i.thumb || null;
+    if (!thumb && i.from_photo && pending && pending.thumb) { thumb = await pending.thumb.catch(() => null); if (thumb) pending.used = true; }
+    const today = dayKey(), before = filesOn(today), q = Number(workCfg().quota) || 2;
+    const st = workStreak(), n = st.today ? st.n : st.n + 1, mult = streakMult(n);
+    let coins = 0, xp = 0;
+    const mins = num(i.minutes);
+    if (kind === "file") {
+      coins = Math.round(files * COIN_PER_FILE * mult * (thumb ? 1 : 0.5));
+      if (before < q && before + files >= q) coins += QUOTA_BONUS;
+      xp = files * FILE_XP;
+    } else { coins = Math.round(((mins || 60) / 60) * 10); xp = Math.round(((mins || 60) / 60) * 15); }
+    const ref = db.collection("worklog").doc();
+    await ref.set({ day: today, at: nowIso(), kind, files, title: clip(i.title, 120) || null, channel: clip(i.channel, 60) || null, minutes: mins,
+      proof: !!thumb, thumb, coins, xp, mult, note: clip(i.note, 200) || null });
+    const done = before + files;
+    toast(kind === "file" ? `+${coins} coins · ${done}/${q} files today${thumb ? "" : " (no proof: half coins)"}` : `+${coins} coins for creative work`);
+    burst(done >= q ? 40 : 18);
+    return { logged: ref.id, files_today: done, quota: q, coins, multiplier: mult, streak_days: n, coin_balance: coinBalance() + coins, proof: !!thumb };
+  }
+  async function planWork(i) {
+    const start = /^\d{1,2}:\d{2}$/.test(String(i.start || "").trim()) ? String(i.start).trim().padStart(5, "0") : null;
+    if (!start) throw new Error("start must be HH:MM");
+    const doc = { day: dayKey(), start, files: Math.max(1, Math.min(10, Math.round(num(i.files) || Number(workCfg().quota) || 2))), note: clip(i.note, 200) || null, at: nowIso() };
+    await db.doc("workplans/" + doc.day).set(doc);
+    toast(`Work plan: ${doc.files} file${doc.files > 1 ? "s" : ""} from ${doc.start}.`);
+    return doc;
+  }
+  async function saveReward(i) {
+    const prev = i.reward_id ? S.rewards.find((r) => r.id === i.reward_id) : null;
+    if (i.reward_id && !prev) throw new Error("No reward with that id.");
+    if (i.delete) { await db.doc("rewards/" + prev.id).delete(); return { deleted: prev.id }; }
+    if (!prev && (!clip(i.title, 80) || num(i.price) == null)) throw new Error("A new reward needs a title and a price in coins.");
+    const doc = prev ? {} : { status: "locked", createdAt: nowIso() };
+    if (i.title != null) doc.title = clip(i.title, 80);
+    if (i.emoji != null) doc.emoji = clip(i.emoji, 8) || null;
+    if (num(i.price) != null) doc.price = Math.max(1, Math.round(num(i.price)));
+    if (TIERS[i.tier]) doc.tier = i.tier; else if (!prev) doc.tier = "fun";
+    if (i.requires_income !== undefined) doc.requires_income = num(i.requires_income) || null;
+    if (num(i.cost) != null) doc.cost = num(i.cost);
+    if (i.why != null) doc.why = clip(i.why, 240);
+    doc.updatedAt = nowIso();
+    let id = prev && prev.id;
+    if (prev) await db.doc("rewards/" + id).update(doc); else { const ref = db.collection("rewards").doc(); id = ref.id; await ref.set(doc); }
+    toast(prev ? "Reward updated." : `Wishlist: ${doc.title} · ${doc.price} coins`);
+    return { reward_id: id, price: doc.price ?? prev.price, coin_balance: coinBalance() };
+  }
+  async function redeemReward(r) {
+    if (!rewardReady(r)) throw new Error("not unlocked yet");
+    await db.doc("rewards/" + r.id).update({ status: "redeemed", redeemedAt: nowIso() });
+    await db.collection("wins").doc().set({ kind: "reward", text: `Unlocked: ${r.title}`, xp: 0, ref: r.id, praise: "You earned this. Enjoy it, guilt-free.", at: nowIso() });
+    burst(60); toast(`Unlocked: ${r.title}. Enjoy it, guilt-free. 🎉`);
+  }
+  async function logIncome(i) {
+    const month = /^\d{4}-\d{2}$/.test(String(i.month || "")) ? i.month : monthOf();
+    const amt = num(i.amount); if (amt == null) throw new Error("amount required");
+    const cur = S.income.find((x) => x.id === month);
+    const entries = [...((cur && cur.entries) || []), { amount: amt, source: clip(i.source, 60) || null, at: nowIso() }];
+    const total = i.set_total ? amt : entries.reduce((a, e) => a + (Number(e.amount) || 0), 0);
+    await db.doc("income/" + month).set({ month, amount: total, entries: i.set_total ? [{ amount: amt, source: "total", at: nowIso() }] : entries, updatedAt: nowIso() });
+    const goal = Number(workCfg().income_goal) || 0;
+    if (goal && total >= goal && (Number(cur && cur.amount) || 0) < goal) { burst(80); toast(`${money(total)} this month. Milestone hit! 🚀`); }
+    return { month, total, goal };
+  }
+
   // ------------------------------------------------------------ food meter + recipe book
   // foods/<id>: values per 100 g plus a short info page. recipes/<id>: ingredients are food ids + grams
   // for the whole recipe, so macros always follow the meter. plans/<YYYY-MM-DD>: the recipes picked for a day.
@@ -1572,6 +1717,133 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
 
 
+  // ------------------------------------------------------------ work screens
+  let memTimer;  // kept here too: some views block storage
+  const timerStart = () => { const v = memTimer !== undefined ? memTimer : store("hq.workStart"); return v && !isNaN(Date.parse(v)) ? v : null; };
+  const setTimer = (v) => { memTimer = v; store("hq.workStart", v); };
+  const timerMins = () => { const t = timerStart(); return t ? Math.max(0, Math.round((Date.now() - Date.parse(t)) / 60000)) : null; };
+  const fmtMins = (m) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+  const hhmmNow = () => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
+  function nextReward() {
+    const bal = coinBalance();
+    return lockedRewards().filter((r) => !rewardReady(r) && (!r.requires_income || bestMonth() >= r.requires_income))
+      .map((r) => ({ r, left: (Number(r.price) || 0) - bal })).sort((a, b) => a.left - b.left)[0] || null;
+  }
+  function planLine(compact) {
+    const plan = planToday(), done = filesOn(dayKey()), q = Number(workCfg().quota) || 2;
+    if (plan) {
+      const late = done === 0 && hhmmNow() > plan.start && (Date.parse(`${dayKey()}T${plan.start}:00+07:00`) + 30 * 60000) < Date.now();
+      return h("div", { class: "wk-plan" + (late ? " late" : "") }, late ? `You said ${plan.start}. It's ${hhmmNow()}: start now?` : `Plan: ${plan.files} file${plan.files > 1 ? "s" : ""} from ${plan.start}${plan.note ? ` · ${plan.note}` : ""}`);
+    }
+    if (done >= q) return null;
+    const t = h("input", { type: "time", "aria-label": "Start time", value: `${String(Math.min(23, hourNow() + 1)).padStart(2, "0")}:00` });
+    const f = h("input", { type: "number", min: "1", max: "10", value: String(q), "aria-label": "Files", style: "width:64px" });
+    return h("div", { class: "inline-form" }, h("span", { class: "small" }, compact ? "No plan yet:" : "Plan today:"), t, h("span", { class: "small" }, "files"), f,
+      h("button", { class: "btn small", type: "button", onclick: () => run(() => planWork({ start: t.value, files: f.value })) }, "Commit"));
+  }
+  function workTodayBlock(compact) {
+    const q = Number(workCfg().quota) || 2, done = filesOn(dayKey()), st = workStreak(), mult = streakMult(st.today ? st.n : st.n + 1), tm = timerMins(), nr = nextReward();
+    return [
+      h("div", { class: "wk-top" }, h("span", { class: "label" }, compact ? "Work · top priority" : "Today"),
+        h("span", { class: "wk-chips" }, st.n ? h("span", { class: "chip" }, `🔥 ${st.n} day${st.n > 1 ? "s" : ""}${mult > 1 ? ` · ×${mult}` : ""}`) : null, h("span", { class: "chip gold mono" }, `${coinBalance()} coins`))),
+      h("div", { class: "wk-big" }, `${done} / ${q} `, h("small", {}, done >= q ? "files today ✓" : "files today")),
+      h("div", { class: "track", role: "progressbar", "aria-label": "Files today", "aria-valuenow": String(Math.min(100, Math.round(100 * done / q))) }, h("i", { style: `width:${Math.min(100, Math.round(100 * done / q))}%` })),
+      planLine(compact),
+      h("div", { class: "wk-actions" },
+        h("button", { class: "btn work", type: "button", onclick: () => openSheet({ type: "workdone", files: 1, minutes: timerMins() }, false) }, "+ File done"),
+        tm != null ? h("button", { class: "btn small", type: "button", onclick: () => { setTimer(null); render(); } }, `⏱ ${fmtMins(tm)} · Stop`)
+          : h("button", { class: "btn small", type: "button", onclick: () => { setTimer(nowIso()); render(); } }, "▶ Start timer"),
+        compact ? h("button", { class: "link-btn", type: "button", onclick: () => showTab("work") }, "Rewards ›") : null),
+      nr ? h("div", { class: "small" }, `Next reward: ${nr.r.emoji || "🎁"} ${nr.r.title} · ${nr.left} coins to go (~${Math.max(1, Math.ceil(nr.left / (COIN_PER_FILE * mult)))} file${Math.ceil(nr.left / (COIN_PER_FILE * mult)) > 1 ? "s" : ""})`)
+        : S.rewards.some((r) => rewardReady(r) && r.status !== "redeemed") ? h("div", { class: "small", style: "font-weight:600" }, "🎁 A reward is ready to unlock!") : null,
+    ];
+  }
+  function renderWork() {
+    if (!["worklog", "rewards", "income", "workplans", "config"].every((c) => S.loaded.has(c))) return;
+    $("#workhome").replaceChildren(...workTodayBlock(true));
+    $("#workcoins").textContent = `${coinBalance()} coins`;
+    const today = dayKey(), q = Number(workCfg().quota) || 2;
+    const last7 = Array.from({ length: 7 }, (_, k) => shiftDay(today, k - 6));
+    const firstDay = S.worklog.map((w) => w.day).sort()[0] || today;
+    $("#worktoday").replaceChildren(...workTodayBlock(false),
+      h("div", { class: "ask-row" }, h("div", { class: "dots", "aria-label": "Last 7 days" }, last7.map((d) => { const n = filesOn(d); return h("i", { class: n >= q ? "done" : n ? "" : d < today && d >= firstDay ? "missed" : "", title: `${nice(d)}: ${n} file${n === 1 ? "" : "s"}`, style: n && n < q ? "background:var(--gold-bright)" : "" }); })),
+        h("span", { class: "muted small" }, `${last7.reduce((a, d) => a + filesOn(d), 0)} files this week · 1 file = ${COIN_PER_FILE} coins, ×1.2 from a 3-day streak, ×1.5 from 7, ×2 from 14`)));
+    // rewards shop
+    const bal = coinBalance(), locked = lockedRewards(), done = S.rewards.filter((r) => r.status === "redeemed");
+    $("#workshop").replaceChildren(...[
+      h("div", { class: "section-head" }, h("h3", { class: "h3s" }, "Rewards shop"), h("button", { class: "link-btn", type: "button", onclick: () => fill("Add to my wishlist: ") }, "+ Wish")),
+      h("p", { class: "muted small", style: "margin:0" }, "Each reward costs coins you earn by finishing files. Big buys also need an income milestone. Once it's unlocked, enjoy it guilt-free."),
+      ...locked.map((r) => {
+        const price = Number(r.price) || 0, pct = price ? Math.min(100, Math.round(100 * Math.max(0, bal) / price)) : 0, ready = rewardReady(r);
+        const incOk = !r.requires_income || bestMonth() >= r.requires_income;
+        let armed = false;
+        const btn = ready ? h("button", { class: "btn work small", type: "button" }, "Unlock") : h("span", { class: "muted small mono" }, `${Math.max(0, price - bal)} to go`);
+        if (ready) btn.addEventListener("click", () => { if (!armed) { armed = true; btn.textContent = `Spend ${price}?`; setTimeout(() => { armed = false; btn.textContent = "Unlock"; }, 3000); return; } run(() => redeemReward(r)); });
+        return h("div", { class: "reward" + (ready ? " ready" : "") }, h("span", { class: "emoji" }, r.emoji || "🎁"),
+          h("div", { style: "min-width:0" }, h("div", { class: "t" }, r.title),
+            h("div", { class: "s" }, [`${price} coins`, TIERS[r.tier], r.cost ? `≈ ${money(r.cost)}` : null].filter(Boolean).join(" · "),
+              r.requires_income ? h("span", { class: "tag" + (incOk ? " goal" : ""), style: "margin-left:6px" }, `${incOk ? "✓ " : ""}needs a ${money(r.requires_income)} month`) : null),
+            h("div", { class: "track" }, h("i", { style: `width:${pct}%` })), r.why ? h("div", { class: "why" }, r.why) : null),
+          btn);
+      }),
+      locked.length ? null : h("div", { class: "empty" }, "No rewards yet. Tell Mali what you want, like a phone, a dinner out or a night out, and she'll price it in files."),
+      done.length ? h("details", {}, h("summary", {}, `Unlocked (${done.length})`), h("div", { class: "list" }, done.map((r) => h("div", { class: "row two" },
+        h("div", { class: "main" }, h("div", { class: "title" }, `${r.emoji || "🎁"} ${r.title}`), h("div", { class: "meta" }, `${r.price} coins · ${r.redeemedAt ? nice(dayKey(r.redeemedAt)) : ""}`)), h("span", { class: "tag goal" }, "enjoyed"))))) : null].filter(Boolean));
+    // income
+    const c = workCfg(), month = monthOf(), cur = incomeOf(month), goal = Number(c.income_goal) || 0;
+    const amt = h("input", { type: "number", inputmode: "decimal", min: "0", placeholder: "Amount", "aria-label": "Amount", style: "width:110px" });
+    const src = h("input", { type: "text", placeholder: "From (e.g. Patreon)", "aria-label": "Source", style: "flex:1 1 140px" });
+    const unlocks = S.rewards.filter((r) => r.requires_income && r.status !== "redeemed");
+    $("#workincome").replaceChildren(
+      h("div", { class: "section-head" }, h("h3", { class: "h3s" }, `Income · ${new Date(month + "-15T12:00:00Z").toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" })}`), h("span", { class: "muted small" }, `best month ${money(bestMonth())}`)),
+      h("div", { class: "macro" }, h("div", { class: "lbl" }, h("span", {}, "This month"), h("span", { class: "mono" }, `${money(cur)} / ${money(goal)}`)),
+        h("div", { class: "track" }, h("i", { style: `width:${goal ? Math.min(100, Math.round(100 * cur / goal)) : 0}%` }))),
+      h("p", { class: "small", style: "margin:0" }, `Averaging ${money(c.income_now)} a month → next milestone ${money(goal)} a month.${unlocks.length ? ` It unlocks: ${unlocks.map((r) => `${r.emoji || "🎁"} ${r.title}`).join(", ")}.` : ""}`),
+      h("div", { class: "inline-form" }, amt, src, h("button", { class: "btn small", type: "button", onclick: () => { if (num(amt.value) == null) return; run(async () => { await logIncome({ amount: amt.value, source: src.value }); amt.value = ""; src.value = ""; }); } }, "+ Add income")));
+    // log
+    const recent = [...S.worklog].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 40);
+    $("#worklogsum").textContent = `Work log (${S.worklog.length})`;
+    $("#worklog").replaceChildren(...recent.map((w) => h("div", { class: "wlog" }, w.thumb ? h("img", { src: w.thumb, alt: "Proof" }) : h("span", { class: "noproof" }, "no proof"),
+      h("div", { style: "min-width:0" }, h("div", { class: "title" }, w.kind === "file" ? `${w.files} file${w.files > 1 ? "s" : ""}${w.title ? ` · ${w.title}` : ""}` : `Creative work${w.title ? ` · ${w.title}` : ""}`),
+        h("div", { class: "muted small" }, [nice(w.day), clock(w.at), w.channel, w.minutes ? `${w.minutes} min` : null, `+${w.coins} coins`].filter(Boolean).join(" · "))),
+      delBtn("Delete entry", () => db.doc("worklog/" + w.id).delete()))));
+    if (!recent.length) $("#worklog").append(h("div", { class: "muted small" }, "Nothing logged yet."));
+  }
+  async function proofOf(file) {
+    const url = (await shrink(await downscale(file), 520)).toDataURL("image/jpeg", 0.6);
+    return url.startsWith("data:image/jpeg") && url.length < 160000 ? url : thumbOf(file);
+  }
+  function workDonePage(v) {
+    const st = workStreak(), mult = streakMult(st.today ? st.n : st.n + 1), q = Number(workCfg().quota) || 2, before = filesOn(dayKey());
+    const preview = () => { const base = Math.round(v.files * COIN_PER_FILE * mult * (v.thumb ? 1 : 0.5)); return base + (before < q && before + v.files >= q ? QUOTA_BONUS : 0); };
+    const coinsEl = h("b");
+    const drawCoins = () => { coinsEl.textContent = `+${preview()} coins`; };
+    const title = h("input", { class: "num-in", type: "text", placeholder: "Which file? (optional)", value: v.title || "", style: "font-family:var(--font-body)" });
+    title.addEventListener("input", () => { v.title = title.value; });
+    const mins = h("input", { class: "num-in", type: "number", min: "0", placeholder: "min", value: v.minutes != null ? String(v.minutes) : "", style: "width:90px" });
+    mins.addEventListener("input", () => { v.minutes = num(mins.value); });
+    const channels = [...new Set(["Akasha", "Rose", ...S.worklog.map((w) => w.channel).filter(Boolean)])].slice(0, 6);
+    const amt = h("b");
+    const step = (d) => { v.files = Math.max(1, Math.min(5, v.files + d)); amt.textContent = String(v.files); drawCoins(); };
+    amt.textContent = String(v.files); drawCoins();
+    return h("div", { class: "page" },
+      h("div", { class: "page-head" }, h("span", { class: "emoji" }, "🎧"), h("div", {}, h("h2", {}, "File done?"), h("div", { class: "muted small" }, "Log it with a proof photo: a screenshot of the exported file or the editor."))),
+      h("div", { class: "calc" },
+        h("div", { class: "slot-head" }, h("span", { class: "label" }, "Files finished"), h("span", { class: "stepper" }, h("button", { class: "btn small", type: "button", onclick: () => step(-1) }, "−"), amt, h("button", { class: "btn small", type: "button", onclick: () => step(1) }, "+"))),
+        title,
+        h("div", { class: "fchips" }, channels.map((c) => h("button", { class: "fchip", type: "button", "aria-pressed": String(v.channel === c), onclick: () => { v.channel = v.channel === c ? null : c; drawSheet(); } }, c))),
+        h("label", { class: "grams-row", style: "font-weight:500" }, mins, "minutes it took"),
+        v.thumb ? h("img", { class: "proof-prev", src: v.thumb, alt: "Proof" }) : null,
+        h("button", { class: "btn" + (v.thumb ? "" : " gold"), type: "button", onclick: () => $("#proofcam").click() }, v.thumb ? "Change proof photo" : "📷 Add proof photo"),
+        h("div", { class: "slot-head" }, h("span", { class: "small" }, v.thumb ? "With proof" : "Without proof you get half the coins"), coinsEl)),
+      h("div", { class: "ask-row" },
+        h("button", { class: "btn work", type: "button", onclick: () => run(async () => {
+          await logWork({ files: v.files, title: v.title, channel: v.channel, minutes: v.minutes, thumb: v.thumb });
+          if (timerStart()) setTimer(nowIso());
+          closeSheet(); }) }, "Log it"),
+        h("button", { class: "btn small", type: "button", onclick: closeSheet }, "Cancel")));
+  }
+
   // ------------------------------------------------------------ home: notices + today at a glance
   function notice(tone, icon, title, sub, to) {
     return h("button", { class: "notice", type: "button", "data-tone": tone, onclick: () => showTab(to) },
@@ -1580,6 +1852,10 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function renderNotices() {
     if (!["tasks", "notes", "drafts", "suggestions"].every((c) => S.loaded.has(c))) return;
     const today = dayKey(), tom = shiftDay(today, 1), out = [];
+    if (S.loaded.has("worklog") && S.loaded.has("workplans")) {
+      const q = Number(workCfg().quota) || 2, done = filesOn(today), hr = hourNow();
+      if (done < q && hr >= 20) out.push(notice("alert", "⏳", `The day's running out: ${done}/${q} files`, done ? "One more file keeps the bonus." : "One file keeps your streak alive.", "work"));
+    }
     for (const t of S.tasks.filter((x) => x.lock && x.status !== "done" && x.lockAt).sort((a, b) => String(a.lockAt).localeCompare(String(b.lockAt))).slice(0, 1))
       out.push(notice("alert", "⏱", t.title, `Locks the app ${dayKey(t.lockAt) === today ? "today" : nice(dayKey(t.lockAt))} at ${clock(t.lockAt)} until it's done`, "tasks"));
     for (const n of S.notes.filter((x) => x.kind === "appointment" && x.date && x.date >= today && x.date <= tom))
@@ -1625,7 +1901,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
 
   // ------------------------------------------------------------ tabs
-  const TAB_NAMES = ["home", "tasks", "food", "recipes", "meter", "training", "move", "goals", "commit", "notes", "drafts", "ideas", "wins"];
+  const TAB_NAMES = ["home", "work", "tasks", "food", "recipes", "meter", "training", "move", "goals", "commit", "notes", "drafts", "ideas", "wins"];
   let tab = "home";
   function showTab(name, keepScroll) {
     tab = TAB_NAMES.includes(name) ? name : "home";
@@ -1637,7 +1913,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
 
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderNext(); renderNotices(); renderGlance(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
+  function render() { renderHeader(); renderWork(); renderNext(); renderNotices(); renderGlance(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
   function renderPersona() {
     document.querySelectorAll(".mname").forEach((el) => { el.textContent = persona(); });
     if (!live && S.loaded.has("chat")) {
@@ -1955,7 +2231,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function drawSheet() {
     const v = sheetStack[sheetStack.length - 1]; if (!v) return;
     $("#sheetback").hidden = sheetStack.length < 2;
-    const page = v.type === "food" ? foodPage(v) : v.type === "check" ? checkPage(v) : v.type === "tick" ? tickPage(v) : recipePage(v);
+    const page = v.type === "food" ? foodPage(v) : v.type === "check" ? checkPage(v) : v.type === "tick" ? tickPage(v) : v.type === "workdone" ? workDonePage(v) : recipePage(v);
     $("#sheetbody").replaceChildren(page || h("div", { class: "empty" }, "This was removed."));
   }
   function renderSheet() {
@@ -2300,6 +2576,13 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   // ------------------------------------------------------------ the secretary (Claude, on the viewer's plan)
   const sched = { type: "array", description: "Weekdays: mon tue wed thu fri sat sun", items: { type: "string" } };
   const TOOLS = [
+    { name: "log_work", description: "Log finished work. kind file = finished audio files (files = how many); kind creative = a creative or funnel block (minutes). Set from_photo true when the attached photo is their proof (the exported file or an editor screenshot); without proof, files earn half coins. Returns today's count, coins and streak.",
+      inputSchema: { type: "object", properties: { kind: { type: "string", enum: ["file", "creative"] }, files: { type: "integer" }, title: { type: "string" }, channel: { type: "string" },
+        minutes: { type: "number" }, from_photo: { type: "boolean" }, note: { type: "string" } } },
+      execute: async (i) => { status("Logging your work…"); return logWork(i); } },
+    { name: "plan_work", description: "Save today's work commitment: start time and number of files. Call it as soon as they give a concrete schedule.",
+      inputSchema: { type: "object", required: ["start"], properties: { start: { type: "string", description: "HH:MM, 24h Bangkok time" }, files: { type: "integer" }, note: { type: "string" } } },
+      execute: async (i) => planWork(i) },
     { name: "log_meal", description: "Log ONE meal (all items on the plate together) with honest estimates, a verdict and an XP score judged against their nutrition goal. Returns today's running totals.",
       inputSchema: { type: "object", required: ["name", "meal", "kcal", "protein_g", "xp", "verdict"], properties: {
         name: { type: "string", description: "e.g. 'Khao man gai + iced Americano'" }, meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "snack", "drink"] },
@@ -2383,15 +2666,25 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         mood: { type: "number" }, energy: { type: "number" }, stress: { type: "number" }, sleep_h: { type: "number" }, weight_kg: { type: "number" }, water_l: { type: "number" } } },
       execute: async (i) => { if (!i.text) throw new Error("text required"); return { entry_id: await addLog(i) }; } },
     { name: "update_settings", description: "Change app settings: nutrition targets (goal + kcal + protein_g, optional carbs_g/fat_g), daily steps_goal, or your own name (secretary_name) if they want to call you something else.",
-      kw: /target|calorie|kcal|protein|macro|cut|bulk|maintain|step goal|steps goal|name/i,
+      kw: /target|calorie|kcal|protein|macro|cut|bulk|maintain|step goal|steps goal|name|quota|per day|currency|goal/i,
       inputSchema: { type: "object", properties: { goal: { type: "string", description: "cut | maintain | bulk | recomp" }, kcal: { type: "number" }, protein_g: { type: "number" },
-        carbs_g: { type: "number" }, fat_g: { type: "number" }, rationale: { type: "string" }, steps_goal: { type: "integer" }, secretary_name: { type: "string" } } },
+        carbs_g: { type: "number" }, fat_g: { type: "number" }, rationale: { type: "string" }, steps_goal: { type: "integer" }, secretary_name: { type: "string" },
+        work_quota: { type: "integer", description: "files per day" }, currency: { type: "string", description: "symbol, e.g. $" }, income_now: { type: "number" }, income_goal: { type: "number" } } },
       execute: async (i) => { const out = {};
         if (i.kcal && i.protein_g) { await db.doc("config/nutrition").set({ goal: clip(i.goal || "maintain", 40), kcal: Math.round(num(i.kcal)), protein_g: Math.round(num(i.protein_g)),
           carbs_g: num(i.carbs_g) && Math.round(num(i.carbs_g)), fat_g: num(i.fat_g) && Math.round(num(i.fat_g)), rationale: clip(i.rationale, 300), updatedAt: nowIso() }); out.nutrition = true; }
         if (num(i.steps_goal)) { await db.doc("config/health").set({ steps_goal: Math.max(1000, Math.min(40000, Math.round(num(i.steps_goal)))), updatedAt: nowIso() }); out.steps_goal = true; }
         if (i.secretary_name) { await db.doc("config/persona").set({ name: clip(i.secretary_name, 24), updatedAt: nowIso() }); out.name = true; }
-        if (!Object.keys(out).length) throw new Error("nothing to change: give kcal+protein_g, steps_goal or secretary_name");
+        if (num(i.work_quota) || i.currency || num(i.income_now) || num(i.income_goal)) {
+          const w = { ...(cfg("work") || {}) };
+          if (num(i.work_quota)) w.quota = Math.max(1, Math.min(10, Math.round(num(i.work_quota))));
+          if (i.currency) w.currency = clip(i.currency, 4);
+          if (num(i.income_now)) w.income_now = num(i.income_now);
+          if (num(i.income_goal)) w.income_goal = num(i.income_goal);
+          w.updatedAt = nowIso(); delete w.id;
+          await db.doc("config/work").set(w); out.work = true;
+        }
+        if (!Object.keys(out).length) throw new Error("nothing to change: give kcal+protein_g, steps_goal, secretary_name or work settings");
         return out; } },
     { name: "save_commitment", description: "Create or manage a commitment: a recurring deadline with a daily time window (e.g. 23:00-23:10). The app shows a check-in button only inside the window; on time = reward XP, missed = penalty XP deducted automatically plus the punishment created as a task (doing it wins back half). action: create | update | pause | resume | delete | excuse (forgive one day).",
       kw: /commit|deadline|window|by \d|every (day|night|morning)|punish|penalt|bedtime|sleep|wake|phone|habit|rule|miss/i,
@@ -2436,6 +2729,17 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         meals: { type: "array", items: { type: "object", required: ["slot", "recipe_id"], properties: { slot: { type: "string", enum: SLOTS }, recipe_id: { type: "string" }, servings: { type: "number" } } } },
         follow_date: { type: "string", description: "YYYY-MM-DD" }, delete: { type: "boolean" } } },
       execute: async (i) => { status("Building the day…"); return saveDay(i); } },
+    { name: "save_reward", description: "Add, reprice or remove a wishlist reward in their Rewards shop. Price it in coins by realistic effort (1 file ≈ 10 coins, see WORK rules). Big buys also get requires_income (the monthly-income milestone to reach first). Always explain the price in why.",
+      kw: /wish|reward|buy|want|phone|treat|go(ing)? out|night out|dinner|unlock|coin|shop|gift|trip|purchase/i,
+      inputSchema: { type: "object", properties: { reward_id: { type: "string" }, title: { type: "string" }, emoji: { type: "string" }, price: { type: "integer", description: "coins" },
+        tier: { type: "string", enum: ["treat", "fun", "gear", "big"] }, cost: { type: "number", description: "real price in their currency, if known" },
+        requires_income: { type: "number", description: "monthly income milestone, e.g. 4000" }, why: { type: "string" }, delete: { type: "boolean" } } },
+      execute: async (i) => saveReward(i) },
+    { name: "log_income", description: "Record money they earned (adds to that month's total), or set_total true to set the month's total.",
+      kw: /income|earn|paid|payout|money|revenue|\$|baht|dollar|month|patreon|sales|k a month/i,
+      inputSchema: { type: "object", required: ["amount"], properties: { amount: { type: "number" }, month: { type: "string", description: "YYYY-MM, default this month" },
+        source: { type: "string" }, set_total: { type: "boolean" } } },
+      execute: async (i) => logIncome(i) },
     // Last on purpose: when the platform caps tools and a message isn't about meals, this is the one left out.
     { name: "update_meal", description: "Edit a meal already logged (any field, XP, verdict), delete it (duplicates, mistakes), or put the photo attached to this message on it as its thumbnail (attach_photo). Meal ids are in meals_today and recent_meals.",
       kw: /meal|ate|eat|food|breakfast|lunch|dinner|snack|drink|photo|pic|thumb|image|edit|fix|wrong|change|correct|actually|delete|remove|portion|kcal|calor|protein/i,
@@ -2451,7 +2755,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 
   function pickTools(text, hasImage) {
     // The platform may cap how many tools one call can carry: keep the ones this message needs first.
-    const scored = TOOLS.map((t, idx) => ({ t, idx, hit: (t.kw && t.kw.test(text)) || (hasImage && ["log_meal", "update_meal", "log_health", "log_places"].includes(t.name)) }));
+    const scored = TOOLS.map((t, idx) => ({ t, idx, hit: (t.kw && t.kw.test(text)) || (hasImage && ["log_meal", "update_meal", "log_health", "log_places", "log_work"].includes(t.name)) }));
     scored.sort((a, b) => (b.hit - a.hit) || (a.idx - b.idx));
     return scored.slice(0, maxTools).sort((a, b) => a.idx - b.idx).map(({ t }) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema, execute: t.execute }));
   }
@@ -2470,6 +2774,12 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes })),
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
       meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
+      work: (() => { const q = Number(workCfg().quota) || 2, st = workStreak(), plan = planToday(), nr = nextReward(), bal = coinBalance(), c = workCfg();
+        return { top_priority: true, time_now: hhmmNow(), files_today: filesOn(today), quota: q, done_for_today: filesOn(today) >= q, plan_today: plan ? { start: plan.start, files: plan.files, note: plan.note } : null,
+          streak_days: st.n, next_file_multiplier: streakMult(st.today ? st.n : st.n + 1), coins: bal, files_last_7_days: Array.from({ length: 7 }, (_, k) => filesOn(shiftDay(today, k - 6))),
+          rewards: lockedRewards().map((r) => `${r.id}: ${r.title} = ${r.price} coins${r.requires_income ? `, needs a ${money(r.requires_income)} month` : ""}${rewardReady(r) ? " (READY to unlock)" : ` (${Math.max(0, r.price - bal)} to go)`}`).slice(0, 30),
+          next_reward: nr ? `${nr.r.title}: ${nr.left} coins to go` : null,
+          income: { this_month: incomeOf(monthOf()), averaging: c.income_now, next_milestone: c.income_goal, best_month: bestMonth(), currency: c.currency } }; })(),
       food_meter: S.foods.map((f) => `${f.id}: ${f.name} (${Math.round(f.kcal || 0)} kcal, ${fmtG(f.protein_g)} g P per 100 g)`).slice(0, 250),
       recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving. How: ${howOf(r) || "-"}`).slice(0, 100),
       day_plans_library: dayList().map((d) => `${d.id}: Day ${d.number} · ${d.title} = ${(d.meals || []).map((m) => `${m.slot} ${(recipeById(m.recipe) || {}).title || "?"}${m.servings !== 1 ? " ×" + m.servings : ""}`).join(", ")} → ${macroLine(dayTotals(d))}`).slice(0, 40),
@@ -2494,6 +2804,13 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   const RULES = () => `You are ${persona()}, the user's personal secretary and coach (she/her), inside their "Secretary HQ" app, where they see your animated face. They live alone in a studio in Thailand.
 Voice: brief and straight to the point, warm, like a friend texting. 1-3 short sentences. No headers or lists unless asked. At most one emoji.
 Act with the tools first, then reply. Don't narrate tool calls.
+WORK IS THEIR TOP PRIORITY (state: work). Their daily job is turning scripts into finished audio files (generate, edit, listen-check, export). It's boring, so you hold the line, warmly but firmly:
+- If done_for_today is false and plan_today is null: before anything else, get a concrete schedule (start time + number of files) and save it with plan_work. Until they commit, keep steering back to it and don't go deep into other topics (still log what they send quietly). Exceptions: health, safety, urgent appointments.
+- When they say a file is done, ask for a proof photo (the exported file or an editor screenshot) and log_work with from_photo true. No photo = half coins; say so.
+- From 20:00 with files short of the quota: insist. One file keeps the streak; name the smallest next step (open the editor, generate the next audio).
+- Every nudge uses ONE fresh, concrete reason, never one already used in this chat: the reward they're closest to (coins to go, about how many files), what hitting the income milestone changes (the phone, freedom, going out guilt-free), the streak multiplier, how close this month is to the milestone.
+- Rewards are permission, priced by effort with save_reward (1 file ≈ 10 coins): small treat 10–20, a nice meal or fun outing 30–40, a night out or trip 50–80, gear 80–200; anything over ~25% of their monthly income: 300+ coins AND requires_income at the next milestone. Put the reasoning in why. Unlocked rewards are guilt-free.
+- Money they mention earning → log_income.
 MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
 You can edit any logged meal with update_meal: fix numbers, rename, delete duplicates, or put the attached photo on an existing meal (attach_photo) instead of logging it twice. Give text-only meals a food emoji icon.
 KITCHEN: food_meter = their foods (per 100 g, each with its own info page); recipes = single meals (the library); day_plans_library = full days of eating ("Day 1", "Day 2"…) they follow as a guide; day_plans = what they follow today/tomorrow. A "recipe" or "day" request from them usually means a FULL DAY: save_foods for every missing ingredient (reuse ids; honest typical values; say raw/cooked/dry; short practical info) → save_recipe for each new meal (always with how: 1-2 sentences on cooking it, plus steps) → save_day with the meals in eating order. To change how a meal is cooked, save_recipe with recipe_id + how (+ steps). A day must land within ±5% of their kcal target with protein at or above target; fit Thai markets and a simple studio kitchen; judge meal xp honestly. "Add X to my meter" → save_foods.
@@ -2652,7 +2969,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
       } else if (lastShot && Date.now() - lastShot.at < 10 * 60e3) { image = lastShot.image; pending = lastShot.pending; again = true; }
       else pending = null;
       const userText = (text || "Log this meal.") + (again ? "\n[Their previous photo is attached again for reference. Don't log it again; use it with update_meal attach_photo if they ask.]"
-        : image ? "\n[Image attached. If they ask whether they can or should eat it, DON'T log it: give a verdict against left_today and what the next meal should look like. Food they ate → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
+        : image ? "\n[Image attached. If they ask whether they can or should eat it, DON'T log it: give a verdict against left_today and what the next meal should look like. A screenshot of an exported audio file or their editor = work proof → log_work with from_photo true. Food they ate → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
       appendChat("user", text || "📷", image && !again ? { image: true } : {}); pushed = true;
       const history = chatHistory().slice(-14).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text || "…" }));
       if (history.length && history[history.length - 1].role === "user") history[history.length - 1] = { role: "user", content: userText };
@@ -2731,6 +3048,11 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   $("#newprogram").addEventListener("click", () => fill("Build me a program for "));
   $("#typemeal").addEventListener("click", () => fill("I just ate "));
   $("#snap").addEventListener("click", () => $("#camera").click());
+  $("#proofcam").addEventListener("change", () => {
+    const f = $("#proofcam").files[0]; $("#proofcam").value = "";
+    const v = sheetStack[sheetStack.length - 1];
+    if (f && v && v.type === "workdone") run(async () => { v.thumb = await proofOf(f); drawSheet(); });
+  });
   document.querySelectorAll(".checkbtn").forEach((b) => b.addEventListener("click", () => $("#checkcam").click()));
   $("#checkcam").addEventListener("change", () => { const f = $("#checkcam").files[0]; $("#checkcam").value = ""; if (f) run(() => checkFood(f)); });
   $("#camera").addEventListener("change", () => { const f = $("#camera").files[0]; if (!f) return; setPhoto(f); talkNow("Log this meal."); });
@@ -2776,7 +3098,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   showTab((location.hash || "").slice(1) === "chat" ? "home" : (location.hash || "").slice(1), true);
   if (location.hash === "#chat") openChat();
   render();
-  setInterval(() => { renderHeader(); renderNext(); renderNotices(); evaluateCommitments(); renderLock(); }, 15000);
+  setInterval(() => { renderHeader(); renderWork(); renderNext(); renderNotices(); evaluateCommitments(); renderLock(); }, 15000);
   setInterval(() => { if (lockShown) tickLock(); }, 1000);
   $("#lockstart").addEventListener("click", () => run(startLock));
   $("#lockdone").addEventListener("click", () => run(finishLock));
@@ -2806,6 +3128,10 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
     sub("foods", db.collection("foods"));
     sub("recipes", db.collection("recipes"));
     sub("days", db.collection("days"));
+    sub("worklog", db.collection("worklog").orderBy("at", "desc").limit(1000));
+    sub("rewards", db.collection("rewards"));
+    sub("income", db.collection("income"));
+    sub("workplans", db.collection("workplans").orderBy("day", "desc").limit(60));
     sub("plans", db.collection("plans").orderBy("day", "desc").limit(60));
   });
   C.use("assets").then((a) => { assets = a; });
