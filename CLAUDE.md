@@ -23,7 +23,9 @@ The app's built-in Claude (their subscription) writes all of these too.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.
 - Sync at every check-in: unprocessed `meals` → `meal add`, `sessions` sets → `log`, `inbox` →
   `day set` / `body`, `health` → `day set --steps --active-kcal --distance-km`, `places` →
-  `place add`; then set `processed: true`. The repo CSVs are the long-term sheets.
+  `place add`; then set `processed: true`. The repo CSVs are the long-term sheets. Mali can edit or
+  delete meals after they're synced: `edited_after_sync: true` → fix that meal's rows in
+  `nutrition/meals.csv` (remove them if `deleted: true`), then clear the flag.
 - Phone sync (docs/phone-sync.md) pushes steps and locations into the repo automatically. At every
   check-in run `python -m secretary app-sync --days 3` and send its output as one ArtifactData
   `batch` (ids are stable, so re-sending is harmless).

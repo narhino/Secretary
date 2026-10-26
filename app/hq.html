@@ -215,6 +215,7 @@ details.steps .row { background: var(--bg); }
 .snap { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .meal { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: start; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
 .meal .thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--sunk); display: grid; place-items: center; color: var(--muted); font-size: 11px; text-align: center; }
+.meal .thumb.icon { font-size: 30px; }
 .meal .name { font-weight: 600; overflow-wrap: anywhere; }
 .meal .nums { font: 500 12px var(--font-mono); color: var(--muted); margin-top: 2px; }
 .meal .verdict { font-size: 13px; margin-top: 4px; }
@@ -576,7 +577,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
   const RESURFACE_DAYS = [3, 7, 14, 30, 60, 90];
   const S = Object.fromEntries(COLLS.map((c) => [c, []]));
   S.loaded = new Set();
-  let db = null, sample = null, assets = null, ctl = null, photo = null, pending = null;
+  let db = null, sample = null, assets = null, ctl = null, photo = null, pending = null, lastShot = null;
   let canTools = true, maxTools = 16, fatal = false;
 
   // ------------------------------------------------------------ helpers
@@ -840,10 +841,50 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     return ref.id;
   }
   function mealThumb(m) {
-    const none = () => h("div", { class: "thumb" }, m.photo ? "📷" : "no photo");
+    const none = () => m.icon ? h("div", { class: "thumb icon" }, m.icon) : h("div", { class: "thumb" }, m.photo ? "📷" : "no photo");
     const src = m.thumb || (m.photoId ? "/_blob/" + m.photoId : m.photoUrl);
     if (!src) return none();
     return h("img", { class: "thumb", src, alt: m.name || "meal", loading: "lazy", onerror: (e) => e.target.replaceWith(none()) });
+  }
+  const MEAL_KINDS = ["breakfast", "lunch", "dinner", "snack", "drink"];
+  async function editMeal(i) {
+    const m = S.meals.find((x) => x.id === i.meal_id);
+    if (!m) throw new Error("No meal with that id. Use an id from meals_today or recent_meals.");
+    const ref = db.doc("meals/" + m.id);
+    if (i.delete) {
+      // Already copied to the long-term sheet: hide it and let the next check-in remove the CSV rows.
+      if (m.processed) await ref.update({ deleted: true, edited_after_sync: true, editedAt: nowIso() });
+      else await ref.delete();
+      toast(`Removed: ${clip(m.name, 50)}`);
+      return { deleted: m.id };
+    }
+    const patch = {};
+    if (i.name != null) patch.name = clip(i.name, 120);
+    if (MEAL_KINDS.includes(i.meal)) patch.meal = i.meal;
+    for (const k of ["kcal", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g"]) if (num(i[k]) != null) patch[k] = num(i[k]);
+    if (Array.isArray(i.items)) patch.items = i.items.slice(0, 12).map((x) => ({ name: clip(x && x.name, 80), kcal: num(x && x.kcal) }));
+    if (i.verdict != null) patch.verdict = clip(i.verdict, 140);
+    if (i.icon != null) patch.icon = clip(i.icon, 8) || null;
+    let hasPhoto = !!m.photo;
+    if (i.attach_photo) {
+      if (!pending) throw new Error("No photo came with this message. Ask them to send it.");
+      const photoId = pending.upload ? await pending.upload.catch(() => null) : null;
+      const thumb = pending.thumb ? await pending.thumb.catch(() => null) : null;
+      if (!photoId && !thumb) throw new Error("The photo couldn't be saved. Ask them to send it again.");
+      Object.assign(patch, { photo: true, photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb });
+      pending.used = true; hasPhoto = true;
+    } else if (i.remove_photo) { Object.assign(patch, { photo: false, photoId: null, photoUrl: null, thumb: null }); hasPhoto = false; }
+    const bonus = (p) => (p ? 2 : 0);
+    if (num(i.xp) != null) patch.xp = Math.max(-20, Math.min(20, Math.round(num(i.xp)))) + bonus(hasPhoto);
+    else if (hasPhoto !== !!m.photo) patch.xp = (Number(m.xp) || 0) + bonus(hasPhoto) - bonus(!!m.photo);
+    const changed = Object.keys(patch);
+    if (!changed.length) return { meal_id: m.id, changed };
+    if (m.processed) patch.edited_after_sync = true;
+    patch.editedAt = nowIso();
+    await ref.update(patch);
+    toast(i.attach_photo ? "Photo added to your meal." : "Meal updated." + (patch.xp != null && patch.xp !== m.xp ? `  ${signed(patch.xp - (Number(m.xp) || 0))} XP` : ""));
+    const day = mealsOn(m.day).map((x) => (x.id === m.id ? { ...x, ...patch } : x));
+    return { meal_id: m.id, changed, xp: patch.xp ?? m.xp, day_kcal: Math.round(sumOf(day, "kcal")), day_protein_g: Math.round(sumOf(day, "protein_g")) };
   }
   async function addMeal(i) {
     const ref = db.collection("meals").doc();
@@ -853,10 +894,10 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     if (fromPhoto && pending.thumb) thumb = await pending.thumb.catch(() => null);
     const items = (Array.isArray(i.items) ? i.items : []).slice(0, 12).map((x) => ({ name: clip(x && x.name, 80), kcal: num(x && x.kcal) }));
     const xp = Math.max(-20, Math.min(20, Math.round(Number(i.xp) || 0))) + (fromPhoto ? 2 : 0);
-    await ref.set({ day: dayKey(), at: nowIso(), meal: ["breakfast", "lunch", "dinner", "snack", "drink"].includes(i.meal) ? i.meal : "snack",
+    await ref.set({ day: dayKey(), at: nowIso(), meal: MEAL_KINDS.includes(i.meal) ? i.meal : "snack",
       name: clip(i.name, 120), items, kcal: num(i.kcal) ?? 0, protein_g: num(i.protein_g) ?? 0, carbs_g: num(i.carbs_g), fat_g: num(i.fat_g),
       fiber_g: num(i.fiber_g), sugar_g: num(i.sugar_g), verdict: clip(i.verdict, 140), xp, photo: fromPhoto,
-      photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb, processed: false });
+      photoId, photoUrl: photoId ? "/_blob/" + photoId : null, thumb, icon: clip(i.icon, 8) || null, processed: false });
     if (fromPhoto) pending.used = true;
     toast(`${clip(i.verdict, 80) || "Logged."}  ${signed(xp)} XP`);
     if (xp >= 10) burst(24);
@@ -1580,7 +1621,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
         items: { type: "array", items: { type: "object", properties: { name: { type: "string" }, kcal: { type: "number" } } } },
         kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, fiber_g: { type: "number" }, sugar_g: { type: "number" },
         xp: { type: "integer", description: "-20..20, see the rubric" }, verdict: { type: "string", description: "Max 10 words, human" },
-        from_photo: { type: "boolean", description: "true when this meal is the attached photo" } } },
+        from_photo: { type: "boolean", description: "true when this meal is the attached photo" }, icon: { type: "string", description: "One food emoji, shown when there's no photo" } } },
       execute: async (i) => { status("Logging your meal…"); return addMeal(i); } },
     { name: "log_health", description: "Save one day's activity from their phone's Health/Fitness app (usually a screenshot): steps, active calories burned, distance, exercise minutes. One call per day shown.",
       kw: /step|walk|health|fitness|burn|active|distance|km|screenshot/i,
@@ -1685,11 +1726,22 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
     { name: "suggest", description: "Add an idea to their Ideas board: a new feature, program, habit or optimisation that would genuinely help, based on what you've learned. Max one per conversation; never repeat existing ones.",
       inputSchema: { type: "object", required: ["title", "detail", "kind"], properties: { title: { type: "string" }, detail: { type: "string" }, kind: { type: "string", enum: ["feature", "program", "habit", "optimization"] } } },
       execute: async (i) => addSuggestion(i) },
+    // Last on purpose: when the platform caps tools and a message isn't about meals, this is the one left out.
+    { name: "update_meal", description: "Edit a meal already logged (any field, XP, verdict), delete it (duplicates, mistakes), or put the photo attached to this message on it as its thumbnail (attach_photo). Meal ids are in meals_today and recent_meals.",
+      kw: /meal|ate|eat|food|breakfast|lunch|dinner|snack|drink|photo|pic|thumb|image|edit|fix|wrong|change|correct|actually|delete|remove|portion|kcal|calor|protein/i,
+      inputSchema: { type: "object", required: ["meal_id"], properties: {
+        meal_id: { type: "string" }, name: { type: "string" }, meal: { type: "string", enum: ["breakfast", "lunch", "dinner", "snack", "drink"] },
+        items: { type: "array", items: { type: "object", properties: { name: { type: "string" }, kcal: { type: "number" } } } },
+        kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, fiber_g: { type: "number" }, sugar_g: { type: "number" },
+        xp: { type: "integer", description: "-20..20, re-judge if the numbers change" }, verdict: { type: "string" }, icon: { type: "string", description: "One food emoji" },
+        attach_photo: { type: "boolean", description: "Use the attached photo as this meal's photo" }, remove_photo: { type: "boolean" },
+        delete: { type: "boolean", description: "Delete this meal" } } },
+      execute: async (i) => { status("Updating your meal…"); return editMeal(i); } },
   ];
 
   function pickTools(text, hasImage) {
     // The platform may cap how many tools one call can carry: keep the ones this message needs first.
-    const scored = TOOLS.map((t, idx) => ({ t, idx, hit: (t.kw && t.kw.test(text)) || (hasImage && ["log_meal", "log_health", "log_places"].includes(t.name)) }));
+    const scored = TOOLS.map((t, idx) => ({ t, idx, hit: (t.kw && t.kw.test(text)) || (hasImage && ["log_meal", "update_meal", "log_health", "log_places"].includes(t.name)) }));
     scored.sort((a, b) => (b.hit - a.hit) || (a.idx - b.idx));
     return scored.slice(0, maxTools).sort((a, b) => a.idx - b.idx).map(({ t }) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema, execute: t.execute }));
   }
@@ -1707,7 +1759,8 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
       open_windows_now: openWindows().map((w) => w.c.title),
       pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes })),
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
-      meals_today: ms.map((m) => ({ name: m.name, meal: m.meal, kcal: m.kcal, protein_g: m.protein_g, xp: m.xp })),
+      meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
+      recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")) },
       programs: S.programs.filter((p) => p.status !== "done").map((p) => ({ id: p.id, type: p.type, title: p.title, goal: p.goal, status: p.status, version: p.version, rules: p.rules,
         sessions: (p.sessions || []).map((s) => ({ id: s.id, name: s.name, days: s.days, items: (s.items || []).map((x) => `${x.name}${x.detail ? " " + x.detail : ""}`) })) })),
@@ -1726,6 +1779,7 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 Voice: brief and straight to the point, warm, like a friend texting. 1-3 short sentences. No headers or lists unless asked. At most one emoji.
 Act with the tools first, then reply. Don't narrate tool calls.
 MEALS: they photograph everything they eat. For each meal (photo or text) call log_meal once with honest estimates for Thai portions (oil, sugar, sauces count). Set from_photo true when it's the attached photo.
+You can edit any logged meal with update_meal: fix numbers, rename, delete duplicates, or put the attached photo on an existing meal (attach_photo) instead of logging it twice. Give text-only meals a food emoji icon.
 Meal XP rubric, judged against nutrition_targets.goal and what's left today: +15..+20 high protein, whole food, fits the remaining budget; +5..+10 decent; 0 neutral; -5..-10 sugary drink, deep-fried or oversized; -15..-20 blows the day or directly fights the goal. If no targets yet, score on general quality and suggest setting targets. Verdict: max 10 words, specific ("Protein bomb, light on oil. Perfect cut meal."). Reply with one line: what today looks like now and one tip.
 TRAINING: when they give fitness goals, build a gym program with save_program: sessions on fixed days, each exercise with sets×reps @ load and rest, progression rules. When they report a workout, log_session with sets. Every few sessions, optimise: update loads/volume from the logged sets (save_program with program_id and a change_note). Other areas (work, habits) can get programs too.
 GOALS: specific and measurable; create_goal with 4-8 ordered milestone steps, the first tiny (<10 min), each with a when/where cue, xp 10-60. Complete steps/tasks by id when they say they did something, then praise specifically.
@@ -1774,16 +1828,19 @@ App state (JSON): ${appState()}`;
     ctl = new AbortController(); setBusy(true); setMood("thinking");
     const reply = $("#reply"); reply.classList.remove("err"); reply.textContent = "…"; reply.dataset.local = "1"; status("");
     live = { text: "" };
-    let image = null, opts = {}, pushed = false;
+    let image = null, opts = {}, pushed = false, again = false;
     try {
       if (photo) {
         image = await downscale(photo);
         pending = { used: false, upload: assets ? Promise.resolve().then(() => assets.upload(image)).then((r) => r.id) : null, thumb: thumbOf(image) };
         if (pending.upload) pending.upload.catch(() => {});
         pending.thumb.catch(() => {});
-      } else pending = null;
-      const userText = (text || "Log this meal.") + (image ? "\n[Image attached. Food → log_meal with from_photo true. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
-      appendChat("user", text || "📷", image ? { image: true } : {}); pushed = true;
+        lastShot = { image, pending, at: Date.now() };
+      } else if (lastShot && Date.now() - lastShot.at < 10 * 60e3) { image = lastShot.image; pending = lastShot.pending; again = true; }
+      else pending = null;
+      const userText = (text || "Log this meal.") + (again ? "\n[Their previous photo is attached again for reference. Don't log it again; use it with update_meal attach_photo if they ask.]"
+        : image ? "\n[Image attached. Food → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
+      appendChat("user", text || "📷", image && !again ? { image: true } : {}); pushed = true;
       const history = chatHistory().slice(-14).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text || "…" }));
       if (history.length && history[history.length - 1].role === "user") history[history.length - 1] = { role: "user", content: userText };
       else history.push({ role: "user", content: userText });
@@ -1897,7 +1954,7 @@ App state (JSON): ${appState()}`;
   C.use("db").then((d) => {
     db = d;
     if (!db) { offline("Sign in to Claude to load your HQ."); return; }
-    const sub = (name, q) => q.onSnapshot((snap) => { S[name] = snap.docs.map((x) => ({ id: x.id, ...x.data() })); S.loaded.add(name); render(); evaluateCommitments(); },
+    const sub = (name, q) => q.onSnapshot((snap) => { S[name] = snap.docs.map((x) => ({ id: x.id, ...x.data() })).filter((x) => !x.deleted); S.loaded.add(name); render(); evaluateCommitments(); },
       (err) => { console.error(name, err); toast("Lost connection to your data. Reload the page."); });
     for (const c of ["goals", "tasks", "notes", "wins", "programs", "suggestions", "config", "drafts", "commitments"]) sub(c, db.collection(c));
     sub("checks", db.collection("checks").orderBy("day", "desc").limit(400));
