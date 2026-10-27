@@ -410,6 +410,14 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .tile .track > i { background: var(--tone); }
 .more-link { justify-self: start; }
 
+/* open commitment windows: a bar on every tab */
+.windowbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 50px); z-index: 4; display: grid; gap: 6px; }
+.wbar { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px;
+  background: var(--gold-soft); border: 2px solid var(--gold-bright); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.wbar .wb-t { font-weight: 700; overflow-wrap: anywhere; }
+.wbar .wb-left { font: 600 14px var(--font-mono); color: var(--gold); white-space: nowrap; }
+.chatpanel.over-lock { z-index: 70; }
+
 /* work */
 .workhome { background: var(--sec-soft); border: 0; border-radius: 20px; padding: 14px; display: grid; gap: 10px; }
 .wk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -580,6 +588,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <button type="button" id="navchat" data-tone="home">Chat</button><button type="button" data-go="home" data-tone="home">Home</button><button type="button" data-go="work" data-tone="work">Work</button><button type="button" data-go="tasks" data-tone="tasks">Tasks</button><button type="button" data-go="food" data-tone="food">Food</button><button type="button" data-go="recipes" data-tone="recipes">Meal plan</button><button type="button" data-go="meter" data-tone="meter">Meter</button><button type="button" data-go="training" data-tone="training">Training</button><button type="button" data-go="move" data-tone="move">Move</button><button type="button" data-go="goals" data-tone="goals">Goals</button><button type="button" data-go="commit" data-tone="commit">Commit</button><button type="button" data-go="notes" data-tone="notes">Notes</button><button type="button" data-go="drafts" data-tone="drafts">Drafts</button><button type="button" data-go="ideas" data-tone="ideas">Ideas<span class="n" id="ideacount"></span></button><button type="button" data-go="wins" data-tone="wins">Wins</button>
   </nav>
 
+  <div class="windowbar" id="windowbar" hidden></div>
   <div class="notices" id="notices" data-tab="home" hidden></div>
 
   <section class="workhome" id="workhome" data-tab="home" aria-label="Work today"></section>
@@ -778,6 +787,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <button type="button" class="btn primary big" id="lockdone" hidden>Done ✓</button>
     <p class="small" id="lockhint">The app unlocks when the timer ends and you tap Done.</p>
     <button type="button" class="skip" id="lockskip">Skip it and lose XP instead</button>
+    <button type="button" class="btn small" id="locktalk">Talk to <span class="mname">Mali</span></button>
   </div>
 </div>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -1376,6 +1386,65 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     return { recipe_id: id, per_serving: { kcal: Math.round(p.kcal), protein_g: Math.round(p.protein_g), carbs_g: Math.round(p.carbs_g), fat_g: Math.round(p.fat_g) }, planned };
   }
 
+  // Everything they can tap, Mali can do too.
+  const DELETABLE = new Set(["tasks", "notes", "inbox", "meals", "worklog", "sessions", "places", "health", "foods", "recipes", "days", "plans", "drafts",
+    "suggestions", "rewards", "wins", "checkins", "goals", "commitments", "checks", "workplans", "income", "programs"]);
+  const TAB_ALIASES = { meal: "recipes", "meal plan": "recipes", plan: "recipes", food: "food", meter: "meter", remember: "notes", commitments: "commit" };
+  async function appAction(i) {
+    const a = i.action, id = clip(i.id, 120), day = normDate(i.day) || dayKey();
+    // The punishment named, else the one locking the screen now, else the next one due.
+    const openLock = () => (id && S.tasks.find((t) => t.id === id && t.lock)) || (lockShown && S.tasks.find((t) => t.id === lockShown))
+      || S.tasks.filter((t) => t.lock && t.status !== "done").sort((x, y) => String(x.lockAt).localeCompare(String(y.lockAt)))[0];
+    const pickOf = () => { const ps = (planOf(day) || {}).picks || []; return ps.find((k) => k.id === id) || ps.find((k) => k.recipe === id && (a === "plan_tick" ? !isEaten(k) : isEaten(k))); };
+    if (a === "punishment_start" || a === "punishment_done" || a === "punishment_skip") {
+      const t = openLock(); if (!t) throw new Error("No open punishment.");
+      if (t.status === "done") return { already_done: t.id };
+      if (a === "punishment_start") { if (!t.lockStartedAt) await db.doc("tasks/" + t.id).update({ lockStartedAt: nowIso() }); return { started: t.id, minutes: t.lockMinutes }; }
+      if (a === "punishment_done") { await toggleTask(t); burst(80); return { done: t.id, xp_back: t.redeemXp || 0 }; }
+      const cost = Math.abs(Number(t.skipXp) || 30);
+      await db.collection("wins").doc().set({ kind: "penalty", text: `Skipped: ${t.title}`, xp: -cost, ref: t.id, praise: "Skipped the punishment. Double penalty.", at: nowIso() });
+      await db.doc("tasks/" + t.id).update({ status: "done", skipped: true, doneAt: nowIso() });
+      return { skipped: t.id, xp: -cost };
+    }
+    if (a === "plan_tick" || a === "plan_untick") {
+      const k = pickOf(); if (!k) throw new Error("No such meal in that day's plan. Use a pick id or recipe id from day_plans.");
+      if (a === "plan_untick") { await untickPick(day, k); return { unticked: k.id }; }
+      if (i.value === "already_logged") { const m = sameSlotMeals(day, k)[0]; if (!m) throw new Error("No logged meal in that slot to count."); await linkPick(day, k, m.id); return { ticked: k.id, counted_meal: m.id }; }
+      await eatPick(day, k); return { ticked: k.id, logged: true };
+    }
+    if (a === "reward_unlock") {
+      const r = S.rewards.find((x) => x.id === id); if (!r) throw new Error("No reward with that id.");
+      if (!rewardReady(r)) throw new Error(`Not earned yet: ${Math.max(0, (Number(r.price) || 0) - coinBalance())} coins to go${r.requires_income && bestMonth() < r.requires_income ? `, and it needs a ${money(r.requires_income)} month` : ""}.`);
+      await redeemReward(r); return { unlocked: r.id };
+    }
+    if (a === "timer_start") { setTimer(nowIso()); render(); return { timer: "started" }; }
+    if (a === "timer_stop") { const m = timerMins(); setTimer(null); render(); return { timer: "stopped", minutes: m }; }
+    if (a.startsWith("draft_")) {
+      const d = S.drafts.find((x) => x.id === id); if (!d) throw new Error("No draft with that id.");
+      if (a === "draft_snooze") { await snoozeDraft(d); return { snoozed: d.id }; }
+      await db.doc("drafts/" + d.id).update({ status: a === "draft_act" ? "promoted" : "archived", lastSeenAt: nowIso() });
+      return { [a === "draft_act" ? "acted_on" : "archived"]: d.id };
+    }
+    if (a === "idea_accept" || a === "idea_dismiss") {
+      const sg = S.suggestions.find((x) => x.id === id); if (!sg) throw new Error("No idea with that id.");
+      await db.doc("suggestions/" + sg.id).update({ status: a === "idea_accept" ? "accepted" : "dismissed", decidedAt: nowIso() });
+      return { [a === "idea_accept" ? "accepted" : "dismissed"]: sg.id };
+    }
+    if (a === "open_tab") {
+      const v = String(i.value || "").toLowerCase().trim(), t = TAB_ALIASES[v] || v;
+      if (!TAB_NAMES.includes(t)) throw new Error(`Tabs: ${TAB_NAMES.join(", ")}`);
+      closeChat(); showTab(t); return { opened: t };
+    }
+    if (a === "delete") {
+      const col = clip(i.collection, 40);
+      if (!DELETABLE.has(col)) throw new Error(`Can delete from: ${[...DELETABLE].join(", ")}`);
+      if (!(S[col] || []).some((x) => x.id === id)) throw new Error(`No ${col} item with id ${id}.`);
+      if (col === "meals") return editMeal({ meal_id: id, delete: true });
+      await db.doc(`${col}/${id}`).delete(); return { deleted: `${col}/${id}` };
+    }
+    throw new Error("Unknown action.");
+  }
+
   async function addMeal(i) {
     const ref = db.collection("meals").doc();
     const fromPhoto = !!i.from_photo && !!pending;
@@ -1641,6 +1710,16 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     const c = S.commitments.find((x) => x.id === String(i.commitment_id));
     if (!c) throw new Error("unknown commitment_id");
     if (action === "delete") { await db.doc("commitments/" + c.id).delete(); return { deleted: true }; }
+    if (action === "check_in") {
+      // Mali checks in for them: the open window, or a given day they did it on time (turns a "missed" into done).
+      const open = openWindows().find((w) => w.c.id === c.id);
+      const day = normDate(i.day) || (open ? open.day : dayKey());
+      const prev = checkOf(c.id, day);
+      if (prev && prev.status === "done") return { already_done: day };
+      if (prev && prev.punishmentTaskId) { const t = S.tasks.find((x) => x.id === prev.punishmentTaskId); if (t && t.status !== "done") await db.doc("tasks/" + t.id).delete(); }
+      await checkDone(c, day);
+      return { checked_in: day, window_open: !!open, reward_xp: Math.abs(Number(c.reward_xp) || 10) };
+    }
     if (action === "excuse") {
       const day = normDate(i.day) || dayKey();
       const prev = checkOf(c.id, day);
@@ -1716,7 +1795,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     if (atBottom || live) log.scrollTop = log.scrollHeight;
   }
   function openChat() { $("#chatpanel").hidden = false; renderChat(); const log = $("#chatlog"); log.scrollTop = log.scrollHeight; setTimeout(() => $("#chatbox").focus(), 50); }
-  function closeChat() { $("#chatpanel").hidden = true; }
+  function closeChat() { $("#chatpanel").hidden = true; $("#chatpanel").classList.remove("over-lock"); }
   function latestAssistant() {
     const all = chatHistory().filter((m) => m.role !== "user");
     return all.length ? all[all.length - 1] : null;
@@ -1741,6 +1820,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   function tickTimers() {
     const t = timerStart(), sec = t ? Math.max(0, Math.floor((Date.now() - Date.parse(t)) / 1000)) : 0;
     document.querySelectorAll(".timer-btn").forEach((b) => { if (t) b.textContent = `⏱ ${fmtClock(sec)} · Stop`; });
+    document.querySelectorAll(".wb-left").forEach((e) => { e.textContent = leftText(new Date(e.dataset.end)); });
   }
   const timerMins = () => { const t = timerStart(); return t ? Math.max(0, Math.round((Date.now() - Date.parse(t)) / 60000)) : null; };
   const hhmmNow = () => new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
@@ -1933,7 +2013,7 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   }
 
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderWork(); renderNext(); renderNotices(); renderGlance(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
+  function render() { renderHeader(); renderWindowBar(); renderWork(); renderNext(); renderNotices(); renderGlance(); renderFood(); renderRecipes(); renderMeter(); renderSheet(); renderTraining(); renderMove(); renderGoals(); renderNotes(); renderDrafts(); renderIdeas(); renderWins(); renderCommitments(); renderPersona(); renderLock(); }
   function renderPersona() {
     document.querySelectorAll(".mname").forEach((el) => { el.textContent = persona(); });
     if (!live && S.loaded.has("chat")) {
@@ -1941,6 +2021,16 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       if (last && last.day === dayKey() && !r.dataset.local) r.textContent = last.text;
     }
     renderChat();
+  }
+  const leftText = (end) => { const left = Math.max(0, end - new Date()); return `${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, "0")} left`; };
+  function renderWindowBar() {
+    const bar = $("#windowbar");
+    if (!S.loaded.has("commitments") || !S.loaded.has("checks")) { bar.hidden = true; return; }
+    const ws = openWindows();
+    bar.hidden = !ws.length;
+    bar.replaceChildren(...ws.map(({ c, day, end }) => h("div", { class: "wbar", role: "alert" },
+      h("span", { class: "wb-t" }, `⏰ ${c.title}`), h("span", { class: "wb-left", "data-end": end.toISOString() }, leftText(end)),
+      h("button", { class: "btn primary small", type: "button", onclick: () => run(() => checkDone(c, day)) }, `Check in ✓ +${Math.abs(Number(c.reward_xp) || 10)}`))));
   }
   function renderCommitments() {
     if (!S.loaded.has("commitments") || !S.loaded.has("checks")) return;
@@ -1953,6 +2043,12 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       return h("div", { class: "commit" },
         h("div", { class: "goal-top" }, h("div", { class: "t" }, c.title), h("span", { class: "tag" + (c.status === "paused" ? "" : " goal") }, c.status)),
         h("div", { class: "rule" }, `${c.window_start}–${c.window_end} · ${(c.days && c.days.length) ? c.days.join(" ") : "every day"} · +${c.reward_xp} on time / −${c.penalty_xp} if missed`),
+        (() => {
+          const w = openWindows().find((x) => x.c.id === c.id), k = checkOf(c.id, today);
+          if (w) return h("button", { class: "btn primary", type: "button", onclick: () => run(() => checkDone(c, w.day)) }, `Check in now ✓ +${Math.abs(Number(c.reward_xp) || 10)} XP · ${leftText(w.end)}`);
+          if (k) return h("span", { class: "tag" + (k.status === "done" ? " goal" : k.status === "missed" ? " due-over" : "") }, k.status === "done" ? "✓ Done today" : k.status === "missed" ? "Missed today" : "Excused today");
+          return c.status === "paused" ? null : h("span", { class: "muted small" }, `The check-in button appears here (and at the top of every tab) from ${c.window_start} to ${c.window_end}.`);
+        })(),
         c.punishment ? h("div", { class: "rule" }, `If missed: ${c.punishment} · locks the app ${c.punishment_time === "now" ? "right away" : "at " + (c.punishment_time || "07:00") + " next day"} for ${lockMins(c.punishment_minutes)} min`) : null,
         h("div", { class: "ask-row" },
           h("div", { class: "dots", "aria-label": "Last 7 days" }, last7.map((d) => { const k = checkOf(c.id, d); return h("i", { class: k ? k.status : "", title: `${nice(d)}: ${k ? k.status : scheduledOn(c, d) ? "—" : "off"}` }); })),
@@ -2596,6 +2692,15 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
   // ------------------------------------------------------------ the secretary (Claude, on the viewer's plan)
   const sched = { type: "array", description: "Weekdays: mon tue wed thu fri sat sun", items: { type: "string" } };
   const TOOLS = [
+    { name: "app_action", description: "Do anything they could do by tapping in the app: punishment_start / punishment_done / punishment_skip (the open punishment lock), plan_tick / plan_untick (a meal in a day's plan; value 'already_logged' counts a meal they already logged), reward_unlock, timer_start / timer_stop (work timer), draft_act / draft_snooze / draft_archive, idea_accept / idea_dismiss, open_tab (show them a tab), delete (any item: collection + id).",
+      inputSchema: { type: "object", required: ["action"], properties: {
+        action: { type: "string", enum: ["punishment_start", "punishment_done", "punishment_skip", "plan_tick", "plan_untick", "reward_unlock", "timer_start", "timer_stop",
+          "draft_act", "draft_snooze", "draft_archive", "idea_accept", "idea_dismiss", "open_tab", "delete"] },
+        id: { type: "string", description: "The item's id from the state (task, pick or recipe, reward, draft, idea, or the item to delete)" },
+        collection: { type: "string", description: "For delete, e.g. tasks, notes, inbox, meals, worklog, sessions, places, foods, recipes, days, drafts, suggestions, rewards, wins, goals, commitments" },
+        value: { type: "string", description: "open_tab: the tab (home, work, tasks, food, recipes, meter, training, move, goals, commit, notes, drafts, ideas, wins); plan_tick: 'already_logged'" },
+        day: { type: "string", description: "YYYY-MM-DD for plan_tick/plan_untick, default today" } } },
+      execute: async (i) => appAction(i) },
     { name: "log_work", description: "Log finished work. kind file = finished audio files (files = how many); kind creative = a creative or funnel block (minutes). Set from_photo true when the attached photo is their proof (the exported file or an editor screenshot); without proof, files earn half coins. Returns today's count, coins and streak.",
       inputSchema: { type: "object", properties: { kind: { type: "string", enum: ["file", "creative"] }, files: { type: "integer" }, title: { type: "string" }, channel: { type: "string" },
         minutes: { type: "number" }, from_photo: { type: "boolean" }, note: { type: "string" } } },
@@ -2706,15 +2811,15 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
         }
         if (!Object.keys(out).length) throw new Error("nothing to change: give kcal+protein_g, steps_goal, secretary_name or work settings");
         return out; } },
-    { name: "save_commitment", description: "Create or manage a commitment: a recurring deadline with a daily time window (e.g. 23:00-23:10). The app shows a check-in button only inside the window; on time = reward XP, missed = penalty XP deducted automatically plus the punishment created as a task (doing it wins back half). action: create | update | pause | resume | delete | excuse (forgive one day).",
-      kw: /commit|deadline|window|by \d|every (day|night|morning)|punish|penalt|bedtime|sleep|wake|phone|habit|rule|miss/i,
-      inputSchema: { type: "object", properties: { action: { type: "string", enum: ["create", "update", "pause", "resume", "delete", "excuse"] }, commitment_id: { type: "string" },
+    { name: "save_commitment", description: "Create or manage a commitment: a recurring deadline with a daily time window (e.g. 23:00-23:10). The app shows a check-in button only inside the window; on time = reward XP, missed = penalty XP deducted automatically plus the punishment created as a task (doing it wins back half). action: create | update | pause | resume | delete | excuse (forgive one day) | check_in (mark it done for them: the open window, or a day they did it on time).",
+      kw: /commit|deadline|window|by \d|every (day|night|morning)|punish|penalt|bedtime|sleep|wake|phone|habit|rule|miss|check.?in|checked|lights out|excuse|did it/i,
+      inputSchema: { type: "object", properties: { action: { type: "string", enum: ["create", "update", "pause", "resume", "delete", "excuse", "check_in"] }, commitment_id: { type: "string" },
         title: { type: "string" }, detail: { type: "string", description: "What counts as done" }, window_start: { type: "string", description: "HH:MM 24h" }, window_end: { type: "string", description: "HH:MM 24h" },
         days: { type: "array", description: "Weekdays (mon..sun); empty = every day", items: { type: "string" } }, reward_xp: { type: "integer" }, penalty_xp: { type: "integer" },
         punishment: { type: "string", description: "Constructive consequence task, e.g. '20 push-ups before breakfast'" },
         punishment_time: { type: "string", description: "When the punishment locks the app: HH:MM on the next day (e.g. 07:00 = before breakfast) or 'now'" },
-        punishment_minutes: { type: "integer", description: "Realistic minutes to do it (timer), e.g. 5 for 20 push-ups" }, day: { type: "string", description: "YYYY-MM-DD for excuse" } } },
-      execute: async (i) => { status("Setting up your commitment…"); return saveCommitment(i); } },
+        punishment_minutes: { type: "integer", description: "Realistic minutes to do it (timer), e.g. 5 for 20 push-ups" }, day: { type: "string", description: "YYYY-MM-DD for excuse or check_in (default: the open window)" } } },
+      execute: async (i) => { status("Updating your commitment…"); return saveCommitment(i); } },
     { name: "adjust_xp", description: "Directly add or deduct XP (-50..50) with a clear reason. With a punishment, it also LOCKS the whole app at lock_at until they do it (timer of punishment_minutes); doing it wins back redeem_xp, skipping costs double.",
       kw: /xp|penal|punish|deduct|bonus|reward|miss|skip|slip|fail|lock|block/i,
       inputSchema: { type: "object", required: ["amount", "reason"], properties: { amount: { type: "integer" }, reason: { type: "string" },
@@ -2787,11 +2892,11 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       activity_today: hd ? { steps: hd.steps, active_kcal: hd.active_kcal, distance_km: hd.distance_km } : null, step_goal: stepGoal(),
       steps_last_7_days: Array.from({ length: 7 }, (_, k) => { const d = shiftDay(today, k - 6), x = S.health.find((r) => r.id === d); return { day: d, steps: x ? x.steps : null }; }),
       places_last_7_days: S.places.filter((p) => p.day >= shiftDay(today, -6)).map((p) => `${p.day} ${p.arrived || ""} ${p.name} (${p.kind})`).slice(0, 40),
-      parked_drafts: S.drafts.filter((d) => d.status === "parked").map((d) => d.title).slice(0, 20),
+      parked_drafts: S.drafts.filter((d) => d.status === "parked").map((d) => `${d.id}: ${d.title || clip(d.text, 60)}`).slice(0, 20),
       commitments: S.commitments.map((c) => ({ id: c.id, title: c.title, window: `${c.window_start}-${c.window_end}`, days: c.days, reward_xp: c.reward_xp, penalty_xp: c.penalty_xp,
         punishment: c.punishment, status: c.status, last_7_days: Array.from({ length: 7 }, (_, k) => { const d = shiftDay(today, k - 6), x = checkOf(c.id, d); return x ? x.status : "-"; }).join(" ") })),
-      open_windows_now: openWindows().map((w) => w.c.title),
-      pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes })),
+      open_windows_now: openWindows().map((w) => ({ id: w.c.id, title: w.c.title, day: w.day, ends: clock(w.end) })),
+      pending_punishments: S.tasks.filter((t) => t.lock && t.status !== "done").map((t) => ({ id: t.id, title: t.title, locks_at: t.lockAt, minutes: t.lockMinutes, timer_started: !!t.lockStartedAt })),
       nutrition_targets: t ? { goal: t.goal, kcal: t.kcal, protein_g: t.protein_g, carbs_g: t.carbs_g, fat_g: t.fat_g } : null,
       meals_today: ms.map((m) => ({ id: m.id, name: m.name, meal: m.meal, at: clock(m.at), kcal: m.kcal, protein_g: m.protein_g, xp: m.xp, has_photo: !!m.photo })),
       work: (() => { const q = Number(workCfg().quota) || 2, st = workStreak(), plan = planToday(), nr = nextReward(), bal = coinBalance(), c = workCfg();
@@ -2804,26 +2909,29 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       recipes: S.recipes.map((r) => `${r.id}: ${r.title} [${r.meal}] ${macroLine(recipeTotals(r).per)} per serving. How: ${howOf(r) || "-"}`).slice(0, 100),
       day_plans_library: dayList().map((d) => `${d.id}: Day ${d.number} · ${d.title} = ${(d.meals || []).map((m) => `${m.slot} ${(recipeById(m.recipe) || {}).title || "?"}${m.servings !== 1 ? " ×" + m.servings : ""}`).join(", ")} → ${macroLine(dayTotals(d))}`).slice(0, 40),
       day_plans: [today, shiftDay(today, 1)].map((d) => ({ day: d, following: (planOf(d) || {}).title || null, picks: ((planOf(d) || {}).picks || []).map((k) => { const r = recipeById(k.recipe);
-        return `${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${isEaten(k) ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
+        return `${k.id}: ${k.slot}: ${r ? r.title : "removed"} ×${k.servings}${isEaten(k) ? " (eaten)" : ""}`; }), totals: macroLine(planTotals(d)) })),
       recent_meals: S.meals.filter((m) => m.day < today && m.day >= shiftDay(today, -2)).map((m) => ({ id: m.id, day: m.day, name: m.name, meal: m.meal, kcal: m.kcal, has_photo: !!m.photo })).slice(0, 30),
       today_totals: { kcal: Math.round(sumOf(ms, "kcal")), protein_g: Math.round(sumOf(ms, "protein_g")), carbs_g: Math.round(sumOf(ms, "carbs_g")), fat_g: Math.round(sumOf(ms, "fat_g")) },
       left_today: t && t.kcal ? { kcal: Math.round(t.kcal - sumOf(ms, "kcal")), protein_g: Math.round((t.protein_g || 0) - sumOf(ms, "protein_g")), carbs_g: Math.round((t.carbs_g || 0) - sumOf(ms, "carbs_g")), fat_g: Math.round((t.fat_g || 0) - sumOf(ms, "fat_g")) } : null,
       programs: S.programs.filter((p) => p.status !== "done").map((p) => ({ id: p.id, type: p.type, title: p.title, goal: p.goal, status: p.status, version: p.version, rules: p.rules,
         sessions: (p.sessions || []).map((s) => ({ id: s.id, name: s.name, days: s.days, items: (s.items || []).map((x) => `${x.name}${x.detail ? " " + x.detail : ""}`) })) })),
-      recent_sessions: [...S.sessions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8).map((l) => ({ name: l.name, day: l.day, sets: (l.sets || []).slice(0, 12), notes: l.notes })),
+      recent_sessions: [...S.sessions].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8).map((l) => ({ id: l.id, name: l.name, day: l.day, sets: (l.sets || []).slice(0, 12), notes: l.notes })),
       goals: S.goals.filter((g) => g.status !== "done").map((g) => ({ id: g.id, title: g.title, deadline: g.deadline, pct: goalPct(g),
         steps: (g.steps || []).map((s) => ({ id: s.id, title: s.title, done: !!s.done })) })),
       open_tasks: S.tasks.filter((x) => x.status !== "done").map((x) => ({ id: x.id, title: x.title, due: x.due, priority: x.priority })).slice(0, 40),
-      notes: S.notes.filter((n) => n.kind !== "fact").map((n) => ({ text: n.text, kind: n.kind, date: n.date })).slice(0, 30),
+      notes: S.notes.filter((n) => n.kind !== "fact").map((n) => ({ id: n.id, text: n.text, kind: n.kind, date: n.date })).slice(0, 30),
       facts_about_user: S.notes.filter((n) => n.kind === "fact").map((n) => n.text).slice(0, 60),
-      ideas_board: S.suggestions.map((s) => `${s.title} [${s.status}]`).slice(0, 30),
-      other_logs_today: S.inbox.filter((e) => e.day === today).map((e) => e.text),
+      ideas_board: S.suggestions.map((s) => `${s.id}: ${s.title} [${s.status}]`).slice(0, 30),
+      other_logs_today: S.inbox.filter((e) => e.day === today).map((e) => `${e.id}: ${e.text}`),
+      work_log_today: S.worklog.filter((w) => w.day === today).map((w) => `${w.id}: ${w.files || 0} file(s) ${w.title || ""} +${w.coins} coins`),
+      work_timer: timerStart() ? `running ${timerMins()} min` : "off",
       recent_wins: [...S.wins].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 6).map((w) => w.text),
     });
   }
   const RULES = () => `You are ${persona()}, the user's personal secretary and coach (she/her), inside their "Secretary HQ" app, where they see your animated face. They live alone in a studio in Thailand.
 Voice: brief and straight to the point, warm, like a friend texting. 1-3 short sentences. No headers or lists unless asked. At most one emoji.
 Act with the tools first, then reply. Don't narrate tool calls.
+PERMISSIONS: you can do everything they can do in the app, and more. When they ask, just do it with your tools; never tell them to tap something you could do yourself. app_action covers punishments, plan ticks, rewards, the timer, drafts, ideas, opening tabs and deleting anything; save_commitment check_in marks a commitment done (use it when they say they did it inside the window; after the window, check_in only if they clearly did it on time, or excuse for a real reason).
 WORK IS THEIR TOP PRIORITY (state: work). Their daily job is turning scripts into finished audio files (generate, edit, listen-check, export). It's boring, so you hold the line, warmly but firmly:
 - If done_for_today is false and plan_today is null: before anything else, get a concrete schedule (start time + number of files) and save it with plan_work. Until they commit, keep steering back to it and don't go deep into other topics (still log what they send quietly). Exceptions: health, safety, urgent appointments.
 - When they say a file is done, ask for a proof photo (the exported file or an editor screenshot) and log_work with from_photo true. No photo = half coins; say so.
@@ -3118,11 +3226,12 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   showTab((location.hash || "").slice(1) === "chat" ? "home" : (location.hash || "").slice(1), true);
   if (location.hash === "#chat") openChat();
   render();
-  setInterval(() => { renderHeader(); renderWork(); renderNext(); renderNotices(); evaluateCommitments(); renderLock(); }, 15000);
+  setInterval(() => { renderHeader(); renderWindowBar(); renderWork(); renderNext(); renderNotices(); renderCommitments(); evaluateCommitments(); renderLock(); }, 15000);
   setInterval(() => { if (lockShown) tickLock(); tickTimers(); }, 1000);
   $("#lockstart").addEventListener("click", () => run(startLock));
   $("#lockdone").addEventListener("click", () => run(finishLock));
   $("#lockskip").addEventListener("click", () => run(skipLock));
+  $("#locktalk").addEventListener("click", () => { $("#chatpanel").classList.add("over-lock"); openChat(); });
 
   const C = window.claude;
   const offline = (msg) => document.querySelectorAll("#next,#meals,#recipelist,#foodlist,#programs,#goals,#notes,#draftlist,#idealist,#wins").forEach((el) => el.replaceChildren(h("div", { class: "offline" }, msg)));

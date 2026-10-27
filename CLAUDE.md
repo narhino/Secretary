@@ -32,7 +32,11 @@ coins − redeemed reward prices; 1 file = 10 coins (half without proof), +5 whe
 ×1.2 / ×1.5 / ×2 at 3 / 7 / 14-day work streaks. Their script pipeline lives in the Script Desk
 artifact (https://claude.ai/artifact/PiSqogtZbHwxTYE97Uakex, `scripts`: new → created → uploaded); read
 it for counts only, never copy script text. The scheduled task "Mali work check-ins" (12:47, 17:47,
-20:47 Bangkok) nudges them when files are short.
+20:47 Bangkok) nudges them when files are short; "Mali commitment window nudge" (23:02) pings them while
+a commitment window is open and unchecked.
+**Mali's permissions:** anything they can tap, she can do (they asked for this, 2026-10-27): the
+`app_action` tool (punishments, plan ticks, rewards, timer, drafts, ideas, open a tab, delete any item)
+plus `save_commitment` check_in / excuse. Rewards still need to be earned; she can't unlock them early.
 The app's built-in Claude (their subscription) writes all of these too.
 - Start of every session: `list` the collections you need. Pin every write with `if_version`.
 - Goals, tasks, notes, programs and nutrition targets go there, not in `data/tasks.yaml`.
