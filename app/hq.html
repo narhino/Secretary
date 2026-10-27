@@ -74,7 +74,7 @@ body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-b
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 .app {
   max-width: 760px; margin: 0 auto; display: grid; gap: 16px;
-  padding-block: 20px 72px;
+  padding-block: 20px 96px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -330,9 +330,65 @@ a.maplink { color: var(--jade); font-weight: 600; font-size: 12px; text-decorati
 .bubble { white-space: pre-wrap; background: var(--jade-soft); border-radius: 4px 16px 16px 16px; padding: 10px 12px; max-height: 180px; overflow: auto; overflow-wrap: anywhere; }
 .bubble.err { background: var(--coral-soft); }
 .fab { position: fixed; z-index: 15; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--surface); background: var(--jade-soft); padding: 0;
-  right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+  right: calc(86px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
 .fab .avatar { width: 100%; height: 100%; }
-.chatpanel { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: grid; grid-template-rows: auto 1fr auto;
+/* voice: hold to talk, swipe up to lock, swipe left to cancel */
+.micbtn { display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--jade); color: var(--on-accent); flex: none;
+  touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  transition: transform .15s, background-color .15s; }
+.micbtn svg { width: 46%; height: 46%; pointer-events: none; }
+.micbtn .i-send { display: none; }
+.micbtn.locked .i-mic { display: none; }
+.micbtn.locked .i-send { display: block; }
+.micbtn.rec { background: var(--coral); transform: scale(1.3); animation: micpulse 1.2s ease-out infinite; }
+@keyframes micpulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--coral) 55%, transparent); } 100% { box-shadow: 0 0 0 18px transparent; } }
+#mic { position: fixed; z-index: 65; width: 60px; height: 60px; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 6px 18px rgba(0,0,0,.22); }
+body.chat-open #mic { display: none; }
+#chatmic { width: 44px; height: 44px; background: var(--jade-soft); color: var(--jade); }
+#chatmic.rec, #chatmic.locked { background: var(--coral); color: var(--on-accent); }
+#sheetmic { width: 36px; height: 36px; }
+.dictbar { position: relative; overflow: hidden; max-width: 760px; width: 100%; margin: 0 auto; display: flex; gap: 10px; align-items: center; font-size: 13px;
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); background: var(--jade-soft); color: var(--ink); }
+.dictbar .grow { flex: 1; position: relative; }
+.dictbar .link-btn { position: relative; padding: 2px 4px; }
+.dictfill { position: absolute; inset: 0 auto 0 0; width: 0; background: color-mix(in srgb, var(--jade) 28%, transparent); }
+.dictfill.run { width: 100%; transition: width var(--dur, 3s) linear; }
+.vlayer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+.vhud { position: fixed; pointer-events: auto; display: grid; gap: 6px; padding: 10px 12px; border-radius: 18px; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: 760px; margin-inline: auto; }
+.vtext { font-size: 16px; line-height: 1.35; max-height: 7.2em; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-wrap; }
+.vtext.ph { color: var(--muted); }
+.vctl { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.vdot { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); animation: vblink 1s steps(2, start) infinite; flex: none; }
+@keyframes vblink { to { visibility: hidden; } }
+.vtime { font-size: 14px; color: var(--muted); }
+.vbars { display: flex; gap: 3px; align-items: center; height: 22px; }
+.vbars i { width: 4px; height: 6px; border-radius: 2px; background: var(--jade); transition: height .2s; }
+.vhud.talking .vbars i { animation: vbar .7s ease-in-out infinite alternate; }
+.vhud.talking .vbars i:nth-child(2) { animation-delay: -.2s; } .vhud.talking .vbars i:nth-child(3) { animation-delay: -.45s; }
+.vhud.talking .vbars i:nth-child(4) { animation-delay: -.1s; } .vhud.talking .vbars i:nth-child(5) { animation-delay: -.6s; }
+@keyframes vbar { from { height: 5px; } to { height: 22px; } }
+.vgrow { flex: 1; }
+.vhint { font-size: 13px; color: var(--muted); white-space: nowrap; opacity: calc(1 - var(--c, 0) * .6); transform: translateX(calc(var(--c, 0) * -18px)); }
+.vcancel { border: 0; background: var(--sunk); color: var(--ink); border-radius: 99px; padding: 8px 14px; font-weight: 600; }
+.vsend { position: relative; width: 48px; height: 48px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center;
+  background: conic-gradient(var(--gold-bright) calc(var(--p, 0) * 360deg), var(--jade) 0); color: var(--on-accent); }
+.vsend::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--jade); }
+.vsend svg { position: relative; width: 22px; height: 22px; }
+.vhud[data-state="hold"] .vcancel, .vhud[data-state="hold"] .vsend { display: none; }
+.vhud:not([data-state="hold"]) .vhint { display: none; }
+.vhud[data-state="finishing"] .vsend { opacity: .6; }
+.vlock { position: fixed; pointer-events: none; width: 44px; padding: 10px 0 12px; border-radius: 99px; display: grid; justify-items: center; gap: 4px;
+  background: var(--surface); color: var(--muted); border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  transform: translate(-50%, calc(-100% - var(--k, 0) * 26px)); }
+.vlock[data-dir="down"] { transform: translate(-50%, calc(var(--k, 0) * 26px)); }
+.vlock svg { width: 18px; height: 18px; }
+.vlock .arr { font-size: 14px; line-height: 1; opacity: calc(.5 + var(--k, 0) * .5); }
+.vlock[data-dir="down"] .arr { transform: rotate(180deg); order: -1; }
+.vlock { color: color-mix(in srgb, var(--jade) calc(var(--k, 0) * 100%), var(--muted)); }
+@media (prefers-reduced-motion: reduce) { .micbtn.rec, .vdot, .vhud.talking .vbars i { animation: none; } }
+.chatpanel { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: grid; grid-template-rows: auto 1fr auto auto;
   padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .chat-head, .chat-compose { max-width: 760px; width: 100%; margin: 0 auto; display: flex; gap: 10px; align-items: center;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px; }
@@ -766,16 +822,19 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
     <button type="button" class="btn small" id="closechat">Close</button>
   </div>
   <div class="chat-log" id="chatlog"><div class="chat-inner" id="chatinner"></div></div>
+  <div class="dictbar" id="dictbar" hidden><span class="dictfill" id="dictfill"></span><span class="grow">🎙 Tap the mic on your keyboard and talk. It sends itself when you stop.</span><button type="button" class="link-btn" id="dictoff">Off</button></div>
   <div class="chat-compose">
     <textarea id="chatbox" placeholder="Message" aria-label="Message"></textarea>
+    <button type="button" class="micbtn" id="chatmic" aria-label="Talk: hold and speak, or tap for hands-free"><svg class="i-mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15Z" fill="currentColor"/><path d="M18.5 11.5a6.5 6.5 0 0 1-13 0M12 18v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-send" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4-6.5L4 12Z" fill="currentColor"/></svg></button>
     <button type="button" class="btn primary" id="chatsend">Send</button>
   </div>
 </div>
 <dialog class="sheet" id="sheet" aria-label="Details">
-  <div class="sheet-bar"><button type="button" class="btn small" id="sheetback" hidden>‹ Back</button><span class="spacer"></span><button type="button" class="btn small" id="sheetclose">Close</button></div>
+  <div class="sheet-bar"><button type="button" class="btn small" id="sheetback" hidden>‹ Back</button><span class="spacer"></span><button type="button" class="micbtn" id="sheetmic" aria-label="Talk to Mali"><svg class="i-mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15Z" fill="currentColor"/><path d="M18.5 11.5a6.5 6.5 0 0 1-13 0M12 18v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-send" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4-6.5L4 12Z" fill="currentColor"/></svg></button><button type="button" class="btn small" id="sheetclose">Close</button></div>
   <div class="sheet-body" id="sheetbody"></div>
 </dialog>
 <button type="button" class="fab" id="fab" aria-label="Open chat"><span class="avslot" data-size="60"></span></button>
+<button type="button" class="micbtn" id="mic" aria-label="Talk to Mali: hold and speak, swipe up to lock, or tap for hands-free"><svg class="i-mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15Z" fill="currentColor"/><path d="M18.5 11.5a6.5 6.5 0 0 1-13 0M12 18v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-send" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4-6.5L4 12Z" fill="currentColor"/></svg></button>
 <div class="lock" id="lock" role="alertdialog" aria-modal="true" aria-labelledby="locktitle" hidden>
   <div class="lock-inner">
     <div class="avslot" data-size="112"></div>
@@ -792,6 +851,20 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
 </div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <div class="toast" id="toast" role="status"></div>
+<div class="vlayer" id="vlayer" hidden>
+  <div class="vhud" id="vhud" data-state="hold">
+    <div class="vtext ph" id="vtext" aria-live="polite">Listening…</div>
+    <div class="vctl">
+      <button type="button" class="vcancel" id="vcancel">Cancel</button>
+      <span class="vdot" aria-hidden="true"></span><span class="vtime mono" id="vtime">0:00</span>
+      <span class="vbars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="vgrow"></span>
+      <span class="vhint">‹ slide to cancel</span>
+      <button type="button" class="vsend" id="vsend" aria-label="Send now"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4-6.5L4 12Z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+  <div class="vlock" id="vlock" aria-hidden="true"><span class="arr">⌃</span><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></div>
+</div>
 
 <script>
 (() => {
@@ -1787,15 +1860,15 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       if (m.day !== lastDay) { lastDay = m.day; kids.push(h("div", { class: "day-sep" }, m.day === dayKey() ? "Today" : nice(m.day))); }
       kids.push(h("div", { class: "msg " + (m.role === "user" ? "user" : "ai") },
         m.source && m.role !== "user" ? h("span", { class: "src" }, m.source === "checkin" ? "Check-in" : m.source) : null,
-        m.text + (m.image ? "\n📷 photo" : ""), h("span", { class: "t" }, clock(m.at))));
+        m.text + (m.image ? "\n📷 photo" : ""), h("span", { class: "t" }, clock(m.at) + (m.voice ? " · 🎙" : ""))));
     }
     if (live) kids.push(h("div", { class: "msg ai", id: "livebubble" }, live.text || "…"));
     if (!kids.length) kids.push(h("div", { class: "empty" }, `No messages yet. Say hi to ${persona()}.`));
     inner.replaceChildren(...kids);
     if (atBottom || live) log.scrollTop = log.scrollHeight;
   }
-  function openChat() { $("#chatpanel").hidden = false; renderChat(); const log = $("#chatlog"); log.scrollTop = log.scrollHeight; setTimeout(() => $("#chatbox").focus(), 50); }
-  function closeChat() { $("#chatpanel").hidden = true; $("#chatpanel").classList.remove("over-lock"); }
+  function openChat() { $("#chatpanel").hidden = false; document.body.classList.add("chat-open"); renderChat(); const log = $("#chatlog"); log.scrollTop = log.scrollHeight; setTimeout(() => $("#chatbox").focus(), 50); }
+  function closeChat() { disarmDictate(); $("#chatpanel").hidden = true; document.body.classList.remove("chat-open"); $("#chatpanel").classList.remove("over-lock"); }
   function latestAssistant() {
     const all = chatHistory().filter((m) => m.role !== "user");
     return all.length ? all[all.length - 1] : null;
@@ -2790,11 +2863,12 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
       inputSchema: { type: "object", required: ["kind", "text"], properties: { kind: { type: "string", enum: ["mood", "sleep", "body", "water", "other"] }, text: { type: "string" },
         mood: { type: "number" }, energy: { type: "number" }, stress: { type: "number" }, sleep_h: { type: "number" }, weight_kg: { type: "number" }, water_l: { type: "number" } } },
       execute: async (i) => { if (!i.text) throw new Error("text required"); return { entry_id: await addLog(i) }; } },
-    { name: "update_settings", description: "Change app settings: nutrition targets (goal + kcal + protein_g, optional carbs_g/fat_g), daily steps_goal, or your own name (secretary_name) if they want to call you something else.",
-      kw: /target|calorie|kcal|protein|macro|cut|bulk|maintain|step goal|steps goal|name|quota|per day|currency|goal/i,
+    { name: "update_settings", description: "Change app settings: nutrition targets (goal + kcal + protein_g, optional carbs_g/fat_g), daily steps_goal, your own name (secretary_name) if they want to call you something else, work settings, or the mic's speech language (voice_lang) if voice notes come out wrong.",
+      kw: /target|calorie|kcal|protein|macro|cut|bulk|maintain|step goal|steps goal|name|quota|per day|currency|goal|voice|mic|language|accent|dictat|transcri|mishear/i,
       inputSchema: { type: "object", properties: { goal: { type: "string", description: "cut | maintain | bulk | recomp" }, kcal: { type: "number" }, protein_g: { type: "number" },
         carbs_g: { type: "number" }, fat_g: { type: "number" }, rationale: { type: "string" }, steps_goal: { type: "integer" }, secretary_name: { type: "string" },
-        work_quota: { type: "integer", description: "files per day" }, currency: { type: "string", description: "symbol, e.g. $" }, income_now: { type: "number" }, income_goal: { type: "number" } } },
+        work_quota: { type: "integer", description: "files per day" }, currency: { type: "string", description: "symbol, e.g. $" }, income_now: { type: "number" }, income_goal: { type: "number" },
+        voice_lang: { type: "string", description: "speech recognition language for the mic, BCP-47 like en-US, en-GB, fr-FR, th-TH" } } },
       execute: async (i) => { const out = {};
         if (i.kcal && i.protein_g) { await db.doc("config/nutrition").set({ goal: clip(i.goal || "maintain", 40), kcal: Math.round(num(i.kcal)), protein_g: Math.round(num(i.protein_g)),
           carbs_g: num(i.carbs_g) && Math.round(num(i.carbs_g)), fat_g: num(i.fat_g) && Math.round(num(i.fat_g)), rationale: clip(i.rationale, 300), updatedAt: nowIso() }); out.nutrition = true; }
@@ -2809,7 +2883,8 @@ ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
           w.updatedAt = nowIso(); delete w.id;
           await db.doc("config/work").set(w); out.work = true;
         }
-        if (!Object.keys(out).length) throw new Error("nothing to change: give kcal+protein_g, steps_goal, secretary_name or work settings");
+        if (i.voice_lang && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(String(i.voice_lang).trim())) { await db.doc("config/voice").set({ lang: String(i.voice_lang).trim(), updatedAt: nowIso() }); out.voice_lang = true; }
+        if (!Object.keys(out).length) throw new Error("nothing to change: give kcal+protein_g, steps_goal, secretary_name, work settings or voice_lang");
         return out; } },
     { name: "save_commitment", description: "Create or manage a commitment: a recurring deadline with a daily time window (e.g. 23:00-23:10). The app shows a check-in button only inside the window; on time = reward XP, missed = penalty XP deducted automatically plus the punishment created as a task (doing it wins back half). action: create | update | pause | resume | delete | excuse (forgive one day) | check_in (mark it done for them: the open window, or a day they did it on time).",
       kw: /commit|deadline|window|by \d|every (day|night|morning)|punish|penalt|bedtime|sleep|wake|phone|habit|rule|miss|check.?in|checked|lights out|excuse|did it/i,
@@ -3081,6 +3156,7 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   }
 
   async function send(box = $("#askbox")) {
+    const voiced = voiceTurn; voiceTurn = false; disarmDictate();
     const text = box.value.trim();
     if (!text && !photo) return;
     if (!sample) { status("Your secretary is available when this page is open in Claude."); return; }
@@ -3096,9 +3172,9 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
         lastShot = { image, pending, at: Date.now() };
       } else if (lastShot && Date.now() - lastShot.at < 10 * 60e3) { image = lastShot.image; pending = lastShot.pending; again = true; }
       else pending = null;
-      const userText = (text || "Log this meal.") + (again ? "\n[Their previous photo is attached again for reference. Don't log it again; use it with update_meal attach_photo if they ask.]"
+      const userText = (text || "Log this meal.") + (voiced ? "\n[Dictated by voice: the transcript can mishear words (food, places, numbers, names). Read it for what they meant and don't mention transcription slips.]" : "") + (again ? "\n[Their previous photo is attached again for reference. Don't log it again; use it with update_meal attach_photo if they ask.]"
         : image ? "\n[Image attached. If they ask whether they can or should eat it, DON'T log it: give a verdict against left_today and what the next meal should look like. A screenshot of an exported audio file or their editor = work proof → log_work with from_photo true. Food they ate → log_meal with from_photo true, or update_meal with attach_photo true if it's a meal already logged. Health/Fitness app screenshot → log_health. Maps Timeline → log_places.]" : "");
-      appendChat("user", text || "📷", image && !again ? { image: true } : {}); pushed = true;
+      appendChat("user", text || "📷", { ...(image && !again ? { image: true } : {}), ...(voiced ? { voice: true } : {}) }); pushed = true;
       const history = chatHistory().slice(-14).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text || "…" }));
       if (history.length && history[history.length - 1].role === "user") history[history.length - 1] = { role: "user", content: userText };
       else history.push({ role: "user", content: userText });
@@ -3130,12 +3206,231 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
     } finally {
       setBusy(false); status("");
       if (fatal) { $("#send").disabled = true; setAi(true); }
+      if (voiceQueue) { const t = voiceQueue; voiceQueue = ""; setTimeout(() => voiceSend(t), 300); }
     }
   }
   function clearPhoto() { photo = null; $("#photo").value = ""; $("#camera").value = ""; $("#photochip").replaceChildren(); }
   function setPhoto(f) {
     photo = f;
     $("#photochip").replaceChildren(h("span", { class: "photo-chip" }, "📷 " + clip(f.name || "photo", 24), h("button", { type: "button", "aria-label": "Remove photo", onclick: clearPhoto }, "✕")));
+  }
+
+  // ------------------------------------------------------------ voice
+  // Hold a mic to talk and release to send; slide up to lock hands-free (sends on ➤ or after a pause);
+  // slide left to cancel; a tap starts hands-free. Uses the phone's own speech recognition and falls
+  // back to keyboard dictation where the view doesn't allow it.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let speechBlocked = false, V = null, vTick = 0, voiceTurn = false, voiceQueue = "", dictate = null;
+  const DICT_WAIT = 3000;
+  // Live recognition needs the viewer to let this page use the microphone; when it can't, the mic opens
+  // keyboard dictation instead. A blocked device is remembered for a week so the first press isn't wasted.
+  function useSpeech() {
+    if (!SR || speechBlocked) return false;
+    try { if (document.featurePolicy && !document.featurePolicy.allowsFeature("microphone")) return false; } catch { /* no policy API */ }
+    const c = cfg("voice");
+    return !(c && c.blocked_ua === clip(navigator.userAgent, 160) && Date.now() - Date.parse(c.checked || 0) < 7 * 864e5);
+  }
+  const V_SILENCE = 4500, V_MAX = 180e3, V_LOCK = 64, V_CANCEL = 110;
+  const voiceLang = () => clip((cfg("voice") || {}).lang || "en-US", 16);
+  const joinText = (a, b) => [a, b].map((x) => String(x || "").trim()).filter(Boolean).join(" ");
+  const voiceText = () => (V ? joinText(V.committed, V.session) : "");
+  function voiceDiag(code) {
+    try { if (db) db.doc("diag/voice").set({ code: clip(code, 60), lang: voiceLang(), hasApi: !!SR, ua: clip(navigator.userAgent, 160), at: nowIso() }).catch(() => {}); } catch { /* never break the page */ }
+  }
+  function voiceSend(text) {
+    if (sheetEl().open) closeSheet();
+    if (!$("#lock").hidden) $("#chatpanel").classList.add("over-lock");
+    openChat();
+    if ($("#chatsend").disabled) { voiceQueue = joinText(voiceQueue, text); toast(`${persona()} is still answering. I'll send it right after.`); return; }
+    const box = $("#chatbox"); box.value = joinText(box.value, text); voiceTurn = true; send(box);
+  }
+  // Fallback: open the chat with the keyboard up, so its own mic is one tap away, and send by itself
+  // once the words stop coming in.
+  function keyboardDictation(msg) {
+    if (sheetEl().open) closeSheet();
+    if (!$("#lock").hidden) $("#chatpanel").classList.add("over-lock");
+    openChat(); $("#chatbox").focus();
+    armDictate();
+    if (msg) toast(msg);
+  }
+  function armDictate() {
+    disarmDictate();
+    dictate = { timer: 0, idle: setTimeout(disarmDictate, 120e3) };
+    $("#dictbar").hidden = false;
+    if ($("#chatbox").value.trim()) dictInput();
+  }
+  function disarmDictate() {
+    if (!dictate) return;
+    clearTimeout(dictate.timer); clearTimeout(dictate.idle); dictate = null;
+    $("#dictbar").hidden = true; $("#dictfill").classList.remove("run");
+  }
+  function dictInput() {
+    if (!dictate) return;
+    const fill = $("#dictfill"); clearTimeout(dictate.timer); fill.classList.remove("run");
+    if (!$("#chatbox").value.trim()) return;
+    void fill.offsetWidth; fill.style.setProperty("--dur", DICT_WAIT / 1000 + "s"); fill.classList.add("run");
+    dictate.timer = setTimeout(() => {
+      disarmDictate();
+      if ($("#chatsend").disabled || !$("#chatbox").value.trim()) return;
+      voiceTurn = true; send($("#chatbox"));
+    }, DICT_WAIT);
+  }
+  function voiceBlocked(code) {
+    voiceDiag(code);
+    const draft = voiceText(); stopVoice(); speechBlocked = true;
+    if (/allowed|capture|start/.test(code) && db) {
+      const c = { ...(cfg("voice") || {}) }; delete c.id;
+      db.doc("config/voice").set({ ...c, blocked_ua: clip(navigator.userAgent, 160), checked: nowIso() }).catch(() => {});
+    }
+    keyboardDictation("This view doesn't allow the mic: tap the box, then 🎤 on your keyboard.");
+    if (draft) $("#chatbox").value = joinText($("#chatbox").value, draft);
+  }
+  function listen() {
+    let rec;
+    try { rec = new SR(); } catch (e) { return voiceBlocked("create: " + (e && e.name)); }
+    rec.lang = V.lang || voiceLang(); rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+    const mine = () => V && V.rec === rec;
+    rec.onstart = rec.onaudiostart = () => { if (mine()) { V.started = true; drawVoice(); } };
+    rec.onresult = (ev) => {
+      if (!mine()) return;
+      let acc = "";
+      for (let i = 0; i < ev.results.length; i++) {
+        const t = String((ev.results[i][0] && ev.results[i][0].transcript) || "").trim();
+        if (!t) continue;
+        // Safari repeats earlier words in later results; Chrome sends separate pieces.
+        acc = acc && t.toLowerCase().startsWith(acc.toLowerCase()) ? t : joinText(acc, t);
+      }
+      V.session = acc; V.heard = Date.now(); V.started = true; drawVoice();
+    };
+    rec.onerror = (ev) => {
+      if (!mine()) return;
+      const code = ev.error || "error";
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(code)) V.blocked = code;
+      else if (code === "language-not-supported") V.lang = "en-US";
+      else if (code === "network") V.net = (V.net || 0) + 1;
+    };
+    rec.onend = () => {
+      if (!mine()) return;
+      V.committed = joinText(V.committed, V.session); V.session = "";
+      if (V.state === "finishing") return deliverVoice();
+      if (V.blocked) return voiceBlocked(V.blocked);
+      // The recogniser stops on its own after pauses: start it again while they're still talking to us.
+      const now = Date.now(); V.restarts = V.restarts.filter((t) => now - t < 4000).concat(now);
+      if (V.restarts.length > 4 || (V.net || 0) > 2) {
+        voiceDiag(V.net ? "network" : "keeps-stopping");
+        if (voiceText()) return finishVoice();
+        stopVoice(); return toast("Voice isn't working right now. Try again, or type.");
+      }
+      listen();
+    };
+    V.rec = rec;
+    try { rec.start(); V.startErr = ""; } catch (e) { V.startErr = String((e && e.name) || e); }
+  }
+  function startVoice(btn, e) {
+    if (V || !SR) return;
+    const r = btn.getBoundingClientRect();
+    V = { btn, state: "hold", t0: Date.now(), x0: e.clientX, y0: e.clientY, pid: e.pointerId, dir: r.top + r.height / 2 > innerHeight / 2 ? -1 : 1,
+      committed: "", session: "", started: false, heard: 0, restarts: [], rec: null, lang: "" };
+    btn.classList.add("rec");
+    showVoice(); listen();
+    clearInterval(vTick); vTick = setInterval(voiceTick, 200);
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+  function lockVoice() {
+    if (!V || V.state !== "hold") return;
+    V.state = "locked"; V.btn.classList.remove("rec"); V.btn.classList.add("locked");
+    try { if (V.pid != null) V.btn.releasePointerCapture(V.pid); } catch { /* already released */ }
+    if (navigator.vibrate) navigator.vibrate([8, 40, 8]);
+    drawVoice();
+  }
+  function finishVoice() {
+    if (!V || V.state === "finishing") return;
+    V.state = "finishing"; drawVoice();
+    try { V.rec && V.rec.stop(); } catch { /* not running */ }
+    V.fin = setTimeout(deliverVoice, 1200);
+  }
+  function deliverVoice() {
+    if (!V) return;
+    const text = voiceText(); stopVoice();
+    if (text) voiceSend(text); else toast("Didn't catch that. Try again a little closer.");
+  }
+  function stopVoice() {
+    if (!V) return;
+    const v = V; V = null;
+    clearTimeout(v.fin); clearInterval(vTick);
+    try { v.rec && v.rec.abort(); } catch { /* already stopped */ }
+    v.btn.classList.remove("rec", "locked");
+    try { if (v.pid != null) v.btn.releasePointerCapture(v.pid); } catch { /* already released */ }
+    hideVoice();
+  }
+  function cancelVoice() { if (V) { stopVoice(); toast("Cancelled"); } }
+  function voiceTick() {
+    if (!V) return;
+    const el = Date.now() - V.t0, quiet = V.heard ? Date.now() - V.heard : 0, has = !!voiceText();
+    $("#vtime").textContent = fmtClock(Math.floor(el / 1000));
+    $("#vhud").classList.toggle("talking", !!V.heard && quiet < 900);
+    $("#vsend").style.setProperty("--p", V.state === "locked" && has ? Math.max(0, Math.min(1, (quiet - 1500) / (V_SILENCE - 1500))) : 0);
+    if (V.state === "locked" && has && quiet > V_SILENCE) return finishVoice();
+    if (V.state === "locked" && !has && el > 30e3) { stopVoice(); return toast("Didn't hear anything, so I stopped."); }
+    if (el > V_MAX) finishVoice();
+  }
+  function showVoice() {
+    const layer = $("#vlayer"), host = sheetEl().open ? sheetEl() : document.body;
+    if (layer.parentNode !== host) host.appendChild(layer);
+    $("#vlock").style.setProperty("--k", 0); $("#vhud").style.setProperty("--c", 0); $("#vsend").style.setProperty("--p", 0);
+    layer.hidden = false; drawVoice();
+  }
+  function hideVoice() {
+    const layer = $("#vlayer"); layer.hidden = true; $("#vhud").classList.remove("talking");
+    if (layer.parentNode !== document.body) document.body.appendChild(layer);
+  }
+  function drawVoice() {
+    if (!V) return;
+    const hud = $("#vhud"), pill = $("#vlock"), txt = $("#vtext"), r = V.btn.getBoundingClientRect(), st = hud.style, t = voiceText();
+    hud.dataset.state = V.state;
+    txt.textContent = t || (V.state === "finishing" ? "…" : V.started ? "Listening…" : "Starting the mic…");
+    txt.classList.toggle("ph", !t); txt.scrollTop = txt.scrollHeight;
+    if (V.state === "hold") {
+      st.left = "12px"; st.right = Math.max(12, innerWidth - r.left + 12) + "px";
+      if (V.dir < 0) { st.top = "auto"; st.bottom = Math.max(8, innerHeight - r.bottom) + "px"; } else { st.bottom = "auto"; st.top = Math.max(8, r.top) + "px"; }
+      pill.hidden = false; pill.dataset.dir = V.dir < 0 ? "up" : "down";
+      pill.style.left = r.left + r.width / 2 + "px"; pill.style.top = (V.dir < 0 ? r.top - 16 : r.bottom + 16) + "px";
+    } else {
+      st.left = "12px"; st.right = "12px"; st.top = "auto"; st.bottom = "calc(12px + env(safe-area-inset-bottom, 0px))";
+      pill.hidden = true;
+    }
+  }
+  function bindMic(btn) {
+    btn.addEventListener("contextmenu", (e) => e.preventDefault());
+    btn.addEventListener("pointerdown", (e) => {
+      if (!useSpeech() || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      if (V) { if (V.state === "locked") finishVoice(); return; }
+      try { btn.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
+      startVoice(btn, e);
+    });
+    btn.addEventListener("pointermove", (e) => {
+      if (!V || V.state !== "hold" || e.pointerId !== V.pid) return;
+      const k = Math.max(0, Math.min(1, ((e.clientY - V.y0) * V.dir) / V_LOCK)), c = Math.max(0, Math.min(1, (V.x0 - e.clientX) / V_CANCEL));
+      $("#vlock").style.setProperty("--k", k); $("#vhud").style.setProperty("--c", c);
+      if (k >= 1) lockVoice(); else if (c >= 1) cancelVoice();
+    });
+    const up = (e) => {
+      if (!V || V.state !== "hold" || e.pointerId !== V.pid) return;
+      // A tap, a cancelled touch or a permission prompt in the way: keep listening hands-free instead of sending nothing.
+      if (e.type === "pointercancel" || Date.now() - V.t0 < 450 || !V.started) {
+        if (V.startErr && !V.started) listen(); // retry inside the tap, which counts as a gesture
+        if (V && V.startErr && !V.started) return voiceBlocked("start: " + V.startErr);
+        return lockVoice();
+      }
+      finishVoice();
+    };
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("click", (e) => {
+      if (!V && !useSpeech()) return keyboardDictation("Tap 🎤 on your keyboard and talk. It sends itself when you stop.");
+      if (e.detail === 0) { if (V) finishVoice(); else { startVoice(btn, { clientX: 0, clientY: 0, pointerId: null }); lockVoice(); } } // keyboard activation
+    });
   }
 
   // ------------------------------------------------------------ confetti
@@ -3165,7 +3460,19 @@ xp is -20..20: +15..20 high protein and fits; +5..10 decent; 0 neutral; -5..-10 
   $("#navchat").addEventListener("click", openChat);
   document.querySelectorAll(".nav [data-go]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.go)));
   $("#closechat").addEventListener("click", closeChat);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#chatpanel").hidden) closeChat(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (V) cancelVoice(); else if (!$("#chatpanel").hidden) closeChat(); } });
+  for (const id of ["#mic", "#chatmic", "#sheetmic"]) bindMic($(id));
+  $("#vcancel").addEventListener("click", cancelVoice);
+  $("#chatbox").addEventListener("input", dictInput);
+  $("#dictoff").addEventListener("click", () => { disarmDictate(); $("#chatbox").focus(); });
+  $("#vsend").addEventListener("click", finishVoice);
+  // Leaving the app ends recognition: keep what they said as a draft instead of sending half a thought.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden || !V) return;
+    const t = voiceText(); stopVoice();
+    if (t) { if (sheetEl().open) closeSheet(); openChat(); $("#chatbox").value = joinText($("#chatbox").value, t); }
+  });
+  addEventListener("resize", drawVoice);
   // The floating chat button only shows once her card has scrolled away, so it never covers it.
   if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { $("#fab").hidden = e.isIntersecting; }).observe($("#ask"));
   $("#newcommit").addEventListener("click", () => fill("New commitment: every day from 23:00 to 23:10 I check in that my phone is away. If I miss it: "));

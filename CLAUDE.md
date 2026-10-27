@@ -34,6 +34,10 @@ artifact (https://claude.ai/artifact/PiSqogtZbHwxTYE97Uakex, `scripts`: new → 
 it for counts only, never copy script text. The scheduled task "Mali work check-ins" (12:47, 17:47,
 20:47 Bangkok) nudges them when files are short; "Mali commitment window nudge" (23:02) pings them while
 a commitment window is open and unchecked.
+**Voice:** a mic sits on every screen (hold to talk, swipe up to lock, swipe left to cancel; sends by
+itself). Claude's viewer doesn't give pages the microphone yet, so where it's blocked the mic falls back to
+keyboard dictation with auto-send; `diag/voice` shows which path their phone used, `config/voice.lang` the
+speech language. Chat messages from voice carry `voice: true`.
 **Mali's permissions:** anything they can tap, she can do (they asked for this, 2026-10-27): the
 `app_action` tool (punishments, plan ticks, rewards, timer, drafts, ideas, open a tab, delete any item)
 plus `save_commitment` check_in / excuse. Rewards still need to be earned; she can't unlock them early.
